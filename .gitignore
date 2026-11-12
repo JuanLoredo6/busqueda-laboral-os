@@ -1,0 +1,18 @@
+# Tus datos personales nunca se suben al repositorio del taller.
+# El repo trae el sistema (skills, plantillas, tablero); tus datos quedan solo en tu computadora.
+contexto/*
+cv/*
+linkedin/*
+postulaciones/*
+entrevistas/*
+investigacion/*
+tablero/datos.js
+!*/.gitkeep
+!linkedin/sugerencias/
+linkedin/sugerencias/*
+!linkedin/sugerencias/.gitkeep
+
+# Sistema
+.DS_Store
+Thumbs.db
+.claude/settings.local.json
