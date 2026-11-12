@@ -18,6 +18,7 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 | Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena | `analizar-oferta` |
 | Registrar una postulación nueva: carpeta, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |
 | Contar una novedad ("me respondieron de X", "tengo entrevista el jueves") y actualizar el tablero | `actualizar` |
+| Traer al tablero las novedades que llegaron por Gmail o Google Calendar (botón 🔄 SYNC, o sola cada 2 horas) | `sincronizar-correo` |
 | Escribir un mensaje a un recruiter, un follow-up o un agradecimiento con tu voz | `redactar-mensaje` |
 | Preparar una entrevista (RR. HH., técnica, de caso o con hiring manager) y hacer un simulacro | `preparar-entrevista` |
 | Repasar la semana: qué venció, qué sigue, cómo van los números | `repaso-semanal` |
@@ -48,7 +49,7 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 
 - **Primera semana:** `empezar` → `mejorar-perfil` → `posicionamiento` → `propuesta-de-valor`.
 - **Cada aviso que te interesa:** `analizar-oferta` → `nueva-postulacion` → (`recruiters-sinteticos` si es importante).
-- **Cada novedad:** `actualizar` (y `redactar-mensaje` si hay que contestar).
+- **Cada novedad:** `actualizar` (y `redactar-mensaje` si hay que contestar). Las que llegan por mail o calendario las trae `sincronizar-correo`.
 - **Cada entrevista:** `preparar-entrevista` (que usa `criterio-producto` o `criterio-tecnico` según el rol).
 - **Cada semana:** `repaso-semanal`.
 - **Cuando se traba:** `diagnostico-busqueda` → `metricas-busqueda` → `mercado-laboral` o `plan-de-networking` → `aprendizajes-busqueda`.

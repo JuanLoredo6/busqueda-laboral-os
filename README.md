@@ -46,6 +46,8 @@ En la app de escritorio: elegí la carpeta `mi-busqueda` como carpeta de trabajo
 | Claude me pide permiso para todo | Dentro de la carpeta del sistema, leer y editar archivos ya está permitido. Te va a pedir permiso para buscar en internet o correr otros comandos: leé qué quiere hacer y aceptá si tiene sentido |
 | El tablero dice «Todavía no hay datos» | Corré `/empezar` primero. Si ya lo hiciste, pedile a Claude: «regenerá el tablero» |
 | El tablero no se actualiza | Recargá la página (F5). Si sigue igual, pedile a Claude: «corré tablero/sincronizar.sh» |
+| El tablero dice que la sincronización automática está «atrasada» | La tarea programada corre solo con la app de escritorio de Claude abierta. Abrila y tocá 🔄 SYNC para ponerte al día |
+| `/sincronizar-correo` dice que falta un conector | Conectá Gmail o Google Calendar en claude.ai → Configuración → Conectores y abrí una sesión nueva |
 | En Mac me dice que falta `git` | Aceptá la ventana que ofrece instalar las herramientas de desarrollo, esperá a que termine y volvé a intentar |
 | No sé qué hacer ahora | Preguntale a Claude «¿qué hago ahora?» o escribí `/mapa-de-skills` |
 
@@ -60,6 +62,7 @@ En la app de escritorio: elegí la carpeta `mi-busqueda` como carpeta de trabajo
 | Cuando ves un aviso que te interesa | `/analizar-oferta` y pegás el link o el texto |
 | Para postularte | `/nueva-postulacion` |
 | Cuando pasa algo ("me respondieron de X") | Contáselo, o `/actualizar` |
+| Para traer lo que llegó por mail o al calendario | 🔄 SYNC en el tablero, o `/sincronizar-correo` |
 | Para escribirle a alguien | `/redactar-mensaje` |
 | Antes de una entrevista | `/preparar-entrevista` |
 | Los viernes | `/repaso-semanal` |
@@ -80,6 +83,16 @@ Se actualiza solo cada vez que Claude cambia algo. Si marcás una acción como h
 
 Para verlo con datos de ejemplo antes de cargar los tuyos, abrí el tablero y tocá **Ver el tablero con datos de ejemplo**.
 
+### Novedades desde Gmail y Google Calendar (opcional)
+
+Claude puede revisar tu correo y tu agenda **solo para leer** y llevar al tablero lo que llega: confirmaciones, respuestas de recruiters, entrevistas agendadas, rechazos.
+
+1. Conectá Gmail y Google Calendar en claude.ai → **Configuración → Conectores**, con tu cuenta de Google. Después abrí una sesión nueva de Claude Code en la carpeta del sistema.
+2. Tocá **🔄 SYNC** en el tablero y pegá el pedido en Claude Code, o escribí `/sincronizar-correo`. La primera vez Claude te pide permiso para leer: elegí **permitir siempre** para buscar y leer mails y para listar eventos.
+3. Para que corra sola **cada 2 horas, de 8 a 22**, escribí `/sincronizar-correo configurar`. Se crea una tarea programada en la app de escritorio de Claude, que corre mientras la app está abierta.
+
+Lo que es claro (una entrevista con fecha, un rechazo explícito) se aplica solo. Lo dudoso, las ofertas y los mails sospechosos quedan en **«Para revisar»** en el tablero, para que decidas vos. Claude nunca responde, archiva ni borra mails.
+
 ---
 
 ## Qué hay adentro
@@ -96,7 +109,7 @@ busqueda-laboral-os/
 ├── tablero/           tablero.html (abrilo con doble clic)
 ├── plantillas/        Lo que /empezar copia la primera vez
 ├── taller/            Material del taller
-└── .claude/skills/    Los 21 skills
+└── .claude/skills/    Los 22 skills
 ```
 
 ### Los skills
@@ -110,6 +123,7 @@ busqueda-laboral-os/
 | `analizar-oferta` | Encaje de un aviso con tu perfil (0 a 100), requisitos uno por uno, si vale la pena |
 | `nueva-postulacion` | Carpeta, CV adaptado, respuestas del formulario y tarjeta en el tablero |
 | `actualizar` | Lleva cada novedad al tablero y crea las acciones que siguen |
+| `sincronizar-correo` | Trae las novedades de Gmail y Google Calendar al tablero, a demanda (🔄 SYNC) o cada 2 horas de 8 a 22 |
 | `redactar-mensaje` | Mensajes a recruiters, referidos, follow-ups y agradecimientos con tu voz |
 | `preparar-entrevista` | Preguntas probables, historias reales para cada una y simulacro con feedback |
 | `repaso-semanal` | Números de la semana, lo que se está cayendo y tres prioridades |

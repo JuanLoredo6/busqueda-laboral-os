@@ -11,6 +11,14 @@ window.DATOS_EJEMPLO = function () {
     version: 1,
     persona: "Lucía (ejemplo)",
     actualizado: d(0) + "T09:30",
+    sync: {
+      ultima: (function () { var x = new Date(Date.now() - 50 * 60000); return d(0) + "T" + String(x.getHours()).padStart(2, "0") + ":" + String(x.getMinutes()).padStart(2, "0"); })(),
+      ultimoIntento: null, programada: true, horario: "cada 2 h, de 8 a 22", error: null, procesados: [],
+      porRevisar: [
+        { id: "r1", fecha: d(0), fuente: "gmail", ref: "ejemplo-1", resumen: "Mail de Talento de «Rumbo Logística»: te invitan a una charla por un puesto de QA. No está en el tablero.", postulacion: null, propuesta: "Crear la postulación en «En conversación» y una acción para responder hoy.", alerta: false },
+        { id: "r2", fecha: d(0), fuente: "gmail", ref: "ejemplo-2", resumen: "«Completá tus datos bancarios para avanzar con tu contratación»: remitente desconocido.", postulacion: null, propuesta: "No responder. Posible phishing.", alerta: true }
+      ]
+    },
     postulaciones: [
       {
         id: "nimbo-qa-automation-sr", empresa: "Nimbo Pagos", rol: "QA Automation Senior · remoto",
@@ -21,7 +29,7 @@ window.DATOS_EJEMPLO = function () {
         historial: [
           { fecha: d(-14), texto: "Me refirió Diego, ex compañero de Andes Soft." },
           { fecha: d(-8), texto: "Charla con Martina de RR. HH.: buena, preguntó por la migración a Playwright." },
-          { fecha: d(-2), texto: "Me agendaron la técnica con el líder de QA." }
+          { fecha: d(-2), texto: "Invitación a la entrevista técnica con el líder de QA.", fuente: "calendar" }
         ]
       },
       {
@@ -49,7 +57,7 @@ window.DATOS_EJEMPLO = function () {
         link: "", canal: "Portal de la empresa", columna: "cerrada", resultado: "descartada", encaje: 62,
         estado: "Rechazo automático por correo, sin feedback.", proximo: "",
         creada: d(-20), enviada: d(-19), ultimaNovedad: d(-12), contacto: "",
-        historial: [{ fecha: d(-12), texto: "Rechazo automático: 'avanzamos con otros perfiles'." }]
+        historial: [{ fecha: d(-12), texto: "Rechazo automático: 'avanzamos con otros perfiles'.", fuente: "gmail" }]
       }
     ],
     acciones: [

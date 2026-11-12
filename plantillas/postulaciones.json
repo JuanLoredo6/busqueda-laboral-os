@@ -3,5 +3,14 @@
   "persona": "",
   "actualizado": "",
   "postulaciones": [],
-  "acciones": []
+  "acciones": [],
+  "sync": {
+    "ultima": null,
+    "ultimoIntento": null,
+    "programada": false,
+    "horario": "",
+    "error": null,
+    "procesados": [],
+    "porRevisar": []
+  }
 }

@@ -88,6 +88,18 @@ h1 { font-size: 28px; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
 .cambios li { margin: 2px 0; }
 .cambios li button { margin-left: 6px; }
 
+.top-fila { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+#sync-estado.atrasada { color: var(--warn); font-weight: 600; }
+
+/* Para revisar (lo que trajo la sincronización y no se aplicó solo) */
+.revisar { background: var(--surface); border: 1px solid var(--border); border-left: 4px solid var(--col-esperando); border-radius: var(--radius); padding: 14px 18px; margin-bottom: 16px; }
+.revisar-fila { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.revisar h2 { font-size: 16px; margin: 0; }
+.revisar ul { margin: 8px 0 0; padding-left: 0; list-style: none; }
+.revisar li { font-size: 14px; padding: 6px 0; border-top: 1px solid var(--border); }
+.revisar li:first-child { border-top: none; }
+.revisar .propuesta { font-size: 13px; color: var(--text-2); }
+
 /* Métricas */
 .metricas { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 10px; margin-bottom: 24px; }
 .metrica { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; }
@@ -178,7 +190,11 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       <h1 id="titulo">Mi búsqueda</h1>
     </div>
     <div class="top-right">
-      <span class="mono muted" id="conteo"></span>
+      <div class="top-fila">
+        <span class="mono muted" id="conteo"></span>
+        <button class="btn" id="btn-sync" title="Copia el pedido para que Claude revise Gmail y Google Calendar">🔄 SYNC</button>
+      </div>
+      <span class="faint" style="font-size:12px" id="sync-estado"></span>
       <span class="faint" style="font-size:12px" id="actualizado"></span>
     </div>
   </header>
@@ -195,6 +211,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         <li>Lo que marques acá (una acción hecha, una tarjeta movida, una nota) queda como <strong>cambio pendiente</strong> en este navegador. Tocá <strong>Copiar pedido para Claude</strong>, pegalo en Claude Code y Claude lo pasa al archivo. Cuando el archivo ya lo refleja, el cambio pendiente desaparece solo.</li>
         <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea.</li>
         <li>Para mover una tarjeta, arrastrala a otra columna o abrí su detalle y elegí la columna.</li>
+        <li><strong>🔄 SYNC</strong> copia el pedido para que Claude revise Gmail y Google Calendar y traiga las novedades de tus postulaciones. Si activaste la sincronización automática (<code>/sincronizar-correo configurar</code>), corre sola cada 2 horas de 8 a 22 mientras la app de Claude esté abierta. Lo dudoso aparece en «Para revisar».</li>
       </ol>
     </details>
   </footer>
@@ -451,6 +468,57 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       "</ul></section>";
   }
 
+  // ---------- sincronización con Gmail y Calendar ----------
+  function aFechaHora(s) {
+    if (!s || !/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/.test(s)) return null;
+    var p = s.slice(0, 16).split(/[-T:]/);
+    return new Date(+p[0], +p[1] - 1, +p[2], +p[3], +p[4]);
+  }
+  function haceCuanto(d) {
+    var min = Math.round((Date.now() - d.getTime()) / 60000);
+    if (min < 1) return "recién";
+    if (min < 60) return "hace " + min + " min";
+    var h = Math.round(min / 60);
+    if (h < 24) return "hace " + h + (h === 1 ? " hora" : " horas");
+    var dias = Math.round(h / 24);
+    return "hace " + dias + (dias === 1 ? " día" : " días");
+  }
+  function estadoSync() {
+    var s = (datos && datos.sync) || {};
+    var ult = aFechaHora(s.ultima);
+    var partes = [];
+    var atrasada = false;
+    partes.push(ult ? "Gmail y Calendar: " + haceCuanto(ult) : "Gmail y Calendar: nunca sincronizado");
+    if (s.programada) {
+      partes.push("automática " + (s.horario || "cada 2 h, de 8 a 22"));
+      var ahora = new Date();
+      var h = ahora.getHours();
+      // En horario (8 a 22 h) la automática no debería pasar 3 horas sin correr.
+      if (h >= 8 && h <= 22 && (!ult || (Date.now() - ult.getTime()) > 3 * 3600000)) atrasada = true;
+    } else {
+      partes.push("automática apagada");
+    }
+    var texto = partes.join(" · ");
+    if (s.error) { texto += " · ⚠️ " + s.error; atrasada = true; }
+    else if (atrasada) texto += " · ⚠️ atrasada: ¿está abierta la app de Claude?";
+    return { texto: texto, atrasada: atrasada };
+  }
+  function htmlRevisar() {
+    var items = ((datos && datos.sync && datos.sync.porRevisar) || []);
+    if (!items.length) return "";
+    return '<section class="revisar" aria-labelledby="revisar-titulo"><div class="revisar-fila"><h2 id="revisar-titulo">Para revisar · ' + items.length +
+      (items.length === 1 ? " novedad" : " novedades") + ' de Gmail y Calendar</h2>' +
+      '<button class="btn btn-sm" id="revisar-correo">Revisar con Claude</button></div><ul>' +
+      items.map(function (r) {
+        var emp = nombreEmpresa(r.postulacion);
+        return "<li>" + (r.alerta ? '<span class="tag tag-vencida">⚠️ Cuidado</span> ' : "") +
+          '<span class="mono">' + esc(r.fecha ? fechaCorta(r.fecha) : "") + "</span> " +
+          '<span class="tag">' + esc(r.fuente === "calendar" ? "Calendar" : "Gmail") + "</span> " +
+          (emp ? '<span class="tag">' + esc(emp) + "</span> " : "") + esc(r.resumen) +
+          (r.propuesta ? '<div class="propuesta">Propuesta: ' + esc(r.propuesta) + "</div>" : "") + "</li>";
+      }).join("") + "</ul></section>";
+  }
+
   function htmlMetricas() {
     var m = metricas();
     return '<div class="metricas">' +
@@ -532,7 +600,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         (p.canal ? "<div>Canal: " + esc(p.canal) + "</div>" : "") +
         (p.contacto ? "<div>Contacto: " + esc(p.contacto) + "</div>" : "") +
         (p.enviada ? "<div>Enviada: " + esc(p.enviada) + "</div>" : "") +
-        (hist.length ? "<ul>" + hist.map(function (x) { return '<li><span class="mono">' + esc(x.fecha ? fechaCorta(x.fecha) : "") + "</span> " + esc(x.texto) + "</li>"; }).join("") + "</ul>" : "") +
+        (hist.length ? "<ul>" + hist.map(function (x) { return '<li><span class="mono">' + esc(x.fecha ? fechaCorta(x.fecha) : "") + "</span> " + esc(x.texto) + (x.fuente ? ' <span class="tag">' + esc(x.fuente === "calendar" ? "Calendar" : x.fuente === "gmail" ? "Gmail" : x.fuente) + "</span>" : "") + "</li>"; }).join("") + "</ul>" : "") +
         '<div class="mover"><label for="mover-' + esc(p.id) + '">Mover a</label><select id="mover-' + esc(p.id) + '" data-mover="' + esc(p.id) + '">' + opciones + "</select></div>" +
         '<label class="sr" for="nota-' + esc(p.id) + '">Nota</label><textarea id="nota-' + esc(p.id) + '" placeholder="Anotá una novedad (por ejemplo: me escribió la recruiter)"></textarea>' +
         '<button class="btn btn-sm" data-nota="' + esc(p.id) + '" style="margin-top:4px">Guardar nota</button>' +
@@ -566,6 +634,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       document.getElementById("titulo").textContent = "Mi búsqueda";
       document.getElementById("conteo").textContent = "";
       document.getElementById("actualizado").textContent = "";
+      document.getElementById("sync-estado").textContent = "";
       cont.innerHTML = '<div class="sin-datos"><h2>Todavía no hay datos</h2><p class="muted">Abrí Claude Code en la carpeta del proyecto y escribí <code>/empezar</code>.<br>Cuando Claude cree tus datos, esta página se completa sola.</p>' +
         '<p><button class="btn" id="ver-ejemplo">Ver el tablero con datos de ejemplo</button></p></div>';
       return;
@@ -589,7 +658,12 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       if (el.value) borradores[el.id] = el.value;
     });
 
-    cont.innerHTML = htmlCambios() + htmlHoy() + htmlMetricas() +
+    var es = estadoSync();
+    var se = document.getElementById("sync-estado");
+    se.textContent = es.texto;
+    se.className = es.atrasada ? "atrasada" : "faint";
+
+    cont.innerHTML = htmlCambios() + htmlHoy() + htmlRevisar() + htmlMetricas() +
       '<div class="grid-main">' + htmlAgenda() + htmlKanban() + "</div>";
 
     Array.prototype.forEach.call(cont.querySelectorAll("details"), function (d, i) {
@@ -607,6 +681,12 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     if (b.id === "ver-ejemplo") { location.search = "?ejemplo"; return; }
     if (b.id === "salir-ejemplo") { location.search = ""; return; }
     if (b.id === "cerrar-dialogo") { document.getElementById("dialogo-copia").close(); return; }
+    if (b.id === "btn-sync") {
+      copiar("/sincronizar-correo\n\nRevisá Gmail y Google Calendar y actualizá mis postulaciones" + (cambios.length ? ".\n\nAntes, aplicá estos cambios que marqué en el tablero:\n" + cambios.map(function (c) { return "- " + describirCambio(c); }).join("\n") : "."),
+        "Pedido de SYNC copiado. Pegalo en Claude Code.");
+      return;
+    }
+    if (b.id === "revisar-correo") { copiar("/sincronizar-correo revisar", "Pedido copiado. Pegalo en Claude Code."); return; }
     if (b.id === "copiar-cambios") { copiar(pedidoCambios(), "Pedido copiado. Pegalo en Claude Code."); return; }
     if (b.hasAttribute("data-quitar")) { quitarCambio(+b.getAttribute("data-quitar")); return; }
     if (b.hasAttribute("data-hecha")) { sumarCambio({ tipo: "hecha", id: b.getAttribute("data-hecha") }); toast("Marcada. Acordate de pasarle el cambio a Claude."); return; }
