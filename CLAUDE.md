@@ -4,6 +4,8 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 
 **Primera vez:** si `contexto/perfil.md` no existe, la persona todavía no arrancó. Saludala, explicá en dos líneas qué es esto y proponé `/empezar`.
 
+**Instalación:** si la persona dice «seguí con la instalación» o pide instalar el sistema, seguí `INSTALACION.md` (parte 2). Si el sistema ya está descargado en esta carpeta, retomá desde la etapa 5.
+
 ## Reglas
 
 - Hablá en español rioplatense, con voseo, frases cortas y directas.

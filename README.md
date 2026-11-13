@@ -6,15 +6,20 @@ Lo armamos para un taller entre colegas de IT que estamos buscando nuestro próx
 
 ---
 
-## Instalación en un paso
+## Instalación asistida
 
-Necesitás **Claude Code** (incluido en los planes Pro y Max de Claude) en la app de escritorio o en la terminal.
+Necesitás un plan **Claude Pro o Max** y la **app de escritorio de Claude** ([claude.com/download](https://claude.com/download)). No hace falta saber programar ni tener cuenta de GitHub.
 
-Abrí Claude Code en cualquier carpeta (por ejemplo, Documentos) y escribí:
+1. Abrí la app, pestaña **Code**, y elegí tu carpeta **Documentos** como carpeta de trabajo.
+2. Pegá este pedido:
 
-> Instalá el sistema de búsqueda laboral de https://github.com/JuanLoredo6/busqueda-laboral-os siguiendo las instrucciones de su README.
+```
+Instalá el sistema de búsqueda laboral siguiendo, etapa por etapa, la guía https://raw.githubusercontent.com/JuanLoredo6/busqueda-laboral-os/main/INSTALACION.md
+```
 
-Claude descarga todo, te dice dónde quedó y te explica cómo abrirlo. Después, **abrí Claude Code en esa carpeta nueva** y escribí:
+Claude te guía etapa por etapa: descarga el sistema, te ayuda a abrirlo en su carpeta, conecta Gmail y Google Calendar (solo lectura) y comprueba que todo funciona. La guía completa, con los pasos previos y qué hacer si algo se traba, está en **[INSTALACION.md](INSTALACION.md)**.
+
+Al terminar, en la carpeta del sistema, escribí:
 
 ```
 /empezar
@@ -28,14 +33,6 @@ Con Git instalado, en una terminal:
 git clone https://github.com/JuanLoredo6/busqueda-laboral-os.git mi-busqueda
 ```
 
-```bash
-cd mi-busqueda
-```
-
-```bash
-claude
-```
-
 En la app de escritorio: elegí la carpeta `mi-busqueda` como carpeta de trabajo de una sesión nueva.
 
 ### Problemas frecuentes
@@ -47,7 +44,7 @@ En la app de escritorio: elegí la carpeta `mi-busqueda` como carpeta de trabajo
 | El tablero dice «Todavía no hay datos» | Corré `/empezar` primero. Si ya lo hiciste, pedile a Claude: «regenerá el tablero» |
 | El tablero no se actualiza | Recargá la página (F5). Si sigue igual, pedile a Claude: «corré tablero/sincronizar.sh» |
 | El tablero dice que la sincronización automática está «atrasada» | La tarea programada corre solo con la app de escritorio de Claude abierta. Abrila y tocá 🔄 SYNC para ponerte al día |
-| `/sincronizar-correo` dice que falta un conector | Conectá Gmail o Google Calendar en claude.ai → Configuración → Conectores y abrí una sesión nueva |
+| `/sincronizar-correo` dice que falta un conector | Tocá el **+** junto al cuadro de mensaje → conectores → Gmail o Google Calendar → Conectar. Si Claude sigue sin verlo, abrí una sesión nueva. Detalle en [INSTALACION.md](INSTALACION.md), etapa 5 |
 | En Mac me dice que falta `git` | Aceptá la ventana que ofrece instalar las herramientas de desarrollo, esperá a que termine y volvé a intentar |
 | No sé qué hacer ahora | Preguntale a Claude «¿qué hago ahora?» o escribí `/mapa-de-skills` |
 
@@ -99,6 +96,7 @@ Lo que es claro (una entrevista con fecha, un rechazo explícito) se aplica solo
 
 ```
 busqueda-laboral-os/
+├── INSTALACION.md     La guía de instalación asistida
 ├── CLAUDE.md          Instrucciones para Claude: reglas, carpetas, modelo de datos
 ├── contexto/          Tu fuente de verdad: perfil, qué buscás, tu voz, decisiones
 ├── linkedin/          Tu PDF de LinkedIn · sugerencias/ con los textos nuevos
@@ -173,20 +171,7 @@ Tus datos no se tocan: están fuera de lo que se versiona.
 
 ## Instrucciones de instalación para Claude Code
 
-*Esta sección es para Claude. Si te pidieron instalar este sistema, seguí estos pasos.*
-
-1. **Dónde.** Preguntá en una línea dónde instalarlo. Recomendado: una carpeta `mi-busqueda` dentro de Documentos (`~/Documents/mi-busqueda` o `~/Documentos/mi-busqueda`). Si ya existe una carpeta con ese nombre, no la pises: proponé otro nombre.
-2. **Git.** Comprobá que `git --version` funciona.
-   - **Windows:** Claude Code ya usa Git para Windows, así que debería estar.
-   - **macOS:** si no está, al correr `git` el sistema ofrece instalar las herramientas de línea de comandos. Pedile a la persona que acepte y espere a que termine.
-   - **Si no hay forma de usar Git:** descargá el ZIP desde https://github.com/JuanLoredo6/busqueda-laboral-os/archive/refs/heads/main.zip y descomprimilo en la carpeta elegida.
-3. **Descargar.** Corré `git clone https://github.com/JuanLoredo6/busqueda-laboral-os.git "<carpeta>"`.
-4. **Comprobar.** Verificá que existen `<carpeta>/CLAUDE.md` y `<carpeta>/.claude/skills/empezar/SKILL.md`.
-5. **Explicar el paso siguiente.** Los skills se cargan cuando Claude Code se abre **en esa carpeta**. Decile a la persona, con la ruta completa:
-   - **App de escritorio:** abrí una sesión nueva y elegí la carpeta `<carpeta>` como carpeta de trabajo.
-   - **Terminal:** `cd "<carpeta>"` y después `claude`.
-   - Una vez ahí, que escriba `/empezar`.
-6. No crees ni copies datos personales en este paso. Eso lo hace `/empezar`.
+*Esta sección es para Claude.* Si te pidieron instalar este sistema, seguí el protocolo de [INSTALACION.md](INSTALACION.md), parte 2, etapa por etapa.
 
 ---
 
