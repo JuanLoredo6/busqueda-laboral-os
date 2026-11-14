@@ -25,7 +25,7 @@ Se corre con el método de `.claude/skills/poner-a-prueba/SKILL.md#método` (cit
 
 ### Un objetivo por ronda
 
-Cada ronda ataca una sola hipótesis: la más riesgosa del Diagnóstico, con la misma priorización riesgo × impacto que ya hizo `diagnostico-busqueda`. Si pedís "averiguar todo junto", apretá: ¿cuál te cuesta más si resulta falsa? Esa va en esta ronda; las otras esperan.
+Cada ronda ataca una sola hipótesis: la primera del Diagnóstico, con la misma priorización (riesgo × impacto × barato de probar) que ya hizo `diagnostico-busqueda`. Su criterio para abandonarla es lo que la ronda tiene que poder confirmar o descartar. Si pedís "averiguar todo junto", apretá: ¿cuál te cuesta más si resulta falsa? Esa va en esta ronda; las otras esperan.
 
 ### A quién: por lo que hizo, no por el cargo
 

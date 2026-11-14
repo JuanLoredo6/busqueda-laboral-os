@@ -38,11 +38,67 @@ Si falta saber algo esencial, preguntá en una sola ronda: a quién, por qué ca
 - **El nombre del destinatario**, si se sabe. Si no, no inventes uno: dejá `<nombre>`.
 - **Nada de presión** ni de urgencia fingida.
 
+## Revisión de voz
+
+> Adaptado de `work-humanizer`, de Paweł Huryn ([product-engineering](https://github.com/phuryn/product-engineering), licencia MIT).
+
+Todo texto que sale en nombre de la persona pasa por acá antes de entregarse: mensajes, respuestas de formularios, el Acerca de de LinkedIn, un post. Los demás skills citan esta sección (`.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz`) y no la copian.
+
+### Primero: ¿lo podría haber escrito cualquiera?
+
+Si el mismo pedido en una línea, hecho por otra persona, daría un texto casi igual, al texto le falta lo que solo ella sabe: el ejemplo real, el número, qué pasó, qué piensa. Ninguna corrección de estilo lo arregla. Pasá al **modo entrevista**. Es lo normal en un Acerca de, un aviso a la red, un primer contacto o una respuesta abierta de formulario. Un follow-up o una confirmación de horario, con todos sus datos a mano, se escriben directo.
+
+### Modo entrevista
+
+- **Una sola ronda, como mucho 5 preguntas.** Cada una completa un hueco que el lector notaría, y cita la frase que su respuesta va a reemplazar.
+- **Pedí que lo cuente, no que llene un formulario:** "En dos o tres frases, como se lo contarías a alguien: ¿qué pasó la primera vez que el equipo usó la automatización?" funciona mejor que "Dame un ejemplo".
+- **Barato de responder:** cada pregunta se contesta en menos de un minuto, y se puede saltear.
+- **El material son sus frases.** Se mantienen su orden, sus palabras raras y su forma de razonar. Solo se corrige claridad, gramática y largo. Si hay un borrador de Claude, es una lista de puntos a cubrir, no el esqueleto.
+- **Una pregunta salteada** da una frase más simple o un recorte, nunca un detalle inventado.
+- Si la persona escribió el texto ella misma y pide una revisión, **no lo reescribas:** señalá cada problema con su arreglo puntual, para que su voz quede.
+
+### Lo que no cambia nunca
+
+- **La certeza de cada dato.** "Ayudé a" no se vuelve "lideré", "cerca de 300" no se vuelve "300", "participé en" no se vuelve "armé". Es la regla de no subir el nivel, aplicada frase por frase.
+- **Quién hizo qué.** Un logro del equipo sigue siendo del equipo.
+- **Motivos y condiciones que la persona no dio**, aunque parezcan obvios: no se agregan.
+- **Lo vago no se vuelve más vago.** Si una frase es vaga y no hay un dato para precisarla, queda como la dijo la persona o se corta.
+
+### Muletillas a sacar
+
+Una sola no prueba nada; varias juntas son la marca de un texto de IA.
+
+- **Contraste con algo que nadie dijo:** "no es solo X, es Y", "más que un trabajo, un desafío". Decí Y.
+- **Anuncio antes del punto:** "Te cuento:", "Lo importante es esto:", "Voy al grano:", "Tres cosas cambiaron:". El punto va directo.
+- **Cierres de fórmula:** "En resumen", "Sin más", "Quedo atento a tus comentarios", "No dudes en contactarme", "Espero que este mensaje te encuentre bien". Se termina en lo último concreto o en el pedido.
+- **Vocabulario inflado:** apasionado, proactivo, sinergia, desafiante, potenciar, impulsar, robusto, integral, de punta, "aportar valor", "en un mundo cada vez más...". También lo que liste `contexto/voz.md` en "no uso nunca".
+- **Adjetivos sin dato atrás:** "significativo", "notable", "gran impacto". Se pega el número o el hecho de `contexto/perfil.md`, o se corta el adjetivo.
+- **Tríadas por reflejo:** tres cosas solo cuando hay tres cosas.
+- **Puntuación de IA:** rayas (—) y punto y coma, salvo que la persona los use; negritas sueltas; emojis de viñeta; varios signos de exclamación.
+- **Ritmo parejo:** todas las frases del mismo largo, o todas arrancando igual. Variá en la dirección que haga falta, sin agregar personalidad postiza ("La verdad,", "Ojo:", un chiste que la persona no hizo).
+
+### Control final
+
+1. **Control de hechos, frase por frase**, contra la fuente (`contexto/perfil.md`, las respuestas de la persona): cada dato, nombre, fecha y compromiso está, con el mismo valor y la misma certeza, y no apareció ninguno nuevo.
+2. **Barrido de muletillas**, buscándolas en el texto final: los ojos se las saltean.
+3. **Leelo como si lo dijera la persona.** Lo que ella no diría, más simple.
+4. **Opción más corta** (en textos de más de 100 palabras): tapá cada párrafo y fijate si el lector extrañaría un dato, un pedido o el punto. Si lo que sobra suma un cuarto del texto o más, ofrecé la versión corta en una línea ("Opción más corta: sacar el párrafo 2, queda un 30% más corto") sin aplicarla. Si no, "ya está ajustado". Nunca se ofrece cortar las pruebas: los ejemplos, los números, el pedido.
+
 ## Entrega
 
-1. Mostrá el mensaje listo para copiar, en un bloque de código, con el conteo de caracteres si el canal tiene límite.
+1. Pasalo por la **Revisión de voz** de arriba. Mostrá el mensaje listo para copiar, en un bloque de código, con el conteo de caracteres si el canal tiene límite.
 2. Si hay dos enfoques razonables, ofrecé una alternativa corta.
 3. Si es para una postulación, guardalo en `postulaciones/<empresa-rol>/mensaje-<tipo>-<AAAA-MM-DD>.md`.
 4. Preguntá si lo va a mandar. Cuando confirme que lo mandó, registralo con `actualizar` (historial, acción hecha, próximo follow-up).
+
+Ejemplo de follow-up por LinkedIn, ilustrativo y con datos ficticios (el logro y el tono salen siempre de `perfil.md` y `voz.md`):
+
+```text
+Hola Laura, ¿cómo estás? El 12/11 me postulé a QA Automation Senior en Acme.
+Desde entonces terminé una certificación en Playwright, que piden en el aviso.
+¿Sabés si el proceso sigue abierto?
+
+(191 caracteres)
+```
 
 **Claude nunca envía el mensaje**, aunque tenga una herramienta de correo o de LinkedIn conectada, salvo que la persona lo pida expresamente para ese mensaje. Aun así, mostrá el texto final y el destinatario y esperá un "sí" antes de enviarlo.

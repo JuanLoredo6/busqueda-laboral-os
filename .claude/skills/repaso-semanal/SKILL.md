@@ -13,7 +13,9 @@ Hablá en rioplatense, con voseo. Con un tono que sostenga: reconocé lo hecho a
 
 - `postulaciones/postulaciones.json` (tarjetas, historial, acciones).
 - `contexto/busqueda.md`, sección **Cómo mido la búsqueda** (indicador principal y antimétricas, si las definió `metricas-busqueda`).
-- El repaso anterior en `investigacion/*-repaso-semanal.md`, si existe, para comparar.
+- Los dos repasos anteriores en `investigacion/*-repaso-semanal.md`, si existen, para comparar.
+- `contexto/decisiones.md` (sobre todo las ⭐ y su "Cambio de idea si...") y el último `investigacion/*-diagnostico-busqueda.md`.
+- La fecha de la última modificación de `contexto/perfil.md`, `contexto/posicionamiento.md` y del último informe de mercado (la fecha de modificación del archivo; esas carpetas no están en git).
 
 La semana es de lunes a domingo de la fecha de hoy, salvo que la persona diga otra cosa.
 
@@ -48,6 +50,15 @@ Si no hay indicador definido, decilo en una línea y ofrecé `metricas-busqueda`
 - **Postulaciones olvidadas:** en `esperando` con más de 14 días sin novedad y sin acción de seguimiento. Proponé un follow-up, buscar un contacto, o cerrarla como `sin-respuesta` (solo si la persona confirma).
 - **Antimétricas:** si alguna pasó su umbral, decilo claro. Por ejemplo, demasiadas postulaciones fuera de lo que buscás o una semana sin ninguna conversación con una persona.
 - **Datos pendientes** viejos en `contexto/datos-pendientes.md`.
+
+> Las cuatro revisiones que siguen están adaptadas del `/review` de `pm-brain`, de Paweł Huryn ([pm-brain](https://github.com/phuryn/pm-brain), licencia MIT).
+
+- **Contexto viejo:** `contexto/perfil.md` o `contexto/posicionamiento.md` sin cambios hace 6 semanas o más mientras hubo entrevistas o feedback nuevo; un informe de mercado de más de 45 días. Proponé qué actualizar, sin hacerlo.
+- **Hipótesis estancadas:** las del último diagnóstico que llevan 30 días o más sin ninguna evidencia nueva en el tablero, las notas o `investigacion/`. Proponé probarlas, reformularlas o dejarlas.
+- **Decisiones que piden revisión:** las de `contexto/decisiones.md` cuya condición de "Cambio de idea si..." ya se cumplió según los datos del tablero.
+- **Contactos sin seguimiento:** acciones de networking o charlas hechas hace más de 3 semanas sin un próximo paso.
+
+Cuando marques que algo dejó de sostenerse (una decisión, una hipótesis, el posicionamiento), **citá cada señal por separado, con su fecha y su fuente** ("Beta: rechazo después de la técnica, 03/11, notas-2026-11-03.md"), nunca un resumen como "el plan no está funcionando". Y **no lo resuelvas en este repaso:** la decisión sigue como está, la señal queda escrita y la persona decide en otro momento si la cambia. Lo de esta parte que no tiene datos se dice en una línea, no se rellena.
 
 ### 4. Una lectura
 

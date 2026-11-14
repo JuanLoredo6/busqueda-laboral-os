@@ -1,6 +1,6 @@
 ---
 name: mercado-laboral
-description: "Investiga con fuentes públicas dónde está la demanda para tu perfil: cuántos roles como el tuyo se publican en tu región, cuáles se ajustan a tus condiciones (modalidad, idioma, seniority) y qué empresas concretas conviene apuntar este mes. Cada número va con su fuente y el supuesto que lo conecta con tu caso. Escribe el Informe de mercado en investigacion/. Usala cuando preguntes 'dónde hay trabajo para mí', 'qué empresas contratan X', 'a qué apunto', 'hay demanda de mi perfil', o al arrancar la búsqueda."
+description: "Investiga con fuentes públicas dónde está la demanda para tu perfil: cuántos roles como el tuyo se publican en tu región, cuáles se ajustan a tus condiciones (modalidad, idioma, seniority) y qué empresas concretas conviene apuntar este mes. Cada número va con su fuente y el supuesto que lo conecta con tu caso. Escribe el Informe de mercado en investigacion/. Usala cuando preguntes 'dónde hay trabajo para mí', 'qué empresas contratan X', 'a qué empresas apunto', 'hay demanda de mi perfil', o al arrancar la búsqueda."
 ---
 
 # mercado-laboral — el Informe de mercado

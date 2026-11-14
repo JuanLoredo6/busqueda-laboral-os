@@ -72,3 +72,20 @@ Versiones, precios, capacidades de modelos y servicios cambian más rápido que 
 - Lo que el entrevistador se lleva, en una frase, y una mejora concreta.
 
 Las preguntas de código en vivo (algoritmos, ejercicios) se practican igual: primero entender y acordar el problema con ejemplos, después el enfoque en voz alta con su complejidad, después el código y al final las pruebas.
+
+## Ejemplo de esqueleto
+
+Ilustrativo: es un esqueleto para razonar en voz alta, no una respuesta para memorizar. Las tecnologías concretas se verifican antes de nombrarlas.
+
+```text
+Pregunta: "Diseñá un acortador de URLs."
+
+1. Diagnóstico y supuestos: ¿cuántas URLs nuevas por día y cuántas visitas? ¿Los links vencen? ¿Hacen falta estadísticas?
+   Supuesto declarado: 1 millón de links nuevos por día y 100 lecturas por cada escritura, así que domina la lectura.
+2. Opciones:
+   a. Código autoincremental en base 62: simple y sin colisiones, pero el contador es un punto único y los códigos son predecibles.
+   b. Hash de la URL truncado: sin coordinación, pero hay que manejar colisiones y los links repetidos.
+3. Postura: a, con rangos de IDs asignados a cada servidor y una caché delante de la base para las lecturas.
+   Descarto b porque manejar colisiones agrega complejidad que este volumen no justifica.
+4. Pasos verificables: prueba de carga a 10 veces la lectura estimada, latencia p99 de la redirección por debajo de 50 ms, y límite de pedidos por IP contra el abuso.
+```

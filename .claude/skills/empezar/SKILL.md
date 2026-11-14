@@ -88,6 +88,21 @@ En pocas líneas:
 - El paso siguiente concreto: `/mejorar-perfil`.
 - Que para ver todos los skills puede pedir `/mapa-de-skills`.
 
+Ejemplo de cierre, ilustrativo y con datos ficticios:
+
+```text
+Quedó cargado: tu perfil con 3 trabajos y 2 logros, qué buscás (QA senior, remoto) y tu voz.
+Falta: logros de tu trabajo en Empresa B y las fechas de tu formación (están en contexto/datos-pendientes.md).
+
+La rutina:
+- Cada día, mirá «Hoy» en el tablero.
+- Cada aviso que te guste: /analizar-oferta.
+- Cada novedad: contámela con /actualizar.
+- Cada viernes: /repaso-semanal.
+
+Mañana: /mejorar-perfil. Para ver todo lo que podés hacer: /mapa-de-skills.
+```
+
 ## Reglas
 
 - No inventes logros, fechas ni números. Lo que no esté, se pregunta o se anota como pendiente.

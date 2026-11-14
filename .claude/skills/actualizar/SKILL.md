@@ -53,8 +53,22 @@ Si la novedad trae mucho contenido (notas de una entrevista, el mail completo de
 
 Mostrá en 2 a 4 líneas qué cambió (tarjeta, acciones creadas y cerradas) y cuál es la próxima acción con fecha. Si es un rechazo, una frase breve y humana, sin dramatizar, y un recordatorio de que se registra para aprender (`aprendizajes-busqueda` lo usa).
 
+## Ejemplo
+
+Ilustrativo, con datos ficticios: la forma es la que vale, los datos salen siempre de la novedad y del tablero.
+
+```text
+Pedido: "me escribió Laura, la recruiter de Acme, para una charla el jueves a las 15"
+
+Cierre:
+Listo. Acme (QA Automation Senior) pasó a «En conversación», con contacto Laura (recruiter).
+Cerré el follow-up del 19/11: no hizo falta.
+Nueva acción: "Preparar la charla con Acme", miércoles 18/11 (/preparar-entrevista acme-qa-automation-senior).
+Próximo paso: charla con Laura el jueves 19/11 a las 15.
+```
+
 ## Reglas
 
-- El JSON tiene que quedar válido. Después de editarlo, leelo de nuevo y comprobá que se puede parsear. Si `tablero/datos.js` no se actualizó (el hook no corrió), corré `bash tablero/sincronizar.sh`.
+- El JSON tiene que quedar válido y respetar el modelo de datos. El hook lo valida después de cada edición: si devuelve errores, corregilos antes de cerrar. Si el hook no corrió, corré `bash tablero/sincronizar.sh`, que valida y regenera `tablero/datos.js`.
 - No inventes datos que la novedad no trae (horario, nombre del entrevistador). Si hace falta, preguntá.
 - No cierres una postulación por silencio sin que la persona lo confirme.

@@ -29,7 +29,7 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 | `postulaciones/` | `postulaciones.json` (los datos del tablero) y una carpeta por postulación |
 | `entrevistas/` | Una carpeta por empresa: preparación, simulacros y notas |
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
-| `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh` |
+| `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`. No se editan |
 | `taller/` | Material del taller |
 | `.claude/skills/` | Los 22 skills del sistema |
@@ -61,13 +61,13 @@ Si un pedido encaja en un skill, usalo aunque la persona no lo nombre.
 ### Cómo funciona
 
 1. Los datos viven en **`postulaciones/postulaciones.json`**. Es la única fuente de verdad del tablero.
-2. Un hook de Claude Code (`.claude/settings.json`) corre `tablero/sincronizar.sh` después de cada edición y regenera **`tablero/datos.js`** (el mismo JSON envuelto en `window.DATOS_TABLERO = ...;`).
+2. Un hook de Claude Code (`.claude/settings.json`) corre `tablero/sincronizar.sh` después de cada edición: valida el JSON con `tablero/validar.py` y regenera **`tablero/datos.js`** (el mismo JSON envuelto en `window.DATOS_TABLERO = ...;`). Si el JSON está roto, no pisa `datos.js` y devuelve el error; si no respeta el modelo de datos, avisa qué campo falla.
 3. **`tablero/tablero.html`** se abre con doble clic, lee `datos.js` y lo vuelve a leer cada 10 segundos. No necesita internet ni servidor.
 4. Lo que la persona marca en el tablero (acción hecha, tarjeta movida, nota, acción nueva) queda como cambio pendiente en su navegador. El tablero arma un pedido que empieza con "Cambios desde el tablero" para pegar en Claude Code; el skill `actualizar` lo aplica al JSON. Cuando el JSON ya refleja el cambio, el tablero lo borra solo.
 5. El botón ⚡ de cada acción copia su `pedido` más el contexto de la tarea, para pegar en Claude Code.
 6. El botón **🔄 SYNC** copia `/sincronizar-correo`: Claude revisa Gmail y Google Calendar con los conectores oficiales y trae las novedades de las postulaciones. La sincronización también puede correr sola cada 2 horas de 8 a 22 con una tarea programada (`/sincronizar-correo configurar`). Lo dudoso queda en `sync.porRevisar` y el tablero lo muestra en «Para revisar».
 
-**Después de editar el JSON:** comprobá que sigue siendo JSON válido y que `tablero/datos.js` se actualizó. Si no (por ejemplo, si el hook no corrió), ejecutá `bash tablero/sincronizar.sh` desde la raíz del proyecto.
+**Después de editar el JSON:** si el hook devuelve un error de validación, corregilo en el mismo turno antes de seguir. Si el hook no corrió, ejecutá `bash tablero/sincronizar.sh` desde la raíz del proyecto: valida y regenera.
 
 ### Modelo de datos de `postulaciones/postulaciones.json`
 

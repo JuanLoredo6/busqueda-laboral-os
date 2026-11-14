@@ -71,6 +71,8 @@ Revisá la pieza contra esta lista. Cada defecto encontrado se anota con su rees
 | Mensaje sin pedido o sin contexto | "Hola, me interesa trabajar en tu empresa" | Qué viste, por qué vos, qué pedís concretamente |
 | Demasiado largo para el canal | CV de 4 páginas, mensaje de LinkedIn de 6 párrafos | Ajustar al canal (CV: 1-2 páginas; mensaje: hasta 5 líneas) |
 
+Si la pieza es un CV o la sección Experiencia de LinkedIn, revisala también contra `.claude/skills/mejorar-perfil/SKILL.md#criterios-de-cv`. Si es un texto en nombre de la persona (mensaje, pitch, Acerca de), contra las muletillas de `.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz`: un recruiter que ve diez mensajes iguales por día las reconoce.
+
 **Nunca se inventa un logro para arreglar un defecto.** Si la reescritura necesita un dato que no está en `contexto/perfil.md`, se marca ❓ y se te pregunta.
 
 ## El entregable

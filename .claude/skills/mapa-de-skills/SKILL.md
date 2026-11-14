@@ -55,3 +55,13 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 - **Cuando se traba:** `diagnostico-busqueda` → `metricas-busqueda` → `mercado-laboral` o `plan-de-networking` → `aprendizajes-busqueda`.
 
 Un pedido que ninguna fila cubre no se resuelve improvisando con uno de estos skills: se dice qué falta.
+
+## Ejemplo
+
+```text
+Pedido: "Me rechazaron tres veces después de la entrevista técnica, ¿qué hago?"
+
+Respuesta: Eso es "cuando se traba". Arrancaría con diagnostico-busqueda para separar el síntoma de la causa.
+Si ya tenés notas de esas entrevistas, aprendizajes-busqueda saca los patrones. Para practicar la próxima,
+preparar-entrevista con criterio-tecnico. ¿Empezamos por el diagnóstico?
+```

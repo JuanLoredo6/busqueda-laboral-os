@@ -62,3 +62,18 @@ Qué se hace primero, con quién y con qué resultado observable. Nunca "seguir 
 - **¿Tomó postura y la sostuvo?**
 - **¿Cerró con próximos pasos observables y con el camino al usuario?**
 - Lo que el entrevistador se lleva, en una frase, y una mejora concreta.
+
+## Ejemplo de esqueleto
+
+Ilustrativo, con una empresa ficticia: es un esqueleto para pensar en voz alta, no un texto para memorizar.
+
+```text
+Pregunta: "La conversión del checkout cayó 15% este mes. ¿Qué hacés?"
+
+1. Diagnóstico: ¿cayó en todos los canales o en uno? ¿Desde qué fecha? ¿Hubo un release, un cambio de precios o de medio de pago? ¿Cómo se mide hoy la conversión?
+2. Opciones:
+   a. Revertir el último cambio del checkout: rápido y de bajo riesgo, pero cede aprender qué lo rompió.
+   b. Segmentar la caída antes de tocar nada: un día más de pérdida, a cambio de atacar la causa real.
+3. Postura: b, salvo que la caída coincida exacto con un release; en ese caso, a, y se investiga después.
+4. Próximos pasos: hoy, cortar los datos por canal y dispositivo con el equipo de datos; mañana, decisión con el dato a la vista; aviso a Soporte para que reporte quejas sobre el checkout.
+```

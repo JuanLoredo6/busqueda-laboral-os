@@ -62,6 +62,17 @@ Las preguntas cambian, las familias se repiten. Traducilas al dominio de la empr
 
 Marcas: 📌 dato literal de una fuente, con su ubicación · 🔍 lectura tuya que ninguna fuente afirma · ❓ dato que falta y completa la persona.
 
+Ejemplo de una pregunta preparada, ilustrativo y con datos ficticios:
+
+```text
+Pregunta: "Contame de una vez que tuviste que decidir sin toda la información." (familia 3)
+Antes de responder: nada; es de comportamiento.
+Estructura: situación (10 s) → qué faltaba saber → qué decidiste y qué supuesto declaraste → resultado → qué harías distinto.
+Historia: la migración de pruebas con fecha de entrega fija 📌 perfil.md, Historias para entrevistas, n.º 2.
+Evalúan: si decidís en lugar de esperar, y si nombrás lo que cediste.
+Tiempo: 1 minuto y medio.
+```
+
 ## Modo 2: simulacro
 
 Cuando la persona pida que le tomes la entrevista:
@@ -82,9 +93,42 @@ Si la persona prefiere practicar en voz alta, sugerí que use el dictado de su s
 
 Ofrecé, en la misma sesión o cuando vuelva:
 
-- Anotar cómo fue (preguntas que hicieron, qué salió bien, qué no) en `entrevistas/<empresa>/notas-<AAAA-MM-DD>.md`. Es la materia prima de `aprendizajes-busqueda`.
+- Anotar cómo fue en `entrevistas/<empresa>/notas-<AAAA-MM-DD>.md`, con la plantilla de abajo. Es la materia prima de `aprendizajes-busqueda`, que solo acepta citas literales: si no se anotan hoy, no existen.
 - El agradecimiento del mismo día con `redactar-mensaje`.
 - Actualizar el tablero con `actualizar`.
+
+### Plantilla de notas
+
+> Adaptada de `summarize-interview`, de Paweł Huryn ([pm-skills](https://github.com/phuryn/pm-skills), licencia MIT), y del `/ingest` de `pm-brain`.
+
+Pedile que lo cuente como le salga, aunque sea desordenado o un dictado pegado, y armá las notas con sus palabras. Lo que no recuerde va con "-", nunca se completa.
+
+```markdown
+# Notas: <empresa> — <tipo de entrevista> — <AAAA-MM-DD>
+
+**Quiénes:** <nombre y rol de cada entrevistador, si los dijo>
+**Duración y formato:** <por ejemplo, 45 min, videollamada, en inglés>
+
+## Lo que preguntaron
+<!-- Lo más literal que se recuerde, en orden. Una línea por pregunta. -->
+- "<pregunta>"
+
+## Lo que respondí
+<!-- Por pregunta importante: qué historia usé y cómo salió, en sus palabras. -->
+
+## Lo que dijeron ellos
+<!-- Frases textuales del entrevistador, entre comillas: sobre el equipo, el rol, el proceso, dudas sobre mí. -->
+- "<frase>" 📌
+
+## Cómo lo leo
+<!-- Interpretaciones de la persona o de Claude, separadas de lo de arriba. -->
+- 🔍 <lectura>
+
+## Próximos pasos
+- <AAAA-MM-DD> · <quién> · <qué> (por ejemplo, "2026-11-21 · la recruiter · avisa si paso a la técnica")
+```
+
+**Lo que dijeron** y **cómo lo leo** van siempre separados: una interpretación escrita como si fuera una cita contamina todo lo que `aprendizajes-busqueda` saque después. Si pega un mail del proceso, se guarda completo y sin editar al lado de las notas (como hace `actualizar` con las notas largas).
 
 ## Reglas
 

@@ -1,6 +1,6 @@
 ---
 name: posicionamiento
-description: "Te entrevista y escribe tu capa estratégica profesional en contexto/posicionamiento.md: a qué rol apuntás y por qué, qué problema le resolvés a una empresa, para qué tipo de empresas y equipos, qué descartás, contra quién competís y cómo te diferenciás, y qué queda abierto. Es la base de la que salen el CV, LinkedIn, los mensajes y el pitch. Usala cuando digas 'no sé cómo venderme', 'a qué apunto', 'quiero cambiar de rol', 'cómo me presento', o antes de rehacer el CV o el perfil."
+description: "Te entrevista y escribe tu capa estratégica profesional en contexto/posicionamiento.md: a qué rol apuntás y por qué, qué problema le resolvés a una empresa, para qué tipo de empresas y equipos, qué descartás, contra quién competís y cómo te diferenciás, y qué queda abierto. Es la base de la que salen el CV, LinkedIn, los mensajes y el pitch. Usala cuando digas 'no sé cómo venderme', 'a qué apunto', 'quiero cambiar de rol', 'no sé qué rol buscar', o antes de rehacer el CV o el perfil."
 ---
 
 # posicionamiento — tu capa estratégica profesional
@@ -43,6 +43,14 @@ Antes de la primera pregunta:
 
 Las preguntas van en rondas, como define el método de `poner-a-prueba`, cada una con una línea de por qué esa sección cambia una decisión. Sin esa línea, la pregunta suena a trámite.
 
+Ejemplo de una pregunta dentro de una ronda, ilustrativo y con datos ficticios (la respuesta recomendada sale siempre de lo que ya leíste):
+
+```text
+2. ¿Qué descartás? Por qué importa: define a qué avisos no les dedicás tiempo y qué no va en tu CV.
+   Recomendada: no a roles de soporte ni a consultoras de staff augmentation; sí a producto propio (sale de busqueda.md).
+   ¿Va así? Respondé "sí" o corregilo.
+```
+
 ### Las seis preguntas que fuerzan la verdad
 
 1. ¿Cuál es la evidencia más fuerte de que una empresa te necesita? No interés: conducta. Una oferta, un ascenso, alguien que te llamó para un proyecto, un problema que te trajeron a vos.
@@ -55,6 +63,23 @@ Las preguntas van en rondas, como define el método de `poner-a-prueba`, cada un
 ### Investigación
 
 No se inventan conclusiones. Si no hay investigación del mercado, se dice y se ofrece `mercado-laboral`. Se pregunta por el tipo de empresa objetivo, el que explícitamente no y las alternativas que hoy tienen esas empresas (otros perfiles, agencias, IA).
+
+### Competencia y diferencial: la curva de valor
+
+> Adaptado de `value-curve`, de Paweł Huryn ([product-engineering](https://github.com/phuryn/product-engineering), licencia MIT), que a su vez sale de *La estrategia del océano azul* (Kim y Mauborgne).
+
+Para escribir `## Competencia y diferencial` con evidencia y no con adjetivos, armá una tabla corta:
+
+1. **Factores:** de 5 a 7 cosas que valora el tipo de empresa al que apuntás, escritas como lo que la empresa necesita y no como tus habilidades ("que alguien ordene la regresión sin frenar los releases", no "Selenium"). Salen de los requisitos que se repiten en los `postulaciones/*/rol.md`, del informe de `mercado-laboral` y de lo que dijeron en entrevistas. Incluí los imprescindibles aunque todos los cumplan: sin ellos no te llaman.
+2. **Con quién te comparan:** vos, 2 o 3 perfiles con los que competís de verdad (por ejemplo, "QA semi senior con 3 años en una sola empresa", "desarrollador que también hace pruebas") y al menos una alternativa a contratar: promover a alguien de adentro, un freelancer, una consultora, una herramienta de IA, no cubrir el puesto.
+3. **Puntaje de 0 a 10 en cada factor**, con su fuente al lado: 📌 evidencia del perfil o de un aviso, o 🔍 suposición. Sin investigación todavía, todo es 🔍 y lo primero que sale de la tabla es qué averiguar (con `plan-de-networking`).
+4. **La lectura, en pocas líneas:**
+   - Dónde tenés que estar claramente arriba: si en los factores que más pesan tu puntaje se parece al de los demás, no hay motivo para elegirte a vos.
+   - Dónde alcanza con estar a la par: los imprescindibles.
+   - En qué **no** competís a propósito, y por qué a ese tipo de empresa no le importa. Decirlo es parte del posicionamiento y alimenta `## Alcance`.
+   - Las cuatro acciones: qué **sacás** de tu CV y tu pitch, qué **bajás**, qué **subís** y qué **creás** (algo que hoy no mostrás y deberías: un proyecto público, un caso escrito).
+
+Ningún puntaje sale de la nada: un factor donde tu número no tiene evidencia queda como 🔍 y va a `## Preguntas abiertas`.
 
 ### Antes de fijar el rol
 

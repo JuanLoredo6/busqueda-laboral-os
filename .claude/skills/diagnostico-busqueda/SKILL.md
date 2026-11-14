@@ -37,6 +37,20 @@ Si el planteo ya llega como solución ("tengo que hacer un curso de IA", "necesi
 
 Repetí hasta que la respuesta nombre un problema concreto en una etapa concreta de la búsqueda, nunca una acción.
 
+**Primero la mejor versión, después la pregunta.** Antes de cuestionar una explicación de la persona, decí en una línea la versión más fuerte de por qué podría ser cierta, y cuestioná esa. Cuestionar la versión débil no enseña nada. Y si una explicación ya viene con buena evidencia, decilo: un diagnóstico que fabrica dudas sirve tan poco como uno que da la razón a todo.
+
+> Esta regla, el ejercicio de abajo y la priorización con "barato de probar" están adaptados de `strategy-red-team` y `pre-mortem`, de Paweł Huryn ([pm-skills](https://github.com/phuryn/pm-skills), licencia MIT).
+
+### Ejercicio opcional: tres meses después
+
+Si la persona llega con mucha angustia o con muchas explicaciones mezcladas, proponé este ejercicio antes de la primera ronda (se puede saltear): *"Imaginá que pasaron tres meses y seguís sin trabajo. ¿Qué pasó?"*. Lo que salga se ordena en tres grupos, con calma y sin dramatizar:
+
+- **Riesgos reales:** tienen evidencia en el tablero, en un feedback o en una conducta. Pasan a la entrevista.
+- **Miedos inflados:** suenan razonables pero los datos no los sostienen (por ejemplo, "me rechazan por la edad" cuando las tres respuestas que hubo fueron por inglés). Se dicen en voz alta con el dato que los desinfla, sin minimizar lo que la persona siente.
+- **Lo que nadie dice:** algo que la persona sospecha y no está mirando (por ejemplo, que hace dos semanas que no habla con ninguna persona). Se anota como pregunta para la entrevista.
+
+Ningún miedo se descarta sin un dato que lo respalde. Si no hay dato, queda como pregunta abierta.
+
 Las etapas típicas del embudo, para ubicar el problema:
 
 1. **Apuntar:** a qué roles y empresas te postulás.
@@ -72,7 +86,9 @@ Ejemplo: "Creemos que los recruiters de empresas de producto descartan mi CV en 
 
 Una hipótesis sin la parte "si es cierto, vamos a ver..." no es una hipótesis: es una opinión con forma de hipótesis. Se devuelve con una repregunta.
 
-**Como mucho 3, priorizadas por riesgo × impacto**, nunca por orden de aparición. Riesgo: qué poco sabés de si es cierta. Impacto: cuánto movería el número del filtro si se confirma. Si aparece una cuarta, anotala en `contexto/datos-pendientes.md`; no entra a la lista.
+**Como mucho 3, priorizadas por riesgo × impacto × qué tan barato es probarla**, nunca por orden de aparición. Riesgo: qué poco sabés de si es cierta. Impacto: cuánto movería el número del filtro si se confirma. Barato de probar: si se puede comprobar esta semana con poco esfuerzo (cambiar el titular y mirar las próximas 10 postulaciones es barato; hacer un curso de tres meses no). Entre dos hipótesis parecidas, va primero la que se prueba más rápido. Si aparece una cuarta, anotala en `contexto/datos-pendientes.md`; no entra a la lista.
+
+Cada hipótesis lleva además su **criterio para abandonarla**: el número o la condición a partir de la cual se deja de lado ("si después de 15 postulaciones con el título nuevo la tasa de respuesta no pasa del 5%, el problema no era el título").
 
 ## El Diagnóstico
 
@@ -84,19 +100,21 @@ investigacion/<AAAA-MM-DD>-diagnostico-busqueda.md
 
 Fechado y nunca pisado: el próximo diagnóstico es otro archivo, y la comparación entre los dos dice si avanzaste.
 
-Lleva estas cuatro secciones, en este orden y con estos títulos:
+Lleva estas cinco secciones, en este orden y con estos títulos:
 
 ```
 ## Problema
 ## Evidencia
 ## Filtro de la métrica
 ## Hipótesis priorizadas
+## Lo que sí se sostiene
 ```
 
 - **Problema:** el síntoma separado de la causa, en qué etapa del embudo está y por qué ahora.
 - **Evidencia:** cada dato con su nivel (`conducta`, `dato`, `afirmación` o `suposición`) al lado.
 - **Filtro de la métrica:** si pasó o no. Si no pasó, el pase a `metricas-busqueda` queda explícito.
-- **Hipótesis priorizadas:** hasta 3, con el formato fijo, ordenadas por riesgo × impacto con el motivo del orden.
+- **Hipótesis priorizadas:** hasta 3, con el formato fijo, ordenadas por riesgo × impacto × barato de probar con el motivo del orden, y cada una con su criterio para abandonarla.
+- **Lo que sí se sostiene:** lo que la evidencia muestra que funciona (un canal que responde, una etapa que se pasa bien, un logro que siempre genera preguntas), con su nivel de evidencia. Se escribe siempre: sostiene a la persona y evita cambiar lo que anda. Si no hay nada con evidencia, se dice.
 
 Después, por cada hipótesis, proponé una acción concreta para probarla y, si la aceptás, sumala a las acciones del tablero (`postulaciones/postulaciones.json`, ver `CLAUDE.md`).
 

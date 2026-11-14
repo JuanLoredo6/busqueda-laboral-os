@@ -81,6 +81,21 @@ Una de tres, con el motivo en una línea:
 - Si decide postular (o quiere guardarlo para más tarde): creá `postulaciones/<empresa-rol>/` (en minúsculas, con guiones, por ejemplo `acme-qa-automation-senior`) y guardá el análisis completo en `rol.md`, con el link, la fecha y el aviso original pegado al final (para cuando lo den de baja). Sumá la tarjeta en «Por enviar» en `postulaciones/postulaciones.json` con el `encaje` y una acción "Postularme a <empresa>" con pedido `/nueva-postulacion <empresa-rol>`. Ofrecé seguir directo con `nueva-postulacion`.
 - Si decide no postular: preguntá si quiere guardarlo igual como referencia. Si sí, mismo destino, con la tarjeta en «Cerradas» y `resultado: "descartada-por-mi"`.
 
+## Ejemplo de puntaje y recomendación
+
+Ilustrativo, con datos ficticios: los números salen siempre del aviso real y de `contexto/perfil.md`.
+
+```text
+Encaje: 71/100 (🔍 lectura orientativa, no una predicción)
+- Excluyentes: 38/50 (3 de 4 cumplidos y el inglés avanzado parcial)
+- Deseables: 10/20 (1 de 2; sin Kubernetes)
+- Lo que buscás: 18/20 (remoto y senior; la industria fintech no está entre tus prioridades)
+- Señales de la empresa: 5/10 (aviso de hace 6 semanas, sin noticias recientes)
+
+Recomendación: Postular con ajustes. Subí el logro de automatización de pruebas y buscá un referido para compensar el inglés.
+¿Qué querés hacer?
+```
+
 ## Reglas
 
 - La evidencia de que cumplís un requisito sale solo de tu perfil. Nunca supongas que "seguro sabés" algo.

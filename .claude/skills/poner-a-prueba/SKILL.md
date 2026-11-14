@@ -1,6 +1,6 @@
 ---
 name: poner-a-prueba
-description: "Pone a prueba lo que decís de vos antes de que quede escrito: cada logro del CV, cada línea de LinkedIn, cada respuesta de entrevista y cada decisión de tu búsqueda. Repregunta con un ejemplo concreto, con un tope de intentos y salidas claras, ordena la evidencia (conducta > dato > afirmación > suposición) y anota lo que queda abierto sin inventarlo. Usala cuando pidas 'revisá mi CV', 'esto se sostiene?', 'apretame', 'cuestioname', antes de mandar una postulación importante, o cuando otro skill necesite entrevistarte: es el método que todos los demás citan."
+description: "Pone a prueba lo que decís de vos antes de que quede escrito: cada logro del CV, cada línea de LinkedIn, cada respuesta de entrevista y cada decisión de tu búsqueda. Repregunta con un ejemplo concreto, con un tope de intentos y salidas claras, ordena la evidencia (conducta > dato > afirmación > suposición) y anota lo que queda abierto sin inventarlo. Usala cuando pidas 'esto de mi CV se sostiene?', 'esto se sostiene?', 'apretame', 'cuestioname', antes de mandar una postulación importante, o cuando otro skill necesite entrevistarte: es el método que todos los demás citan."
 ---
 
 # poner-a-prueba — el interrogatorio que hace creíble tu perfil
@@ -115,7 +115,7 @@ Ponés a prueba un texto o una decisión. Si no dijiste cuál, preguntá en una 
 |---|---|
 | Un dato confirmado o una formulación precisa | `contexto/perfil.md` |
 | Un hueco | `contexto/datos-pendientes.md`: una línea con el dato, quién lo cierra y la fecha |
-| Una decisión de la búsqueda | `contexto/decisiones.md`: una línea con fecha y la decisión |
+| Una decisión de la búsqueda | `contexto/decisiones.md`: una línea con fecha y la decisión (las ⭐ llevan además lo de «Decisiones clave») |
 | El texto revisado (si lo pediste) | Junto al original, con sufijo `-revisado` (por ejemplo, `cv/cv-revisado.md`) |
 
 Si para seguir haría falta escribir en un destino que no está en esta tabla, decilo y frená.
@@ -133,3 +133,20 @@ Todas las decisiones se anotan. Una **decisión clave** se marca con ⭐ en `con
 > No clave: "Reviso el tablero los lunes". Se cambia fácil (falla la 1), no sorprende a nadie (falla la 2) y no se descartó nada (falla la 3).
 
 **Claude propone la marca y vos la confirmás.** Antes de marcarla, mostrá la decisión con las tres condiciones al lado y cuál se cumple. Marcala solo si la aceptás. Si falla una condición, no la propongas: decí cuál falla.
+
+### Qué la haría cambiar
+
+> Adaptado del esquema de decisiones de `pm-brain`, de Paweł Huryn ([pm-brain](https://github.com/phuryn/pm-brain), licencia MIT).
+
+Toda decisión ⭐ se escribe con dos líneas más, debajo:
+
+```
+- 2026-11-14 ⭐ Dejo de postularme a roles de backend y me enfoco en DevRel.
+  Descarto: seguir como backend senior en fintech.
+  Cambio de idea si: en las próximas 15 postulaciones a DevRel no consigo ninguna primera charla.
+```
+
+- **Descarto:** la alternativa concreta que se dejó (la condición 3 de arriba, escrita).
+- **Cambio de idea si:** una condición **observable**: un número del tablero, una fecha, algo que diga una persona concreta. "Si las cosas no funcionan" no sirve: se repregunta con el ingrediente 1 hasta que se pueda comprobar. Si la persona no quiere fijarla, queda `Cambio de idea si: ❓` y va a `contexto/datos-pendientes.md`.
+
+`repaso-semanal` revisa cada semana si alguna de esas condiciones se cumplió.

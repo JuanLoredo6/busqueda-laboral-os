@@ -1,6 +1,6 @@
 ---
 name: nueva-postulacion
-description: "Registra y prepara una postulación: crea o completa la carpeta postulaciones/<empresa-rol>/, adapta el CV al aviso sin inventar nada, responde las preguntas del formulario con tu voz, redacta la carta o el mensaje si hace falta, y suma o mueve la tarjeta en el tablero con su seguimiento. Nunca envía nada. Usala cuando digas 'me quiero postular a X', 'ayudame con este formulario', 'ya me postulé a X', 'registrá esta postulación', o después de analizar-oferta."
+description: "Registra y prepara una postulación: crea o completa su carpeta en postulaciones/ (una por empresa y rol), adapta el CV al aviso sin inventar nada, responde las preguntas del formulario con tu voz, redacta la carta o el mensaje si hace falta, y suma o mueve la tarjeta en el tablero con su seguimiento. Nunca envía nada. Usala cuando digas 'me quiero postular a X', 'ayudame con este formulario', 'ya me postulé a X', 'registrá esta postulación', o después de analizar-oferta."
 ---
 
 # nueva-postulacion — preparar y registrar una postulación
@@ -27,6 +27,7 @@ Partí del CV vigente en `cv/` (o de `contexto/perfil.md` si no hay CV).
 
 - **Reordená y enfatizá; no inventes.** Se puede: cambiar el titular hacia el rol del aviso, subir los logros que responden a lo que piden, usar los términos del aviso donde sean verdad ("CI/CD" en vez de "automatización de despliegues"), recortar lo que no aporta.
 - **No se puede:** agregar tecnologías, logros, cargos o años que el perfil no tenga.
+- El CV adaptado sigue cumpliendo `.claude/skills/mejorar-perfil/SKILL.md#criterios-de-cv`.
 - Guardá el contenido en `postulaciones/<empresa-rol>/cv.md` con una lista corta al principio de qué cambió respecto del CV base y por qué.
 - Si el formato lo pide, ofrecé generar el .docx o PDF (ver `mejorar-perfil`, paso 5).
 
@@ -42,6 +43,8 @@ Si el formulario tiene preguntas abiertas, pedí que las pegue. Para cada una:
   - **Pretensión salarial:** no la completes. Marcala ❓ y preguntale qué quiere poner, salvo que `busqueda.md` diga otra cosa.
   - **Disponibilidad y ubicación:** lo que diga `busqueda.md`.
 - Datos personales (documento, dirección, teléfono): no los pidas ni los escribas. Los completa la persona directamente en el formulario.
+
+Cada respuesta abierta pasa por la revisión de `.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz` antes de entregarse. Si una respuesta "la podría haber escrito cualquiera" (por qué esta empresa, por qué este rol), usá su modo entrevista.
 
 Guardá preguntas y respuestas en `postulaciones/<empresa-rol>/respuestas.md`.
 
@@ -65,6 +68,15 @@ Si todavía no envió: dejá la tarjeta en «Por enviar» con `proximo: "Enviar"
 ## Cierre
 
 Una línea con lo que quedó en la carpeta, la tarjeta y la próxima acción con su fecha. Si el tablero está abierto, se actualiza solo.
+
+Ejemplo, ilustrativo y con datos ficticios:
+
+```text
+Listo: en postulaciones/acme-qa-automation-senior/ quedaron el CV adaptado (titular y 2 logros reordenados)
+y 3 respuestas del formulario. La tarjeta está en «Esperando» desde hoy (portal).
+Próxima acción: follow-up a Acme el 19/11, solo si no respondieron.
+No pude comprobar en tu perfil "liderazgo de 4 personas": confirmalo o lo saco.
+```
 
 ## Reglas
 

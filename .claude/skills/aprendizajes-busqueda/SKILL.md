@@ -28,7 +28,7 @@ Hablá en rioplatense, con voseo. Un rechazo duele: tratá el material con cuida
 **El feedback** (obligatorio). Fuentes posibles:
 
 - Mails de rechazo y respuestas de recruiters (pegados o guardados en `postulaciones/<empresa-rol>/`).
-- Notas de entrevistas en `entrevistas/<empresa>/`.
+- Notas de entrevistas en `entrevistas/<empresa>/`. Si siguen la plantilla de `preparar-entrevista`, las citas salen de «Lo que preguntaron» y «Lo que dijeron ellos»; lo de «Cómo lo leo» es interpretación y nunca cuenta como cita.
 - Notas de charlas de networking.
 - El historial del tablero en `postulaciones/postulaciones.json`: en qué columna se frena cada postulación y cuántos días lleva sin novedades.
 
