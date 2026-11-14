@@ -22,7 +22,7 @@ Hablá en rioplatense, con voseo.
 
 | Cuándo | Desde / hacia |
 |---|---|
-| Ya hay un brief del pitch de `propuesta-de-valor` | Viene de ahí: el titular y los tres logros son el contenido principal |
+| Ya hay un brief del pitch (`investigacion/*-mapa-de-valor.md`, de la fase de propuesta de valor de `posicionamiento`) | Viene de ahí: el titular y los tres logros son el contenido principal |
 | Te pidieron una presentación para una entrevista | Solo, con `postulaciones/<empresa-rol>/` como fuente |
 | Cualquier pieza con un lector y un propósito | Solo |
 
@@ -108,4 +108,4 @@ Fechado y nunca pisado. Con estas cinco secciones, en este orden y con estos tí
 
 ## Lo que este entregable no es
 
-No valida que la pieza funcione: eso solo lo dice su lector real (y `recruiters-sinteticos` ayuda a encontrar defectos antes). Tampoco decide qué contás de vos: eso sale de `posicionamiento` y `propuesta-de-valor`.
+No valida que la pieza funcione: eso solo lo dice su lector real (y `recruiters-sinteticos` ayuda a encontrar defectos antes). Tampoco decide qué contás de vos: eso sale de `posicionamiento` y su propuesta de valor.

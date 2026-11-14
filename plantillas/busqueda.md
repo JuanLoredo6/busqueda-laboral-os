@@ -25,4 +25,4 @@
 
 ## Cómo mido la búsqueda
 
-<!-- Lo completa metricas-busqueda: indicador principal y antimétricas. -->
+<!-- Lo completa el modo métricas de diagnostico-busqueda: indicador principal y antimétricas. -->

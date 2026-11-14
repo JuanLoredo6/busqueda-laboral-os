@@ -106,7 +106,7 @@ busqueda-laboral-os/
 ├── investigacion/     Informes fechados: diagnóstico, mercado, métricas, repasos
 ├── tablero/           tablero.html (abrilo con doble clic)
 ├── plantillas/        Lo que /empezar copia la primera vez
-└── .claude/skills/    Los 22 skills
+└── .claude/skills/    Los 18 skills
 ```
 
 ### Los skills
@@ -129,11 +129,9 @@ busqueda-laboral-os/
 
 | Skill | Para qué |
 |---|---|
-| `diagnostico-busqueda` | Por qué no avanza: síntoma, causa e hipótesis para probar |
+| `diagnostico-busqueda` | Por qué no avanza: síntoma, causa e hipótesis para probar, y qué números mirar para saber si avanzás |
 | `mercado-laboral` | Dónde hay demanda para tu perfil y qué empresas apuntar, con fuentes |
-| `posicionamiento` | A qué rol apuntás, qué problema resolvés, para quién y qué descartás |
-| `propuesta-de-valor` | Ángulos para presentarte, tu pitch de 30 segundos y tu titular |
-| `metricas-busqueda` | Qué números mirar para saber si avanzás |
+| `posicionamiento` | A qué rol apuntás, qué problema resolvés, para quién y qué descartás. Después, ángulos para presentarte, tu pitch de 30 segundos y tu titular |
 | `plan-de-networking` | A quién pedirle una charla, qué preguntarle y cómo escribirle |
 | `aprendizajes-busqueda` | Qué te dice el feedback real (rechazos, entrevistas, charlas) |
 
@@ -143,8 +141,6 @@ busqueda-laboral-os/
 |---|---|
 | `poner-a-prueba` | Repregunta cada logro y cada decisión hasta que se sostenga |
 | `recruiters-sinteticos` | Prueba tu CV, pitch o mensaje contra recruiters simulados |
-| `criterio-producto` | Responder casos de producto, negocio y liderazgo |
-| `criterio-tecnico` | Responder preguntas técnicas y de diseño de sistemas |
 | `disenador-visual` | Especificar y construir CV, portada, presentación o portfolio |
 | `mapa-de-skills` | El índice de todo lo anterior |
 
@@ -177,4 +173,4 @@ Tus datos no se tocan: están fuera de lo que se versiona.
 ## Créditos
 
 - Sistema armado por Juan Rodríguez Loredo para el taller. Licencia MIT: ver [LICENSE](LICENSE).
-- Trece skills son adaptaciones de los skills de producto de **Pedro Romero Luna** ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT). Detalle en [CREDITOS.md](CREDITOS.md).
+- Trece piezas del sistema (skills o partes de un skill) son adaptaciones de los skills de producto de **Pedro Romero Luna** ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT). Detalle en [CREDITOS.md](CREDITOS.md).

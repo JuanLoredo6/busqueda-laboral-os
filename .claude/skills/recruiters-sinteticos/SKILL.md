@@ -15,7 +15,7 @@ Hablá en rioplatense, con voseo.
 
 | Cuándo | Desde / hacia |
 |---|---|
-| Tenés una pieza lista para mandar | Solo, o desde `propuesta-de-valor`, `mejorar-perfil` o `redactar-mensaje` |
+| Tenés una pieza lista para mandar | Solo, o desde `posicionamiento` (el pitch de su propuesta de valor), `mejorar-perfil` o `redactar-mensaje` |
 | La versión 2 queda escrita | Usala de verdad. Lo que pase con recruiters reales lo procesa `aprendizajes-busqueda` |
 
 ## Regla número uno

@@ -1,9 +1,6 @@
----
-name: propuesta-de-valor
-description: "Busca la mejor forma de presentarte en dos modos. ABRIR prepara la exploración: preguntas '¿Cómo podría...?' que salen de tu posicionamiento, ángulos semilla sellados hasta que escribas los tuyos, y una dinámica para hacerlo solo o con compañeros del taller. CERRAR toma lo que elegiste y escribe tu mapa de valor y el brief de tu pitch (pitch de 30 segundos, titular, logros a destacar). Claude nunca elige el ángulo ganador. Usala cuando digas 'cómo me presento', 'armame un pitch', 'no sé qué destacar', 'necesito un titular', o después de posicionamiento."
----
+# Propuesta de valor — tus ángulos y tu pitch
 
-# propuesta-de-valor — tus ángulos y tu mapa de valor
+> Es la fase 3 de `posicionamiento` (`.claude/skills/posicionamiento/SKILL.md`). Se carga cuando el posicionamiento ya está escrito o cuando la persona pide directamente cómo presentarse, un pitch o un titular.
 
 > Adaptado de `ideation-engine`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
@@ -17,7 +14,7 @@ Hablá en rioplatense, con voseo.
 
 | Cuándo | Desde / hacia |
 |---|---|
-| Ya hay `contexto/posicionamiento.md` | Viene de `posicionamiento`: el problema que resolvés y para quién es contra lo que se exploran ángulos |
+| Ya hay `contexto/posicionamiento.md` | Viene de las fases 1 y 2 de `posicionamiento`: el problema que resolvés y para quién es contra lo que se exploran ángulos |
 | Ya hiciste la exploración (solo o en grupo) y votaste | Viene de la sesión misma |
 | El mapa de valor y el brief quedan escritos | Hacia `mejorar-perfil` (CV y LinkedIn salen del brief) y `recruiters-sinteticos` (probar el pitch antes de usarlo) |
 | Sin posicionamiento previo | Pedí al menos el rol objetivo y tres logros reales. **Sin eso no hay exploración:** idear sin evidencia de qué resolvés es decorar suposiciones |
@@ -137,4 +134,4 @@ Con tu visto bueno, el pitch y el titular también se copian a `contexto/posicio
 
 ## Lo que este entregable no es
 
-El mapa de valor es un borrador con evidencia, no una propuesta validada: lo elegido todavía tiene que pasar por recruiters reales. El rol y el alcance se deciden en `posicionamiento`.
+El mapa de valor es un borrador con evidencia, no una propuesta validada: lo elegido todavía tiene que pasar por recruiters reales. El rol y el alcance se deciden en las fases 1 y 2 de `posicionamiento`.

@@ -1,6 +1,6 @@
 ---
 name: diagnostico-busqueda
-description: "Entrevista socrática sobre tu búsqueda laboral para separar el síntoma de la causa ('no me llaman', 'me rechazan después de la técnica', 'no sé a qué apuntar'), ordenar la evidencia, exigir un número que muestre si el problema se resuelve y priorizar hasta tres hipótesis. Escribe el Diagnóstico de búsqueda en investigacion/. Usala cuando la búsqueda se traba, cuando no entendés por qué no avanzás, al arrancar una búsqueda o cada tres o cuatro semanas, aunque no nombres el skill."
+description: "Entrevista socrática sobre tu búsqueda laboral para separar el síntoma de la causa ('no me llaman', 'me rechazan después de la técnica', 'no sé a qué apuntar'), ordenar la evidencia, exigir un número que muestre si el problema se resuelve y priorizar hasta tres hipótesis. Escribe el Diagnóstico de búsqueda en investigacion/. Su modo métricas arma ese número: un indicador principal que cambie decisiones, el árbol de palancas, un número por hipótesis con su valor de hoy sacado del tablero y las antimétricas con su umbral (postular a todo, quemarte), en el Informe de métricas. Usala cuando la búsqueda se traba, cuando no entendés por qué no avanzás, al arrancar una búsqueda o cada tres o cuatro semanas, y cuando digas 'cómo mido mi búsqueda', 'estoy avanzando?', 'qué número miro', aunque no nombres el skill."
 ---
 
 # diagnostico-busqueda — el Diagnóstico de tu búsqueda
@@ -17,7 +17,8 @@ Hablá en rioplatense, con voseo, frases cortas. Con empatía: quien lo usa prob
 |---|---|
 | La búsqueda arranca, o hace semanas que no avanza | Solo |
 | El Diagnóstico queda escrito | Siguiente paso: `mercado-laboral` (dónde está la demanda para tu perfil) o `posicionamiento` (cómo presentarte) |
-| No hay un número que diga si mejoró (falla el filtro de la métrica) | Pasá a `metricas-busqueda` para armarlo antes de seguir |
+| No hay un número que diga si mejoró (falla el filtro de la métrica) | Pasá al [modo métricas](metricas.md) para armarlo antes de seguir |
+| La persona pregunta cómo medir la búsqueda o qué número mirar, sin pedir un diagnóstico | Directo al modo métricas: leé y seguí `.claude/skills/diagnostico-busqueda/metricas.md` |
 
 ## Antes de empezar
 
@@ -72,7 +73,7 @@ La evidencia de menor nivel también se anota, con su nivel al lado. No se desca
 
 ### El filtro de la métrica
 
-**Si no hay un número, el problema no está claro.** Antes de aceptar el problema como bien planteado, preguntá: ¿qué número se movería si esto se resolviera? Por ejemplo: tasa de respuesta a postulaciones, cuántas primeras charlas pasan a entrevista técnica, entrevistas por semana. Si no hay respuesta, o la que aparece es de vanidad (postulaciones enviadas, vistas del perfil: números que no cambian ninguna decisión), el filtro no pasa. Decilo así y pasá a `metricas-busqueda` antes de seguir. Nada avanza como si hubiera pasado.
+**Si no hay un número, el problema no está claro.** Antes de aceptar el problema como bien planteado, preguntá: ¿qué número se movería si esto se resolviera? Por ejemplo: tasa de respuesta a postulaciones, cuántas primeras charlas pasan a entrevista técnica, entrevistas por semana. Si no hay respuesta, o la que aparece es de vanidad (postulaciones enviadas, vistas del perfil: números que no cambian ninguna decisión), el filtro no pasa. Decilo así y pasá al modo métricas (`.claude/skills/diagnostico-busqueda/metricas.md`) antes de seguir. Nada avanza como si hubiera pasado.
 
 ### Hipótesis, con formato fijo
 
@@ -112,7 +113,7 @@ Lleva estas cinco secciones, en este orden y con estos títulos:
 
 - **Problema:** el síntoma separado de la causa, en qué etapa del embudo está y por qué ahora.
 - **Evidencia:** cada dato con su nivel (`conducta`, `dato`, `afirmación` o `suposición`) al lado.
-- **Filtro de la métrica:** si pasó o no. Si no pasó, el pase a `metricas-busqueda` queda explícito.
+- **Filtro de la métrica:** si pasó o no. Si no pasó, el pase al modo métricas queda explícito.
 - **Hipótesis priorizadas:** hasta 3, con el formato fijo, ordenadas por riesgo × impacto × barato de probar con el motivo del orden, y cada una con su criterio para abandonarla.
 - **Lo que sí se sostiene:** lo que la evidencia muestra que funciona (un canal que responde, una etapa que se pasa bien, un logro que siempre genera preguntas), con su nivel de evidencia. Se escribe siempre: sostiene a la persona y evita cambiar lo que anda. Si no hay nada con evidencia, se dice.
 

@@ -1,9 +1,6 @@
----
-name: criterio-tecnico
-description: "El criterio de un CTO aplicado a entrevistas técnicas y de diseño de sistemas: toda respuesta en cuatro pasos (diagnóstico de lo que existe y sus restricciones, al menos dos opciones con su costo a largo plazo, una postura que nombra lo que descarta y por qué, próximos pasos verificables) bajo cinco reglas. Las tecnologías, versiones y precios se verifican con fuentes actuales antes de opinar, nunca de memoria. Sirve para desarrollo, QA, datos, infraestructura, seguridad y arquitectura. Usala cuando digas 'tengo una entrevista técnica', 'diseño de sistemas', 'cómo respondo esta pregunta técnica', 'practiquemos system design', o desde preparar-entrevista."
----
+# Criterio técnico — responder preguntas técnicas con criterio
 
-# criterio-tecnico — responder preguntas técnicas con criterio
+> Es parte de `preparar-entrevista` (`.claude/skills/preparar-entrevista/SKILL.md`). Se carga para entrevistas técnicas y de diseño de sistemas, o cuando la persona quiere practicar o resolver una pregunta técnica, aunque no tenga una entrevista agendada. Sirve para desarrollo, QA, datos, infraestructura, seguridad y arquitectura.
 
 > Adaptado de `cto`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
@@ -60,7 +57,7 @@ Versiones, precios, capacidades de modelos y servicios cambian más rápido que 
 
 ## Cómo se usa
 
-**Para preparar.** Con la postulación como fuente, armá de 3 a 5 preguntas técnicas probables para ese rol (diseño de sistemas, depuración de un incidente, decisión de arquitectura, calidad y pruebas, según el perfil) y, por cada una, la estructura de los cuatro pasos: preguntas de diagnóstico y supuestos a declarar, dos opciones con su costo a largo plazo, una postura con lo que descarta y próximos pasos verificables. Si hace falta un ejemplo de tu experiencia, sale de `contexto/perfil.md`; si no hay ninguno que sirva, preguntalo. Nunca lo inventes. Guardalo en `entrevistas/<empresa>/casos-tecnicos.md`.
+**Para preparar.** Con la postulación como fuente, armá de 3 a 5 preguntas técnicas probables para ese rol (diseño de sistemas, depuración de un incidente, decisión de arquitectura, calidad y pruebas, según el perfil) y, por cada una, la estructura de los cuatro pasos: preguntas de diagnóstico y supuestos a declarar, dos opciones con su costo a largo plazo, una postura con lo que descarta y próximos pasos verificables. Si hace falta un ejemplo de tu experiencia, sale de `contexto/perfil.md`; si no hay ninguno que sirva, preguntalo. Nunca lo inventes. Guardalo en `entrevistas/<empresa>/casos-tecnicos.md` (o en `entrevistas/practica/` si es práctica sin postulación).
 
 **Para practicar.** Hacé de entrevistador técnico: una pregunta por vez, sin adelantar pistas, respondiendo los datos que pida como lo haría un entrevistador real. Después de cada respuesta, devolvé en pocas líneas:
 

@@ -1,6 +1,6 @@
 ---
 name: preparar-entrevista
-description: "Prepara una entrevista con un método de criterio, no de respuestas de memoria: según el tipo (RR. HH., comportamiento, técnica, caso, hiring manager, panel) arma las preguntas probables, las preguntas que conviene hacer antes de responder, la estructura de cada respuesta atada a una historia real de tu perfil y lo que el entrevistador evalúa, y después te toma un simulacro y te devuelve feedback. Sirve para cualquier perfil IT. Usala cuando digas 'tengo una entrevista', 'preparame para X', 'qué me pueden preguntar', 'tomame la entrevista', 'hagamos un mock', o desde una acción del tablero."
+description: "Prepara una entrevista con un método de criterio, no de respuestas de memoria: según el tipo (RR. HH., comportamiento, técnica, caso, hiring manager, panel) arma las preguntas probables, las preguntas que conviene hacer antes de responder, la estructura de cada respuesta atada a una historia real de tu perfil y lo que el entrevistador evalúa, y después te toma un simulacro y te devuelve feedback. Para las preguntas técnicas y de caso trae dos criterios: el de un CTO (diseño de sistemas, arquitectura, depuración, código en vivo; verifica tecnologías con fuentes actuales) y el de un líder de Producto (qué construirías, qué priorizás, qué harías si cayó una métrica), siempre en cuatro pasos: diagnóstico, dos opciones con lo que cuestan, una postura y próximos pasos. Sirve para cualquier perfil IT. Usala cuando digas 'tengo una entrevista', 'preparame para X', 'qué me pueden preguntar', 'tomame la entrevista', 'hagamos un mock', 'tengo una entrevista técnica', 'practiquemos system design', 'cómo respondo esta pregunta técnica', 'tengo un caso', 'practiquemos un caso', o desde una acción del tablero."
 ---
 
 # preparar-entrevista — llegar con criterio, no con un guion
@@ -20,6 +20,8 @@ Leé siempre:
 
 Si no se sabe con quién es la entrevista, el formato, el idioma o la duración, preguntalo en una línea. Esas cuatro cosas cambian qué se prepara.
 
+Si la persona solo quiere practicar casos o preguntas técnicas, sin una entrevista concreta ("practiquemos system design", "tengo un caso"), no hace falta postulación: preguntá el rol objetivo (o tomalo de `contexto/posicionamiento.md`) y andá directo al criterio que corresponda en la tabla de abajo. Lo que se prepare se guarda en `entrevistas/practica/`.
+
 Si en el perfil hay menos de tres historias para entrevistas, antes de preparar nada proponé una ronda corta para sumar dos o tres (con `poner-a-prueba`): son la base de todo.
 
 ## Los tipos de entrevista y qué pesa en cada uno
@@ -28,8 +30,8 @@ Si en el perfil hay menos de tres historias para entrevistas, antes de preparar 
 |---|---|---|
 | **RR. HH. / primera charla** | Motivación, encaje con la cultura, condiciones, cómo contás tu historia | Pitch de 1 minuto ("contame de vos"), por qué esta empresa, motivo de salida con la frase acordada, disponibilidad. La pretensión salarial solo si la persona decidió qué decir |
 | **Comportamiento** | Cómo actuaste en situaciones reales | 5 a 7 historias del perfil en formato situación → qué hiciste vos → resultado → qué aprendiste |
-| **Técnica** | Cómo razonás un problema técnico | Usá `.claude/skills/criterio-tecnico/SKILL.md` |
-| **Caso de producto o negocio** | Cómo pasás de un problema ambiguo a una decisión | Usá `.claude/skills/criterio-producto/SKILL.md` |
+| **Técnica** | Cómo razonás un problema técnico | Leé y seguí `.claude/skills/preparar-entrevista/criterio-tecnico.md` |
+| **Caso de producto o negocio** | Cómo pasás de un problema ambiguo a una decisión | Leé y seguí `.claude/skills/preparar-entrevista/criterio-producto.md` |
 | **Hiring manager** | Si resolviste problemas como los del equipo y cómo trabajás | Lo que le duele al equipo (del aviso y de la investigación), 2 historias que lo respondan, preguntas sobre el equipo |
 | **Panel o ronda final** | Todo lo anterior, más consistencia | Repaso de todo, sobre todo lo que se dijo en rondas anteriores |
 

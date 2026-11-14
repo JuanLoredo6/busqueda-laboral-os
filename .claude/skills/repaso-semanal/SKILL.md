@@ -1,6 +1,6 @@
 ---
 name: repaso-semanal
-description: "Hace el repaso de la semana de búsqueda en 10 minutos: lee el tablero, calcula los números de la semana (postulaciones, respuestas, conversaciones) contra tus métricas, detecta acciones vencidas y postulaciones olvidadas, revisa las antimétricas, propone las 3 prioridades de la semana que viene y las suma al tablero si las aceptás. Usala cuando digas /repaso-semanal, 'cómo me fue esta semana', 'repasemos', 'qué hago la semana que viene', o los viernes."
+description: "Hace el repaso de la semana de búsqueda en 10 minutos: lee el tablero, calcula los números de la semana (postulaciones, respuestas, conversaciones) contra tus métricas, detecta acciones vencidas y postulaciones olvidadas, revisa las antimétricas, propone las 3 prioridades de la semana que viene y las suma al tablero si las aceptás. Usala cuando digas /repaso-semanal, 'cómo me fue esta semana', 'cómo voy', 'repasemos', 'qué hago la semana que viene', o los viernes."
 ---
 
 # repaso-semanal — 10 minutos para no perder el hilo
@@ -12,7 +12,7 @@ Hablá en rioplatense, con voseo. Con un tono que sostenga: reconocé lo hecho a
 ## Qué leer
 
 - `postulaciones/postulaciones.json` (tarjetas, historial, acciones).
-- `contexto/busqueda.md`, sección **Cómo mido la búsqueda** (indicador principal y antimétricas, si las definió `metricas-busqueda`).
+- `contexto/busqueda.md`, sección **Cómo mido la búsqueda** (indicador principal y antimétricas, si ya se definieron con el modo métricas de `diagnostico-busqueda`).
 - Los dos repasos anteriores en `investigacion/*-repaso-semanal.md`, si existen, para comparar.
 - `contexto/decisiones.md` (sobre todo las ⭐ y su "Cambio de idea si...") y el último `investigacion/*-diagnostico-busqueda.md`.
 - La fecha de la última modificación de `contexto/perfil.md`, `contexto/posicionamiento.md` y del último informe de mercado (la fecha de modificación del archivo; esas carpetas no están en git).
@@ -42,7 +42,7 @@ Una frase de reconocimiento concreta, sin exagerar.
 | Conversaciones (charlas + entrevistas) | | | |
 | Indicador principal (si está definido) | | | |
 
-Si no hay indicador definido, decilo en una línea y ofrecé `metricas-busqueda` para la semana que viene. Con menos de 10 postulaciones, aclará que los porcentajes todavía no dicen mucho.
+Si no hay indicador definido, decilo en una línea y ofrecé definirlo al terminar el repaso (unos 10 minutos más, con `.claude/skills/diagnostico-busqueda/metricas.md`) o dejarlo como una de las prioridades de la semana que viene. Lo decide la persona. Con menos de 10 postulaciones, aclará que los porcentajes todavía no dicen mucho.
 
 ### 3. Lo que se está cayendo
 

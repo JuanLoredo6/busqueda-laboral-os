@@ -1,13 +1,10 @@
----
-name: metricas-busqueda
-description: "Arma la capa de medición de tu búsqueda: un indicador principal que cambie decisiones (por ejemplo, conversaciones con hiring managers por semana), el árbol de palancas que lo mueven y dónde se mide cada una, un número por hipótesis con su valor de hoy sacado del tablero, y las antimétricas con su umbral de alarma (postular a todo, quemarte). Escribe el Informe de métricas en investigacion/. Usala cuando digas 'cómo voy', 'cómo mido mi búsqueda', 'estoy avanzando?', 'qué número miro', o cuando diagnostico-busqueda no encuentre un número."
----
+# Métricas de la búsqueda — el Informe de métricas
 
-# metricas-busqueda — el Informe de métricas
+> Es el modo métricas de `diagnostico-busqueda` (`.claude/skills/diagnostico-busqueda/SKILL.md`). Se carga cuando el filtro de la métrica no pasa, cuando la persona pregunta cómo medir su búsqueda o qué número mirar, o desde `repaso-semanal` si todavía no hay indicador.
 
 > Adaptado de `product-metrics`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
-`diagnostico-busqueda` exige que "si no hay un número, el problema no está claro". Este skill arma ese número: define el indicador principal de tu búsqueda, el árbol de palancas que lo sostienen y, para cada hipótesis activa, un número, cómo se mide y cuánto vale hoy.
+El Diagnóstico exige que "si no hay un número, el problema no está claro". Este modo arma ese número: define el indicador principal de tu búsqueda, el árbol de palancas que lo sostienen y, para cada hipótesis activa, un número, cómo se mide y cuánto vale hoy.
 
 Hablá en rioplatense, con voseo.
 
@@ -15,9 +12,9 @@ Hablá en rioplatense, con voseo.
 
 | Cuándo | Desde / hacia |
 |---|---|
-| El filtro de la métrica de `diagnostico-busqueda` no pasa | Viene de `diagnostico-busqueda` |
-| El Informe queda escrito | Hacia `posicionamiento`, o de vuelta a `diagnostico-busqueda` con el número ya definido. `repaso-semanal` lo usa cada semana |
-| Sin filtro previo | Solo |
+| El filtro de la métrica del Diagnóstico no pasa | Viene del Diagnóstico, en la misma sesión |
+| El Informe queda escrito | De vuelta al Diagnóstico con el número ya definido, o hacia `posicionamiento`. `repaso-semanal` lo usa cada semana |
+| Sin Diagnóstico previo ("cómo mido mi búsqueda", o desde `repaso-semanal`) | Solo: las hipótesis del paso 3 salen de la entrevista |
 
 ## La entrevista
 

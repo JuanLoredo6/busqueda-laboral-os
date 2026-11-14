@@ -31,7 +31,7 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
 | `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`, más `prompt-importar-contexto.md` (el prompt para traer el contexto de otra IA). No se editan |
-| `.claude/skills/` | Los 22 skills del sistema |
+| `.claude/skills/` | Los 18 skills del sistema |
 
 Las carpetas personales están en `.gitignore`: los datos de la persona nunca se suben al repositorio del taller.
 
@@ -40,10 +40,12 @@ Las carpetas personales están en `.gitignore`: los datos de la persona nunca se
 El índice completo, con recorridos típicos, está en `.claude/skills/mapa-de-skills/SKILL.md`. Resumen:
 
 - **Día a día:** `empezar`, `mejorar-perfil`, `analizar-oferta`, `nueva-postulacion`, `actualizar`, `sincronizar-correo`, `redactar-mensaje`, `preparar-entrevista`, `repaso-semanal`.
-- **Estrategia:** `diagnostico-busqueda`, `mercado-laboral`, `posicionamiento`, `propuesta-de-valor`, `metricas-busqueda`, `plan-de-networking`, `aprendizajes-busqueda`.
-- **Criterio:** `poner-a-prueba` (el método de entrevista que citan los demás), `recruiters-sinteticos`, `criterio-producto`, `criterio-tecnico`, `disenador-visual`.
+- **Estrategia:** `diagnostico-busqueda`, `mercado-laboral`, `posicionamiento`, `plan-de-networking`, `aprendizajes-busqueda`.
+- **Criterio:** `poner-a-prueba` (el método de entrevista que citan los demás), `recruiters-sinteticos`, `disenador-visual`.
 
-Trece de ellos son adaptaciones de los skills de Pedro Romero Luna (MIT); ver `CREDITOS.md`.
+Algunos skills traen partes en archivos aparte, que el `SKILL.md` carga cuando hacen falta: `posicionamiento/propuesta-de-valor.md` (ángulos, mapa de valor y pitch), `diagnostico-busqueda/metricas.md` (indicador principal, palancas y antimétricas) y `preparar-entrevista/criterio-producto.md` y `criterio-tecnico.md` (casos y preguntas técnicas).
+
+Trece piezas (skills o partes de un skill) son adaptaciones de los skills de Pedro Romero Luna (MIT); ver `CREDITOS.md`.
 
 Si un pedido encaja en un skill, usalo aunque la persona no lo nombre.
 

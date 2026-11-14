@@ -1,9 +1,6 @@
----
-name: criterio-producto
-description: "El criterio de un líder de Producto aplicado a las preguntas de caso de una entrevista (qué construirías, qué priorizás, cómo lanzarías X, cómo resolverías que cayó una métrica, cómo manejarías un conflicto entre áreas): toda respuesta en cuatro pasos (diagnóstico, al menos dos opciones con lo que cede cada una, una postura clara, próximos pasos) bajo cuatro reglas. Sirve para roles de Producto, Negocio, Proyectos, Análisis y Liderazgo, y para cualquier pregunta de 'qué harías si...'. Usala cuando digas 'tengo un caso', 'cómo respondo esta pregunta de producto', 'practiquemos un caso', o desde preparar-entrevista."
----
+# Criterio de producto — responder casos como un líder de Producto
 
-# criterio-producto — responder casos como un líder de Producto
+> Es parte de `preparar-entrevista` (`.claude/skills/preparar-entrevista/SKILL.md`). Se carga para entrevistas de caso de producto o negocio, o cuando la persona quiere practicar o resolver una pregunta de caso, aunque no tenga una entrevista agendada. Sirve para roles de Producto, Negocio, Proyectos, Análisis y Liderazgo, y para cualquier pregunta de "qué harías si...".
 
 > Adaptado de `cpo`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
@@ -53,7 +50,7 @@ Qué se hace primero, con quién y con qué resultado observable. Nunca "seguir 
 
 ## Cómo se usa
 
-**Para preparar.** Con la postulación como fuente, armá de 3 a 5 preguntas de caso probables para ese rol y, por cada una, la estructura de los cuatro pasos: preguntas de diagnóstico, dos opciones con lo que cede cada una, una postura posible con su criterio y próximos pasos. Es un esqueleto para pensar en voz alta, no un texto para memorizar. Si hace falta un ejemplo de tu experiencia, sale de `contexto/perfil.md`; si no hay ninguno que sirva, preguntalo. Nunca lo inventes. Guardalo en `entrevistas/<empresa>/casos-producto.md`.
+**Para preparar.** Con la postulación como fuente, armá de 3 a 5 preguntas de caso probables para ese rol y, por cada una, la estructura de los cuatro pasos: preguntas de diagnóstico, dos opciones con lo que cede cada una, una postura posible con su criterio y próximos pasos. Es un esqueleto para pensar en voz alta, no un texto para memorizar. Si hace falta un ejemplo de tu experiencia, sale de `contexto/perfil.md`; si no hay ninguno que sirva, preguntalo. Nunca lo inventes. Guardalo en `entrevistas/<empresa>/casos-producto.md` (o en `entrevistas/practica/` si es práctica sin postulación).
 
 **Para practicar.** Hacé de entrevistador: una pregunta por vez, sin adelantar pistas. Después de cada respuesta, devolvé en pocas líneas:
 

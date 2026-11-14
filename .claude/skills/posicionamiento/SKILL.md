@@ -1,13 +1,15 @@
 ---
 name: posicionamiento
-description: "Te entrevista y escribe tu capa estratégica profesional en contexto/posicionamiento.md: a qué rol apuntás y por qué, qué problema le resolvés a una empresa, para qué tipo de empresas y equipos, qué descartás, contra quién competís y cómo te diferenciás, y qué queda abierto. Es la base de la que salen el CV, LinkedIn, los mensajes y el pitch. Usala cuando digas 'no sé cómo venderme', 'a qué apunto', 'quiero cambiar de rol', 'no sé qué rol buscar', o antes de rehacer el CV o el perfil."
+description: "Te entrevista y escribe tu capa estratégica profesional en contexto/posicionamiento.md: a qué rol apuntás y por qué, qué problema le resolvés a una empresa, para qué tipo de empresas y equipos, qué descartás, contra quién competís y cómo te diferenciás, y qué queda abierto. Después, en su fase de propuesta de valor, explora ángulos para presentarte (solo o con compañeros del taller; Claude nunca elige el ganador) y escribe tu mapa de valor, tu pitch de 30 segundos y tu titular. Es la base de la que salen el CV, LinkedIn, los mensajes y el pitch. Usala cuando digas 'no sé cómo venderme', 'a qué apunto', 'quiero cambiar de rol', 'no sé qué rol buscar', 'cómo me presento', 'armame un pitch', 'no sé qué destacar', 'necesito un titular', o antes de rehacer el CV o el perfil."
 ---
 
 # posicionamiento — tu capa estratégica profesional
 
 > Adaptado de `prd`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
-Te entrevista y escribe la definición estratégica de tu perfil: hacia dónde vas, qué problema resolvés, para quién, qué no hacés, contra quién competís y qué queda abierto. Es la puerta de entrada del sistema: de acá salen el CV (`mejorar-perfil`), el pitch (`propuesta-de-valor`) y cada postulación.
+Te entrevista y escribe la definición estratégica de tu perfil: hacia dónde vas, qué problema resolvés, para quién, qué no hacés, contra quién competís y qué queda abierto. Es la puerta de entrada del sistema: de acá salen el CV (`mejorar-perfil`), el pitch (la fase 3, [propuesta de valor](propuesta-de-valor.md)) y cada postulación.
+
+**Qué fase toca.** Si no hay `contexto/posicionamiento.md`, se arranca por la fase 1. Si ya está escrito con veredicto Completo o Completo con reservas y la persona pide cómo presentarse, un pitch o un titular, se va directo a la fase 3. Si pide un pitch sin posicionamiento, decí en una línea que el pitch sale del posicionamiento y ofrecé las dos cosas: hacerlo primero, o ir a la fase 3 con lo mínimo que esa fase pide.
 
 La entrevista aprieta con el método de `.claude/skills/poner-a-prueba/SKILL.md#método`: citado, nunca copiado.
 
@@ -113,4 +115,8 @@ Al final, uno de tres, siempre explícito:
 
 **Mínimo indispensable:** si `Rol objetivo`, `Alcance` o `Competencia y diferencial` quedan vacías, todavía no conviene reescribir el CV ni LinkedIn. Decilo de frente, no dejes que se descubra después.
 
-El mensaje de cierre nombra el archivo y el veredicto, y sugiere el paso siguiente: `propuesta-de-valor` para el pitch o `mejorar-perfil` para CV y LinkedIn.
+El mensaje de cierre nombra el archivo y el veredicto, y sugiere el paso siguiente: la fase 3 para el pitch o `mejorar-perfil` para CV y LinkedIn.
+
+## Fase 3: tu propuesta de valor y tu pitch
+
+Cuando el posicionamiento está escrito, el paso siguiente es encontrar la mejor forma de presentarte. Es otra sesión, porque la exploración de ángulos la hacés vos (solo o con compañeros del taller) entre el modo ABRIR y el modo CERRAR. Leé y seguí completo `.claude/skills/posicionamiento/propuesta-de-valor.md`.
