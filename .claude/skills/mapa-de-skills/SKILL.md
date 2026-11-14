@@ -13,8 +13,8 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 
 | Necesidad | Skill |
 |---|---|
-| Arrancar el sistema por primera vez: entrevista inicial, perfil, qué buscás y tu voz | `empezar` |
-| Mejorar LinkedIn y el CV a partir del PDF de LinkedIn, con textos listos para copiar y pegar | `mejorar-perfil` |
+| Arrancar el sistema por primera vez: traer el CV, LinkedIn o el contexto que armaste con otra IA, entrevista inicial, perfil, qué buscás y tu voz | `empezar` |
+| Mejorar LinkedIn y el CV a partir del PDF de LinkedIn, del CV o de los dos, con textos listos para copiar y pegar | `mejorar-perfil` |
 | Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena | `analizar-oferta` |
 | Registrar una postulación nueva: carpeta, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |
 | Contar una novedad ("me respondieron de X", "tengo entrevista el jueves") y actualizar el tablero | `actualizar` |

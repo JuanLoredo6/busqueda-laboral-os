@@ -55,7 +55,7 @@ En la app de escritorio: elegí la carpeta `mi-busqueda` como carpeta de trabajo
 | Cuándo | Qué le decís a Claude |
 |---|---|
 | La primera vez | `/empezar` |
-| Para mejorar LinkedIn y el CV (dejá el PDF de LinkedIn en `linkedin/`) | `/mejorar-perfil` |
+| Para mejorar LinkedIn y el CV (dejá el PDF de LinkedIn en `linkedin/`, tu CV en `cv/`, o los dos) | `/mejorar-perfil` |
 | Cuando ves un aviso que te interesa | `/analizar-oferta` y pegás el link o el texto |
 | Para postularte | `/nueva-postulacion` |
 | Cuando pasa algo ("me respondieron de X") | Contáselo, o `/actualizar` |
@@ -98,7 +98,7 @@ Lo que es claro (una entrevista con fecha, un rechazo explícito) se aplica solo
 busqueda-laboral-os/
 ├── INSTALACION.md     La guía de instalación asistida
 ├── CLAUDE.md          Instrucciones para Claude: reglas, carpetas, modelo de datos
-├── contexto/          Tu fuente de verdad: perfil, qué buscás, tu voz, decisiones
+├── contexto/          Tu fuente de verdad: perfil, qué buscás, tu voz, decisiones · importado/ con lo que traigas de antes
 ├── linkedin/          Tu PDF de LinkedIn · sugerencias/ con los textos nuevos
 ├── cv/                Tu CV
 ├── postulaciones/     postulaciones.json (datos del tablero) + una carpeta por postulación
@@ -115,8 +115,8 @@ busqueda-laboral-os/
 
 | Skill | Para qué |
 |---|---|
-| `empezar` | Puesta en marcha: carga tu perfil, qué buscás y tu voz, y deja el tablero listo |
-| `mejorar-perfil` | Lee tu PDF de LinkedIn, te entrevista y te da textos listos para copiar y pegar, más el CV |
+| `empezar` | Puesta en marcha: trae lo que ya tenés (CV, LinkedIn, notas, el contexto de otra IA), carga tu perfil, qué buscás y tu voz, y deja el tablero listo |
+| `mejorar-perfil` | Lee tu PDF de LinkedIn, tu CV o los dos, compara qué tiene cada uno, te entrevista y te da textos listos para copiar y pegar, más el CV |
 | `analizar-oferta` | Encaje de un aviso con tu perfil (0 a 100), requisitos uno por uno, si vale la pena |
 | `nueva-postulacion` | Carpeta, CV adaptado, respuestas del formulario y tarjeta en el tablero |
 | `actualizar` | Lleva cada novedad al tablero y crea las acciones que siguen |

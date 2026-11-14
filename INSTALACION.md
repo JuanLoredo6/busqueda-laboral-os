@@ -15,7 +15,8 @@ Tiempo estimado: 20 a 30 minutos.
 | Un plan **Claude Pro o Max** | Incluye Claude Code | En claude.ai, con tu cuenta. El plan gratuito no alcanza |
 | La **app de escritorio de Claude** (Windows o Mac) | Es donde corre el sistema | https://claude.com/download |
 | Tu **cuenta de Google** | Para conectar Gmail y Calendar (solo lectura) | La que usás para tu búsqueda laboral |
-| Tu **perfil de LinkedIn en PDF** | Punto de partida de tu perfil | En LinkedIn: tu perfil → **Más** (o **Recursos**) → **Guardar en PDF** |
+| Tu **CV** o tu **perfil de LinkedIn en PDF** (con uno alcanza; los dos, mejor) | Punto de partida de tu perfil | El CV en .pdf, .docx o texto. El PDF de LinkedIn: tu perfil → **Más** (o **Recursos**) → **Guardar en PDF** |
+| *Opcional:* el contexto que ya armaste con otra IA (Claude en el chat, ChatGPT, Gemini) | Que no tengas que contar todo de nuevo | `/empezar` te da un prompt para pegar en ese chat y traer la respuesta |
 
 No necesitás cuenta de GitHub: el sistema se descarga de un repositorio público.
 
@@ -133,8 +134,8 @@ Mostrá el resumen:
 
 Después decile qué sigue, en este orden:
 
-1. Dejá tu PDF de LinkedIn en la carpeta `linkedin/`.
-2. Escribí `/empezar`: carga tu perfil y qué buscás (30 a 40 minutos).
+1. Dejá tu CV en la carpeta `cv/` y, si lo tenés, tu PDF de LinkedIn en `linkedin/`.
+2. Escribí `/empezar`: trae lo que ya tengas (también el contexto de otra IA, si usás una), carga tu perfil y qué buscás (30 a 40 minutos).
 3. Para volver otro día: abrí la app, pestaña Code, y elegí la sesión o la carpeta `<carpeta>`.
 
 ---

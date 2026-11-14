@@ -1,18 +1,27 @@
 ---
 name: mejorar-perfil
-description: "Mejora tu perfil de LinkedIn y tu CV a partir del PDF que exporta LinkedIn: lo lee sección por sección, hace un diagnóstico, te entrevista para conseguir los logros y datos que faltan, y entrega sugerencias listas para copiar y pegar (titular, Acerca de, cada experiencia, aptitudes) respetando los límites de caracteres, más un CV actualizado. Nunca inventa logros. Usala cuando digas 'mejorá mi LinkedIn', 'revisá mi perfil', 'acá está mi PDF', 'actualizá mi CV', 'revisá mi CV', 'mi perfil no atrae recruiters', o cuando dejes un PDF en linkedin/."
+description: "Mejora tu perfil de LinkedIn y tu CV a partir de lo que tengas más completo (el PDF que exporta LinkedIn, tu CV o los dos): lo lee sección por sección, hace un diagnóstico, compara CV y LinkedIn para encontrar lo que está en uno y falta en el otro, te entrevista para conseguir los logros y datos que faltan, y entrega sugerencias listas para copiar y pegar (titular, Acerca de, cada experiencia, aptitudes) respetando los límites de caracteres, más un CV actualizado. Nunca inventa logros. Usala cuando digas 'mejorá mi LinkedIn', 'revisá mi perfil', 'acá está mi PDF', 'actualizá mi CV', 'revisá mi CV', 'mi perfil no atrae recruiters', 'tengo el CV pero no el LinkedIn', o cuando dejes un PDF en linkedin/ o un CV en cv/."
 ---
 
 # mejorar-perfil — LinkedIn y CV listos para copiar y pegar
 
-Toma el PDF de LinkedIn (y el CV si hay), detecta qué le falta para que un recruiter lo encuentre y lo entienda en 30 segundos, te entrevista para conseguir lo que falta, y te devuelve los textos nuevos listos para pegar.
+Toma el PDF de LinkedIn, el CV o los dos (lo que esté más completo es la base), detecta qué le falta para que un recruiter lo encuentre y lo entienda en 30 segundos, te entrevista para conseguir lo que falta, y te devuelve los textos nuevos listos para pegar.
 
 Hablá en rioplatense, con voseo. Los textos del perfil van en el idioma que elijas (español, inglés o ambos) y con tu voz (`contexto/voz.md`).
 
 ## Antes de empezar
 
-1. Buscá el PDF más reciente en `linkedin/`. Si no hay, explicá cómo bajarlo (perfil → **Más** o **Recursos** → **Guardar en PDF**) y esperá.
-2. Leé completos: el PDF, `contexto/perfil.md`, `contexto/busqueda.md` y, si existen, `contexto/posicionamiento.md` y el último `investigacion/*-mapa-de-valor.md`.
+1. Buscá el PDF más reciente en `linkedin/` y el CV más reciente en `cv/` (que no sea uno que generó este skill; si hay varios, preguntá cuál es el vigente). Según lo que haya:
+
+   | Hay | Cómo se trabaja |
+   |---|---|
+   | **Los dos** | Preguntá cuál está más completo: ese es la base. El diagnóstico suma la comparación entre los dos (paso 1) |
+   | **Solo el CV** | Arrancá con el CV, sin esperar el PDF. Los textos de LinkedIn salen del CV y de `contexto/perfil.md`. Ofrecé en una línea bajar el PDF (perfil → **Más** o **Recursos** → **Guardar en PDF**) para comparar con lo que tiene publicado hoy, pero no lo exijas |
+   | **Solo el PDF** | Como siempre: el PDF es la base y el CV se arma en el paso 5 |
+   | **Ninguno** | Si `contexto/perfil.md` tiene la experiencia cargada, trabajá desde ahí. Si no, pedí el CV (archivo o texto pegado) o el PDF, y esperá |
+
+   Un CV en .docx se lee con el skill de documentos si está disponible; si no, pedí que lo pegue en el chat o lo exporte a PDF.
+2. Leé completos: el PDF y el CV que haya, `contexto/perfil.md`, `contexto/busqueda.md` y, si existen, `contexto/posicionamiento.md` y el último `investigacion/*-mapa-de-valor.md`.
 3. Si no hay posicionamiento, avisá en una línea: el perfil queda mejor si antes se define a qué rol apuntás (`/posicionamiento`). Ofrecé hacerlo primero o seguir con lo que dice `contexto/busqueda.md`.
 4. Preguntá en una ronda: idioma del perfil (español, inglés o ambos) y si también quiere el CV.
 
@@ -37,7 +46,7 @@ Valen para el CV, para la sección Experiencia de LinkedIn y para el CV adaptado
 
 ## Paso 1: diagnóstico
 
-Por cada sección del PDF, una línea con qué funciona y qué no, contra lo que hace un recruiter (busca por palabras clave del rol, lee el titular y el primer párrafo, mira el último puesto):
+Por cada sección del perfil, una línea con qué funciona y qué no, contra lo que hace un recruiter (busca por palabras clave del rol, lee el titular y el primer párrafo, mira el último puesto). Si no hay PDF, revisá la experiencia, las habilidades y la formación sobre el CV, y el titular y el Acerca de quedan como "sin versión actual para comparar":
 
 | Sección | Qué se revisa |
 |---|---|
@@ -49,6 +58,16 @@ Por cada sección del PDF, una línea con qué funciona y qué no, contra lo que
 | **Lo que falta** | Por ejemplo: sin foto o sin portada (lo dice el usuario, el PDF no lo muestra), sin URL personalizada, sin "Open to work" configurado para recruiters |
 
 Si hay CV, sumá una línea por cada criterio de [Criterios de CV](#criterios-de-cv) que no cumpla, con la cita literal del CV.
+
+**Si están los dos, compará CV y LinkedIn.** Es común que uno esté más completo que el otro. Una tabla corta con lo que difiere, con la cita de cada lado:
+
+| Qué | En el CV | En LinkedIn | Qué se hace |
+|---|---|---|---|
+| Logros, puestos, proyectos o certificaciones que están en uno solo | 📌 cita | — | Llevarlo al otro (sale en las propuestas del paso 3) |
+| Fechas, cargos o empresas que no coinciden | 📌 cita | 📌 cita | Preguntá cuál es la correcta; no elijas vos |
+| Tecnologías o habilidades que aparecen en uno solo | 📌 cita | — | Confirmá que las usó antes de sumarlas |
+
+Lo que se confirma se suma a `contexto/perfil.md`.
 
 Mostralo como una lista corta, ordenada por impacto. No reescribas nada todavía.
 
@@ -73,7 +92,7 @@ Por cada sección, este formato:
 ````markdown
 ## Titular
 
-**Antes:** <texto actual>
+**Antes:** <texto actual, o "sin versión actual (no hay PDF de LinkedIn)">
 
 **Por qué cambia:** <una línea>
 
@@ -116,7 +135,7 @@ Si lo pidió:
 - Nombrá los archivos que escribiste.
 - Explicá cómo aplicarlo: abrir LinkedIn, editar sección por sección, copiar del bloque de código y pegar.
 - Sumá al tablero una acción "Aplicar los cambios del perfil en LinkedIn" con fecha de hoy o mañana, y una "Completar datos pendientes del perfil" si quedaron huecos.
-- Recordá: cuando aplique los cambios, conviene bajar un PDF nuevo a `linkedin/` para que el sistema trabaje con la versión vigente.
+- Recordá: cuando aplique los cambios, conviene bajar un PDF nuevo a `linkedin/` para que el sistema trabaje con la versión vigente (y, si se arrancó solo con el CV, para comparar en la próxima pasada).
 
 ## Reglas
 

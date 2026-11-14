@@ -23,14 +23,14 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 
 | Carpeta | Contenido |
 |---|---|
-| `contexto/` | Fuente de verdad: `perfil.md`, `busqueda.md`, `voz.md`, `posicionamiento.md`, `decisiones.md`, `datos-pendientes.md` |
+| `contexto/` | Fuente de verdad: `perfil.md`, `busqueda.md`, `voz.md`, `posicionamiento.md`, `decisiones.md`, `datos-pendientes.md`. `importado/` guarda tal cual lo que la persona trajo de antes (notas, la respuesta de otra IA): es respaldo, no fuente de verdad, y solo entra a los demás archivos con su confirmación |
 | `linkedin/` | El PDF exportado de LinkedIn. `sugerencias/` tiene los textos propuestos, fechados |
 | `cv/` | CV vigente (en .md y en el formato que use la persona) |
 | `postulaciones/` | `postulaciones.json` (los datos del tablero) y una carpeta por postulación |
 | `entrevistas/` | Una carpeta por empresa: preparación, simulacros y notas |
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
 | `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
-| `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`. No se editan |
+| `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`, más `prompt-importar-contexto.md` (el prompt para traer el contexto de otra IA). No se editan |
 | `.claude/skills/` | Los 22 skills del sistema |
 
 Las carpetas personales están en `.gitignore`: los datos de la persona nunca se suben al repositorio del taller.
