@@ -31,7 +31,6 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
 | `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`. No se editan |
-| `taller/` | Material del taller |
 | `.claude/skills/` | Los 22 skills del sistema |
 
 Las carpetas personales están en `.gitignore`: los datos de la persona nunca se suben al repositorio del taller.

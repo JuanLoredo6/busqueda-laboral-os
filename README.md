@@ -106,7 +106,6 @@ busqueda-laboral-os/
 ├── investigacion/     Informes fechados: diagnóstico, mercado, métricas, repasos
 ├── tablero/           tablero.html (abrilo con doble clic)
 ├── plantillas/        Lo que /empezar copia la primera vez
-├── taller/            Material del taller
 └── .claude/skills/    Los 22 skills
 ```
 

@@ -16,3 +16,6 @@ linkedin/sugerencias/*
 .DS_Store
 Thumbs.db
 .claude/settings.local.json
+
+# Material interno de quien da el taller
+taller/

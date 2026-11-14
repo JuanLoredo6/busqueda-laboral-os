@@ -57,5 +57,5 @@ El texto de la licencia está en [`.claude/skills/LICENSE-phuryn.txt`](.claude/s
 | Esquema de decisiones (pm-brain) | `poner-a-prueba`, «Qué la haría cambiar» | Cada decisión clave con lo que descarta y una condición observable para revisarla |
 | Hook de validación (pm-brain) | `tablero/validar.py` | El JSON del tablero se valida con código después de cada edición |
 
-La idea de probar cada skill con pedidos que sí y que no deberían activarlo (`taller/pedidos-de-prueba.md`) sale de
-[NVIDIA/SkillEvaluator](https://github.com/NVIDIA/SkillEvaluator) (licencia Apache 2.0). No se copió código ni texto.
+Para que dos skills no compartan las mismas frases en su descripción, se usó la idea de probar cada skill con pedidos que sí y que no
+deberían activarlo, de [NVIDIA/SkillEvaluator](https://github.com/NVIDIA/SkillEvaluator) (licencia Apache 2.0). No se copió código ni texto.
