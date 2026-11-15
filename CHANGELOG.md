@@ -12,6 +12,8 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.7.2 — 2026-11-15 · Licencia MIT en todo el repo
+
 ### Cambios
 
 - `CLAUDE.md` nombra la licencia MIT y también a Paweł Huryn en los créditos.
