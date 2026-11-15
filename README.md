@@ -176,4 +176,4 @@ Qué cambió en cada versión: [CHANGELOG.md](CHANGELOG.md).
 
 - Sistema armado por Juan Rodríguez Loredo para el taller. Licencia MIT: ver [LICENSE](LICENSE).
 - Trece piezas del sistema (skills o partes de un skill) son adaptaciones de los skills de producto de **Pedro Romero Luna** ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT). Detalle en [CREDITOS.md](CREDITOS.md).
-- Varias secciones adaptan métodos de **Paweł Huryn** ([The Product Compass](https://www.productcompass.pm)), publicados con licencia MIT. Detalle en [CREDITOS.md](CREDITOS.md).
+- Varias secciones adaptan métodos de **Paweł Huryn** ([The Product Compass](https://www.productcompass.pm)), publicados con licencia MIT en [pm-skills](https://github.com/phuryn/pm-skills), [product-engineering](https://github.com/phuryn/product-engineering) y [pm-brain](https://github.com/phuryn/pm-brain). Detalle en [CREDITOS.md](CREDITOS.md).

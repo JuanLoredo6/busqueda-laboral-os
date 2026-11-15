@@ -6,6 +6,8 @@ license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver
 
 # preparar-entrevista — llegar con criterio, no con un guion
 
+> Los criterios de producto (`criterio-producto.md`) y técnico (`criterio-tecnico.md`) están adaptados de `cpo` y `cto`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
+
 La mayoría de las preguntas de entrevista no tienen una respuesta correcta: se evalúa cómo pensás. Los buenos candidatos no se apuran: preguntan antes de responder, deciden, explican lo que ceden y se apoyan en experiencias reales. Este skill entrena eso.
 
 Hablá en rioplatense, con voseo, frases cortas. Si la entrevista es en inglés, las respuestas modelo van en inglés y las indicaciones en español.

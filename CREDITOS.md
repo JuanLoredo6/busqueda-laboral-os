@@ -1,5 +1,7 @@
 # Créditos
 
+Todo el sistema tiene licencia MIT: ver [`LICENSE`](LICENSE). Las piezas adaptadas conservan además la licencia MIT de sus autores, cuyo texto completo va en `.claude/skills/`.
+
 ## Skills adaptados del pack de Pedro Romero Luna
 
 Trece piezas de `.claude/skills/` (skills completos o partes de un skill) son **adaptaciones** de los skills de **Pedro Romero Luna** publicados en
