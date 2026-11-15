@@ -162,6 +162,8 @@ git pull
 
 Tus datos no se tocan: están fuera de lo que se versiona.
 
+Qué cambió en cada versión: [CHANGELOG.md](CHANGELOG.md).
+
 ---
 
 ## Instrucciones de instalación para Claude Code

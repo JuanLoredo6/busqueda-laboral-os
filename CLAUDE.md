@@ -56,6 +56,7 @@ Si un pedido encaja en un skill, usalo aunque la persona no lo nombre.
 - **Archivos de una postulación:** `rol.md` (aviso y análisis), `cv.md` (CV adaptado), `respuestas.md` (formulario), `mensaje-<tipo>-<fecha>.md`, notas fechadas.
 - **Marcas en los documentos:** 📌 dato literal de una fuente, con su ubicación · 🔍 lectura de Claude que ninguna fuente afirma · ❓ dato que falta y completa la persona.
 - **Informes:** `investigacion/<AAAA-MM-DD>-<nombre>.md`, nunca se pisan.
+- **Cambios del sistema:** si se modifica el sistema mismo (skills, tablero, plantillas, guías), sumá una línea en la sección «Sin publicar» de `CHANGELOG.md`, con el formato que explica ese archivo. Los datos de la persona nunca van ahí.
 
 ## El tablero
 
