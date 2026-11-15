@@ -8,7 +8,7 @@ Cómo se lleva:
 - Cada versión agrupa sus cambios en **Nuevo**, **Cambios**, **Arreglos** y **Quitado** (solo los grupos que tengan algo).
 - Numeración `MAYOR.MENOR.ARREGLO`: un skill o una capacidad nueva sube el número del medio; un arreglo sin funciones nuevas, el último. Mientras el sistema esté en armado, la versión empieza con 0.
 - Fechas en `AAAA-MM-DD`.
-- Cada versión tiene su tag en git (`v0.7.0`), puesto en el commit que la cierra, y se sube con `git push origin --tags`.
+- Cada versión tiene su tag en git (`v0.7.0`), puesto en el commit que la cierra, y se sube con `git push origin --tags`. Después se publica su release en GitHub con el texto de su sección como notas (`gh release create v0.7.0 --title "v0.7.0 · <título>" --notes-file <notas>`).
 
 ## Sin publicar
 
