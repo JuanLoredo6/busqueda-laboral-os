@@ -12,6 +12,16 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Cambios
+
+- `CLAUDE.md` nombra la licencia MIT y también a Paweł Huryn en los créditos.
+- Los scripts y el tablero (`revisar-ats.py`, `validar.py`, `sincronizar.sh`, `tablero.html`, `ejemplo.js`) llevan su línea de licencia MIT, y el pie del tablero remite a los créditos.
+- La «Plantilla de notas» de `preparar-entrevista` enlaza pm-brain con su licencia.
+
+### Arreglos
+
+- Se saca del repo `tablero/__pycache__/`, que se había subido por error, y queda en `.gitignore`.
+
 ## 0.7.1 — 2026-11-15 · Licencia y créditos en cada skill
 
 ### Cambios

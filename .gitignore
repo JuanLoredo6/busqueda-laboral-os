@@ -15,6 +15,7 @@ linkedin/sugerencias/*
 # Sistema
 .DS_Store
 Thumbs.db
+__pycache__/
 .claude/settings.local.json
 
 # Material interno de quien da el taller

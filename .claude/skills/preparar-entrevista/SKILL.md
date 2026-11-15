@@ -102,7 +102,7 @@ Ofrecé, en la misma sesión o cuando vuelva:
 
 ### Plantilla de notas
 
-> Adaptada de `summarize-interview`, de Paweł Huryn ([pm-skills](https://github.com/phuryn/pm-skills), licencia MIT), y del `/ingest` de `pm-brain`.
+> Adaptada de `summarize-interview`, de Paweł Huryn ([pm-skills](https://github.com/phuryn/pm-skills), licencia MIT), y del `/ingest` de `pm-brain`, del mismo autor ([pm-brain](https://github.com/phuryn/pm-brain), licencia MIT).
 
 Pedile que lo cuente como le salga, aunque sea desordenado o un dictado pegado, y armá las notas con sus palabras. Lo que no recuerde va con "-", nunca se completa.
 

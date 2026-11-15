@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
 """Valida postulaciones/postulaciones.json contra el modelo de datos de CLAUDE.md.
 
 Lo llama tablero/sincronizar.sh. Solo usa la biblioteca estándar.

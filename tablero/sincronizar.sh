@@ -1,4 +1,6 @@
 #!/usr/bin/env bash
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
 # Valida postulaciones/postulaciones.json y regenera tablero/datos.js.
 # Lo corre solo un hook de Claude Code (.claude/settings.json) después de cada edición.
 # También se puede correr a mano: bash tablero/sincronizar.sh

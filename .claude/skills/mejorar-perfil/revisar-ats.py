@@ -1,4 +1,6 @@
 #!/usr/bin/env python3
+# SPDX-License-Identifier: MIT
+# Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
 """Revisa si un CV se lee bien en un sistema de selección (ATS).
 
 Lo usa el skill mejorar-perfil (ver ats.md). Para .docx y .md solo usa la

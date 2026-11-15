@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: MIT
+// Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
 // Datos de ejemplo de una persona ficticia, para mostrar el tablero en el taller.
 // Las fechas se calculan desde hoy para que el ejemplo nunca quede viejo.
 // Se ven abriendo tablero.html?ejemplo (o con el botón "Ver el tablero con datos de ejemplo").
