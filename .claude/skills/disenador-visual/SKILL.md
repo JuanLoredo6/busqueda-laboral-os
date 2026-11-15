@@ -66,7 +66,7 @@ Cada pieza declara su situación incómoda y qué dice cuando pasa: el hueco de 
 
 ### Para CV: la lectura de los sistemas de selección (ATS)
 
-Un CV se lee dos veces: primero una máquina y después una persona. Para la máquina: una columna, texto seleccionable (no imágenes de texto), títulos de sección comunes ("Experiencia", "Educación"), fechas en un formato consistente y las palabras clave del aviso donde sean verdad. Para la persona: lo de arriba.
+Un CV se lee dos veces: primero una máquina y después una persona. Para la máquina valen las reglas de `.claude/skills/mejorar-perfil/ats.md` (una columna, sin tablas ni cuadros de texto, contacto en el cuerpo, texto seleccionable, títulos estándar, fechas con mes y año, palabras clave del aviso donde sean verdad) y la comprobación con su script. Ninguna decisión visual va en contra de esas reglas: si un criterio de este método choca con una, gana `ats.md` y se anota en «Criterios visuales aplicados». Para la persona: lo de arriba.
 
 ## La especificación
 

@@ -43,7 +43,7 @@ El índice completo, con recorridos típicos, está en `.claude/skills/mapa-de-s
 - **Estrategia:** `diagnostico-busqueda`, `mercado-laboral`, `posicionamiento`, `plan-de-networking`, `aprendizajes-busqueda`.
 - **Criterio:** `poner-a-prueba` (el método de entrevista que citan los demás), `recruiters-sinteticos`, `disenador-visual`.
 
-Algunos skills traen partes en archivos aparte, que el `SKILL.md` carga cuando hacen falta: `posicionamiento/propuesta-de-valor.md` (ángulos, mapa de valor y pitch), `diagnostico-busqueda/metricas.md` (indicador principal, palancas y antimétricas) y `preparar-entrevista/criterio-producto.md` y `criterio-tecnico.md` (casos y preguntas técnicas).
+Algunos skills traen partes en archivos aparte, que el `SKILL.md` carga cuando hacen falta: `posicionamiento/propuesta-de-valor.md` (ángulos, mapa de valor y pitch), `diagnostico-busqueda/metricas.md` (indicador principal, palancas y antimétricas), `mejorar-perfil/cv-en-ingles.md` (el CV en el otro idioma, con criterio de recruiter bilingüe), `mejorar-perfil/ats.md` (que el CV lo lea un sistema de selección, con su script `revisar-ats.py`) y `preparar-entrevista/criterio-producto.md` y `criterio-tecnico.md` (casos y preguntas técnicas).
 
 Trece piezas (skills o partes de un skill) son adaptaciones de los skills de Pedro Romero Luna (MIT); ver `CREDITOS.md`.
 

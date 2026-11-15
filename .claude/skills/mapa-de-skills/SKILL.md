@@ -15,6 +15,8 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 |---|---|
 | Arrancar el sistema por primera vez: traer el CV, LinkedIn o el contexto que armaste con otra IA, entrevista inicial, perfil, qué buscás y tu voz | `empezar` |
 | Mejorar LinkedIn y el CV a partir del PDF de LinkedIn, del CV o de los dos, con textos listos para copiar y pegar | `mejorar-perfil` |
+| Tener el CV en inglés (o en español, si el base está en inglés) sin que suene traducido | `mejorar-perfil` (su parte `cv-en-ingles.md`) |
+| Comprobar que el CV lo lea bien un sistema de selección (ATS) y que tenga las palabras clave de un aviso | `mejorar-perfil` (su parte `ats.md`); para un aviso puntual, `nueva-postulacion` |
 | Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena | `analizar-oferta` |
 | Registrar una postulación nueva: carpeta, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |
 | Contar una novedad ("me respondieron de X", "tengo entrevista el jueves") y actualizar el tablero | `actualizar` |

@@ -48,7 +48,7 @@ Un rasgo sin marca no entra.
 
 Elenco típico, ajustado a la pieza:
 
-- **Recruiter que filtra:** 30 segundos por CV, busca palabras clave del aviso.
+- **Recruiter que filtra:** 30 segundos por CV, busca palabras clave del aviso. Si la pieza es un CV, antes de simularlo corré `revisar-ats.py` con las claves del aviso (ver `.claude/skills/mejorar-perfil/ats.md`): sus reacciones se apoyan en ese resultado, que es evidencia, y no en una suposición sobre qué encontraría.
 - **Hiring manager:** quiere saber si resolviste problemas como los suyos.
 - **El escéptico.**
 - Para puestos técnicos, opcional: **alguien del equipo** que te entrevistaría.

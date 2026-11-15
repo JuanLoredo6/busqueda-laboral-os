@@ -81,6 +81,7 @@ Con el método de `.claude/skills/poner-a-prueba/SKILL.md#método` (rondas numer
 
 **Ronda 1, qué buscás** → `contexto/busqueda.md`:
 - Rol y seniority al que apunta, industrias, modalidad y ubicación, tipo de contratación, desde cuándo puede empezar.
+- Idioma del CV: la plantilla trae español. Preguntá solo si busca afuera o en empresas que trabajan en inglés: ahí proponé inglés como idioma por defecto, o dejar español y sumar la versión en inglés.
 
 **Ronda 2, lo delicado** → `contexto/busqueda.md`:
 - Cómo quiere contar su salida del último trabajo. Proponé una frase neutra y breve; usa la suya si la tiene. Nunca agregues detalles que no dio.

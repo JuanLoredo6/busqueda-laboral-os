@@ -9,6 +9,13 @@
 - **Tipo de contratación (relación de dependencia, contractor, freelance):**
 - **Disponibilidad para empezar:**
 
+## Idioma del CV
+
+<!-- El idioma en que se escribe el CV base y los textos de LinkedIn. Si buscás afuera o en empresas que trabajan en inglés, cambialo a "inglés". La otra versión se arma cuando la pidas o cuando un aviso venga en el otro idioma. -->
+
+- **Idioma por defecto:** español
+- **Variante del inglés (si hay versión en inglés):** Estados Unidos
+
 ## Qué descarto
 
 -

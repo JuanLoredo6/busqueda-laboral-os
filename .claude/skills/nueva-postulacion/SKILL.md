@@ -23,13 +23,14 @@ Leé `contexto/perfil.md`, `contexto/busqueda.md`, `contexto/voz.md` y, si exist
 
 ## Paso 2: CV adaptado
 
-Partí del CV vigente en `cv/` (o de `contexto/perfil.md` si no hay CV).
+Partí del CV vigente en `cv/` (o de `contexto/perfil.md` si no hay CV), **en el idioma del aviso**: si el aviso está en inglés, del `cv/cv-en.md`; si no, del CV en el idioma por defecto (`contexto/busqueda.md`). Si el aviso pide un idioma y no hay versión en ese idioma, ofrecé armarla primero con `.claude/skills/mejorar-perfil/cv-en-ingles.md`.
 
 - **Reordená y enfatizá; no inventes.** Se puede: cambiar el titular hacia el rol del aviso, subir los logros que responden a lo que piden, usar los términos del aviso donde sean verdad ("CI/CD" en vez de "automatización de despliegues"), recortar lo que no aporta.
 - **No se puede:** agregar tecnologías, logros, cargos o años que el perfil no tenga.
-- El CV adaptado sigue cumpliendo `.claude/skills/mejorar-perfil/SKILL.md#criterios-de-cv`.
+- El CV adaptado sigue cumpliendo `.claude/skills/mejorar-perfil/SKILL.md#criterios-de-cv` y `.claude/skills/mejorar-perfil/ats.md`.
 - Guardá el contenido en `postulaciones/<empresa-rol>/cv.md` con una lista corta al principio de qué cambió respecto del CV base y por qué.
-- Si el formato lo pide, ofrecé generar el .docx o PDF (ver `mejorar-perfil`, paso 5).
+- **Palabras clave del aviso:** sacalas de `rol.md` (excluyentes primero) y corré `revisar-ats.py` sobre el CV adaptado con esas claves (ver `ats.md#la-comprobación-con-el-script`). Cada clave que falta se clasifica como dice `ats.md`: la usó y no está escrita, la usó con otro nombre, o no la usó (no entra). Anotá el porcentaje y las que faltan en la lista de cambios del principio de `cv.md`.
+- Si el formato lo pide, ofrecé generar el .docx o PDF (ver `mejorar-perfil`, paso 5) y volvé a correr el script sobre el archivo final.
 
 Si el cambio es mínimo, decilo y recomendá mandar el CV base: no hace falta adaptar todo.
 
