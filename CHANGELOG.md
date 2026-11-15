@@ -12,6 +12,14 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.7.1 — 2026-11-15 · Licencia y créditos en cada skill
+
+### Cambios
+
+- Cada `SKILL.md` declara su licencia en el encabezado (`license:`). Los skills adaptados nombran a Pedro Romero Luna, a Paweł Huryn o a los dos, y remiten a su texto de licencia.
+- La nota del `LICENSE` raíz y los créditos del `README.md` también nombran a Paweł Huryn.
+- `tablero/validar.py` dice en su encabezado de dónde viene la idea (el hook de validación de pm-brain).
+
 ## 0.7.0 — 2026-11-15 · CV en dos idiomas y filtros ATS
 
 ### Nuevo
