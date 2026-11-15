@@ -1,6 +1,7 @@
 ---
 name: redactar-mensaje
 description: "Escribe mensajes de la búsqueda con tu voz y nunca los envía: primer contacto a un recruiter o a quien publicó un aviso, pedido de referido, pedido de charla informativa, follow-up, agradecimiento después de una entrevista, respuesta a un rechazo, aceptación o rechazo de una oferta, y avisos a tu red. Adapta el largo al canal (LinkedIn, mail, invitación de conexión) y usa solo datos reales. Usala cuando digas 'escribile a X', 'armame un follow-up', 'cómo le respondo', 'necesito un mensaje para', 'agradecé la entrevista', o desde una acción del tablero."
+license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # redactar-mensaje — mensajes que suenan a vos

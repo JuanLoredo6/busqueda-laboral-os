@@ -1,6 +1,7 @@
 ---
 name: nueva-postulacion
 description: "Registra y prepara una postulación: crea o completa su carpeta en postulaciones/ (una por empresa y rol), adapta el CV al aviso sin inventar nada, responde las preguntas del formulario con tu voz, redacta la carta o el mensaje si hace falta, y suma o mueve la tarjeta en el tablero con su seguimiento. Nunca envía nada. Usala cuando digas 'me quiero postular a X', 'ayudame con este formulario', 'ya me postulé a X', 'registrá esta postulación', o después de analizar-oferta."
+license: "MIT. Ver LICENSE en la raíz del repo."
 ---
 
 # nueva-postulacion — preparar y registrar una postulación

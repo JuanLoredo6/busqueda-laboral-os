@@ -1,6 +1,7 @@
 ---
 name: analizar-oferta
 description: "Analiza un aviso de trabajo contra tu perfil antes de postularte: resume qué piden de verdad, separa requisitos excluyentes de deseables, marca cuáles cumplís con evidencia de tu perfil, calcula el encaje de 0 a 100 con su desglose, detecta señales sobre la empresa y te dice qué ajustar si te postulás. La decisión es tuya. Usala cuando pegues un link o el texto de un aviso, o digas 'mirá esta oferta', 'me conviene postularme?', 'qué tal encajo acá', 'analizá este puesto'."
+license: "MIT. Ver LICENSE en la raíz del repo."
 ---
 
 # analizar-oferta — ¿vale la pena esta postulación?

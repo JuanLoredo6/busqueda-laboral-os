@@ -1,6 +1,7 @@
 ---
 name: mapa-de-skills
 description: "El índice de todos los skills de este sistema de búsqueda laboral: qué skill resuelve cada cosa, en qué orden conviene usarlos y qué no cubre ninguno. Usala para elegir el skill correcto en vez de adivinar, cuando alguien pregunte 'qué puedo hacer con esto', 'qué skills hay', 'por dónde empiezo', 'cuál uso para...', o cuando un pedido no encaja claramente en un skill."
+license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
 # mapa-de-skills — qué skill usar para cada cosa

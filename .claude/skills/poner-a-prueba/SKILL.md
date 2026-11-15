@@ -1,6 +1,7 @@
 ---
 name: poner-a-prueba
 description: "Pone a prueba lo que decís de vos antes de que quede escrito: cada logro del CV, cada línea de LinkedIn, cada respuesta de entrevista y cada decisión de tu búsqueda. Repregunta con un ejemplo concreto, con un tope de intentos y salidas claras, ordena la evidencia (conducta > dato > afirmación > suposición) y anota lo que queda abierto sin inventarlo. Usala cuando pidas 'esto de mi CV se sostiene?', 'esto se sostiene?', 'apretame', 'cuestioname', antes de mandar una postulación importante, o cuando otro skill necesite entrevistarte: es el método que todos los demás citan."
+license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver CREDITOS.md, .claude/skills/LICENSE-ai-first-product-skills.txt y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # poner-a-prueba — el interrogatorio que hace creíble tu perfil

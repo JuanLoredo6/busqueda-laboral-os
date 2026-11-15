@@ -1,6 +1,7 @@
 ---
 name: diagnostico-busqueda
 description: "Entrevista socrática sobre tu búsqueda laboral para separar el síntoma de la causa ('no me llaman', 'me rechazan después de la técnica', 'no sé a qué apuntar'), ordenar la evidencia, exigir un número que muestre si el problema se resuelve y priorizar hasta tres hipótesis. Escribe el Diagnóstico de búsqueda en investigacion/. Su modo métricas arma ese número: un indicador principal que cambie decisiones, el árbol de palancas, un número por hipótesis con su valor de hoy sacado del tablero y las antimétricas con su umbral (postular a todo, quemarte), en el Informe de métricas. Usala cuando la búsqueda se traba, cuando no entendés por qué no avanzás, al arrancar una búsqueda o cada tres o cuatro semanas, y cuando digas 'cómo mido mi búsqueda', 'estoy avanzando?', 'qué número miro', aunque no nombres el skill."
+license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver CREDITOS.md, .claude/skills/LICENSE-ai-first-product-skills.txt y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # diagnostico-busqueda — el Diagnóstico de tu búsqueda

@@ -1,6 +1,7 @@
 ---
 name: empezar
 description: "Pone en marcha el sistema de búsqueda laboral la primera vez: da la bienvenida, pregunta qué material ya tenés (CV, PDF de LinkedIn, notas o el contexto que armaste con otra IA, con un prompt listo para traerlo), lo vuelca con tu confirmación, hace una entrevista corta solo con lo que falta (perfil, qué buscás y tu voz), deja el tablero listo y explica qué sigue. Usala cuando la persona escriba /empezar, 'arranquemos', 'primera vez', 'cómo empiezo', 'configurá el sistema', o cuando contexto/perfil.md no exista todavía."
+license: "MIT. Ver LICENSE en la raíz del repo."
 ---
 
 # empezar — la puesta en marcha

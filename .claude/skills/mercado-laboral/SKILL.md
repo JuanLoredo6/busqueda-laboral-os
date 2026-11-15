@@ -1,6 +1,7 @@
 ---
 name: mercado-laboral
 description: "Investiga con fuentes públicas dónde está la demanda para tu perfil: cuántos roles como el tuyo se publican en tu región, cuáles se ajustan a tus condiciones (modalidad, idioma, seniority) y qué empresas concretas conviene apuntar este mes. Cada número va con su fuente y el supuesto que lo conecta con tu caso. Escribe el Informe de mercado en investigacion/. Usala cuando preguntes 'dónde hay trabajo para mí', 'qué empresas contratan X', 'a qué empresas apunto', 'hay demanda de mi perfil', o al arrancar la búsqueda."
+license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
 # mercado-laboral — el Informe de mercado

@@ -1,6 +1,7 @@
 ---
 name: disenador-visual
 description: "Especifica una pieza visual de tu búsqueda antes de hacerla (CV, portada o foto de LinkedIn, portfolio, presentación para un caso de entrevista, una página personal), pantalla por pantalla o diapositiva por diapositiva: propósito, estructura, jerarquía, contenido real de cada bloque y criterios visuales. Después revisa si la sesión tiene con qué construirla y recién ahí lo ofrece. Usala cuando digas 'quiero que mi CV se vea mejor', 'armame una portada', 'tengo que presentar un caso', 'necesito un portfolio', o cuando otro skill necesite criterio visual."
+license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
 # disenador-visual — la especificación visual y su construcción

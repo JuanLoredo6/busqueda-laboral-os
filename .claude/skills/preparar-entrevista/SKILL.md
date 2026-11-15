@@ -1,6 +1,7 @@
 ---
 name: preparar-entrevista
 description: "Prepara una entrevista con un método de criterio, no de respuestas de memoria: según el tipo (RR. HH., comportamiento, técnica, caso, hiring manager, panel) arma las preguntas probables, las preguntas que conviene hacer antes de responder, la estructura de cada respuesta atada a una historia real de tu perfil y lo que el entrevistador evalúa, y después te toma un simulacro y te devuelve feedback. Para las preguntas técnicas y de caso trae dos criterios: el de un CTO (diseño de sistemas, arquitectura, depuración, código en vivo; verifica tecnologías con fuentes actuales) y el de un líder de Producto (qué construirías, qué priorizás, qué harías si cayó una métrica), siempre en cuatro pasos: diagnóstico, dos opciones con lo que cuestan, una postura y próximos pasos. Sirve para cualquier perfil IT. Usala cuando digas 'tengo una entrevista', 'preparame para X', 'qué me pueden preguntar', 'tomame la entrevista', 'hagamos un mock', 'tengo una entrevista técnica', 'practiquemos system design', 'cómo respondo esta pregunta técnica', 'tengo un caso', 'practiquemos un caso', o desde una acción del tablero."
+license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver CREDITOS.md, .claude/skills/LICENSE-ai-first-product-skills.txt y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # preparar-entrevista — llegar con criterio, no con un guion

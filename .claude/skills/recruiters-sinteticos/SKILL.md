@@ -1,6 +1,7 @@
 ---
 name: recruiters-sinteticos
 description: "Prueba tu CV, tu perfil de LinkedIn, tu pitch, un mensaje a un recruiter o tus respuestas de entrevista contra recruiters y hiring managers simulados, antes de usarlos de verdad. Cada rasgo del personaje marcado como evidencia, dato público o suposición, cada reacción con el rasgo en que se apoya, y siempre un escéptico. Encuentra defectos y escribe la versión 2 de la pieza. No valida nada. Usala cuando digas 'cómo lo leería un recruiter', 'probá mi CV', 'esto convence?', 'simulá un hiring manager', o antes de mandar una postulación importante."
+license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
 # recruiters-sinteticos — diagnóstico y versión 2 de tu pieza

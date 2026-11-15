@@ -1,6 +1,7 @@
 ---
 name: plan-de-networking
 description: "Diseña una ronda de charlas con gente de la industria (personas que contratan, ex compañeros, gente que ya tiene el rol al que apuntás) para validar la hipótesis más riesgosa de tu búsqueda: a quién buscar según lo que hizo y no según el cargo, qué formato usar, la guía de preguntas atadas a la hipótesis y el mensaje para pedir la charla. Escribe el Plan de networking en investigacion/. Usala cuando digas 'con quién hablo', 'cómo hago networking', 'quiero pedir una charla', 'cómo sé si esto es así', o después de diagnostico-busqueda o mercado-laboral."
+license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
 # plan-de-networking — el Plan de networking

@@ -1,6 +1,7 @@
 ---
 name: mejorar-perfil
 description: "Mejora tu perfil de LinkedIn y tu CV a partir de lo que tengas más completo (el PDF que exporta LinkedIn, tu CV o los dos): lo lee sección por sección, hace un diagnóstico, compara CV y LinkedIn para encontrar lo que está en uno y falta en el otro, te entrevista para conseguir los logros y datos que faltan, y entrega sugerencias listas para copiar y pegar (titular, Acerca de, cada experiencia, aptitudes) respetando los límites de caracteres, más un CV actualizado en español (o el idioma por defecto que configures), su versión en inglés escrita como la escribiría alguien nativo, y la comprobación de que se lee bien en los sistemas de selección (ATS). Nunca inventa logros. Usala cuando digas 'mejorá mi LinkedIn', 'revisá mi perfil', 'acá está mi PDF', 'actualizá mi CV', 'revisá mi CV', 'mi perfil no atrae recruiters', 'tengo el CV pero no el LinkedIn', 'pasá mi CV al inglés', 'necesito el CV en inglés', '¿mi CV pasa los ATS?', 'revisá que lo lea el ATS', o cuando dejes un PDF en linkedin/ o un CV en cv/."
+license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # mejorar-perfil — LinkedIn y CV listos para copiar y pegar

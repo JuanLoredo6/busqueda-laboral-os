@@ -1,6 +1,7 @@
 ---
 name: actualizar
 description: "Lleva al tablero cualquier novedad de la búsqueda: una respuesta de una empresa, una entrevista agendada, un rechazo, una oferta, una tarea hecha o los cambios que marcaste en el tablero y copiaste como pedido. Mueve la tarjeta, actualiza estado y próximo paso, anota el historial y crea o cierra las acciones que siguen. Usala cuando digas 'me respondieron de X', 'tengo entrevista el jueves', 'me rechazaron', 'ya hice el follow-up', 'actualizá el tablero', o cuando pegues un pedido que empieza con 'Cambios desde el tablero'."
+license: "MIT. Ver LICENSE en la raíz del repo."
 ---
 
 # actualizar — mantener el tablero al día

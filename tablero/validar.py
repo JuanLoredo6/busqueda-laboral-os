@@ -2,6 +2,8 @@
 """Valida postulaciones/postulaciones.json contra el modelo de datos de CLAUDE.md.
 
 Lo llama tablero/sincronizar.sh. Solo usa la biblioteca estándar.
+La idea de validar con código después de cada edición viene del hook de validación de
+pm-brain, de Paweł Huryn (licencia MIT); ver CREDITOS.md. No se copió código.
 
 Uso: python validar.py <ruta al JSON>
 

@@ -1,6 +1,7 @@
 ---
 name: repaso-semanal
 description: "Hace el repaso de la semana de búsqueda en 10 minutos: lee el tablero, calcula los números de la semana (postulaciones, respuestas, conversaciones) contra tus métricas, detecta acciones vencidas y postulaciones olvidadas, revisa las antimétricas, propone las 3 prioridades de la semana que viene y las suma al tablero si las aceptás. Usala cuando digas /repaso-semanal, 'cómo me fue esta semana', 'cómo voy', 'repasemos', 'qué hago la semana que viene', o los viernes."
+license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # repaso-semanal — 10 minutos para no perder el hilo

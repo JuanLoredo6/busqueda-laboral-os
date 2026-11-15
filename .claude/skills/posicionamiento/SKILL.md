@@ -1,6 +1,7 @@
 ---
 name: posicionamiento
 description: "Te entrevista y escribe tu capa estratégica profesional en contexto/posicionamiento.md: a qué rol apuntás y por qué, qué problema le resolvés a una empresa, para qué tipo de empresas y equipos, qué descartás, contra quién competís y cómo te diferenciás, y qué queda abierto. Después, en su fase de propuesta de valor, explora ángulos para presentarte (solo o con compañeros del taller; Claude nunca elige el ganador) y escribe tu mapa de valor, tu pitch de 30 segundos y tu titular. Es la base de la que salen el CV, LinkedIn, los mensajes y el pitch. Usala cuando digas 'no sé cómo venderme', 'a qué apunto', 'quiero cambiar de rol', 'no sé qué rol buscar', 'cómo me presento', 'armame un pitch', 'no sé qué destacar', 'necesito un titular', o antes de rehacer el CV o el perfil."
+license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver CREDITOS.md, .claude/skills/LICENSE-ai-first-product-skills.txt y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # posicionamiento — tu capa estratégica profesional

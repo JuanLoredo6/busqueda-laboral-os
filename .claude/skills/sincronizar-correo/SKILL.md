@@ -1,6 +1,7 @@
 ---
 name: sincronizar-correo
 description: "Revisa Gmail y Google Calendar con los conectores oficiales y lleva al tablero las novedades de tus postulaciones: confirmaciones, respuestas de recruiters, entrevistas agendadas, rechazos y ofertas. Aplica solo lo inequívoco y deja lo dudoso en «Para revisar». Solo lee: nunca responde, archiva ni borra mails. Puede correr sola cada 2 horas de 8 a 22 con una tarea programada. Usala cuando escribas /sincronizar-correo, toques 🔄 SYNC en el tablero, digas 'revisá mis mails', '¿me escribió alguien?', 'sincronizá', 'configurá la sincronización automática', o cuando una tarea programada la llame."
+license: "MIT. Ver LICENSE en la raíz del repo."
 ---
 
 # sincronizar-correo — el tablero al día con tu Gmail y tu Calendar
