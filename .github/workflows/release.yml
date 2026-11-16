@@ -1,0 +1,39 @@
+name: Release
+
+# Crea la release de GitHub de cada tag vX.Y.Z con las notas del CHANGELOG.
+# El proceso está en .github/RELEASE.md.
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Tag de la versión (vX.Y.Z), para publicar una versión vieja"
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+
+      - name: Traer los tags
+        run: git fetch --force --tags origin
+
+      - name: Crear la release desde el CHANGELOG
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+        run: bash .github/scripts/release-desde-changelog.sh "$TAG"
