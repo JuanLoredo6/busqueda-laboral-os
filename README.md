@@ -4,6 +4,10 @@ Un sistema para ordenar tu búsqueda laboral con **Claude Code**: tu perfil, Lin
 
 Lo armamos para un taller entre colegas de IT que estamos buscando nuestro próximo desafío. Sirve para cualquier perfil: desarrollo, QA, datos, producto, diseño, infraestructura, proyectos.
 
+> **🎓 Taller en vivo «Buscá con sistema»**: dos encuentros con acompañamiento personalizado para usar este sistema en tu búsqueda, en español. Fechas, precios y becas en **[busca-con-sistema.pages.dev](https://busca-con-sistema.pages.dev/)**.
+>
+> ¿Sos headhunter o reclutador independiente? Mirá la sección **Recruiters** de la misma página.
+
 ---
 
 ## Instalación asistida
