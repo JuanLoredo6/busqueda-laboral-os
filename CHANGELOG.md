@@ -8,9 +8,13 @@ Cómo se lleva:
 - Cada versión agrupa sus cambios en **Nuevo**, **Cambios**, **Arreglos** y **Quitado** (solo los grupos que tengan algo).
 - Numeración `MAYOR.MENOR.ARREGLO`: un skill o una capacidad nueva sube el número del medio; un arreglo sin funciones nuevas, el último. Mientras el sistema esté en armado, la versión empieza con 0.
 - Fechas en `AAAA-MM-DD`.
-- Cada versión tiene su tag en git (`v0.7.0`), puesto en el commit que la cierra, y se sube con `git push origin --tags`. Después se publica su release en GitHub con el texto de su sección como notas (`gh release create v0.7.0 --title "v0.7.0 · <título>" --notes-file <notas>`).
+- Cada versión tiene su tag anotado en git (`git tag -a v0.7.0 -m "v0.7.0 · <título>"`), puesto en main en el commit que la cierra, y se sube solo: `git push origin v0.7.0`. La release de GitHub la crea el workflow `release.yml` con el texto de su sección como notas. El paso a paso está en `.github/RELEASE.md`.
 
 ## Sin publicar
+
+### Nuevo
+
+- Releases automáticas: al subir un tag `vX.Y.Z`, el workflow `.github/workflows/release.yml` crea la release con las notas de su sección del CHANGELOG y falla si algún tag quedó sin release. El proceso está en `.github/RELEASE.md`.
 
 ## 0.7.2 — 2026-11-15 · Licencia MIT en todo el repo
 
