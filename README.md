@@ -1,5 +1,7 @@
 # Búsqueda laboral OS
 
+[English](README.en.md) · **Español**
+
 Un sistema para ordenar tu búsqueda laboral con **Claude Code**: tu perfil, LinkedIn y CV, cada postulación, la preparación de entrevistas y un tablero que te dice qué hacer hoy. Todo queda en carpetas de tu computadora.
 
 Lo armamos para un taller entre colegas de IT que estamos buscando nuestro próximo desafío. Sirve para cualquier perfil: desarrollo, QA, datos, producto, diseño, infraestructura, proyectos.
