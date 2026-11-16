@@ -15,6 +15,7 @@ Cómo se lleva:
 ### Nuevo
 
 - Releases automáticas: al subir un tag `vX.Y.Z`, el workflow `.github/workflows/release.yml` crea la release con las notas de su sección del CHANGELOG y falla si algún tag quedó sin release. El proceso está en `.github/RELEASE.md`.
+- README en inglés (`README.en.md`), con un selector de idioma arriba de los dos README. El sistema sigue funcionando en español.
 
 ### Arreglos
 
