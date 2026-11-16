@@ -16,6 +16,10 @@ Cómo se lleva:
 
 - Releases automáticas: al subir un tag `vX.Y.Z`, el workflow `.github/workflows/release.yml` crea la release con las notas de su sección del CHANGELOG y falla si algún tag quedó sin release. El proceso está en `.github/RELEASE.md`.
 
+### Arreglos
+
+- La versión 0.4.1 del CHANGELOG suma su título, el mismo de su release.
+
 ## 0.7.2 — 2026-11-15 · Licencia MIT en todo el repo
 
 ### Cambios
@@ -79,7 +83,7 @@ Cómo se lleva:
 - `empezar` pregunta primero qué material ya hay (CV, LinkedIn, notas, otra IA), lo vuelca con confirmación por bloque y la entrevista pregunta solo lo que falta.
 - `mejorar-perfil` arranca desde el CV, el PDF de LinkedIn o los dos, y compara ambos para encontrar lo que está en uno solo.
 
-## 0.4.1 — 2026-11-14
+## 0.4.1 — 2026-11-14 · Material interno fuera del repositorio
 
 ### Quitado
 
