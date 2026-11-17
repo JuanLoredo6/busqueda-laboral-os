@@ -30,6 +30,7 @@ Este proyecto es un sistema para ordenar una búsqueda laboral con Claude Code: 
 | `entrevistas/` | Una carpeta por empresa: preparación, simulacros y notas |
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
 | `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
+| `evals/` | Pruebas del sistema mismo sobre una persona ficticia: qué skill carga cada pedido y si se respetan las reglas (no inventar, pretensión salarial, voz). Ver `evals/README.md`. No se usan en la búsqueda |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`, más `prompt-importar-contexto.md` (el prompt para traer el contexto de otra IA). No se editan |
 | `.claude/skills/` | Los 18 skills del sistema |
 

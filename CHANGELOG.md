@@ -14,11 +14,14 @@ Cómo se lleva:
 
 ### Nuevo
 
+- Evals del sistema (`evals/`): una persona ficticia, casos de disparo (qué skill carga cada pedido) y de comportamiento (no inventar, pretensión salarial, instrucciones escondidas en un aviso, voz, cómo cuenta la salida), controles de código con su autotest y un juez Haiku de sí o no. El workflow `evals.yml` los corre en los pull requests que tocan skills, `CLAUDE.md`, plantillas o evals.
+
 - Releases automáticas: al subir un tag `vX.Y.Z`, el workflow `.github/workflows/release.yml` crea la release con las notas de su sección del CHANGELOG y falla si algún tag quedó sin release. El proceso está en `.github/RELEASE.md`.
 - README en inglés (`README.en.md`), con un selector de idioma arriba de los dos README. El sistema sigue funcionando en español.
 
 ### Arreglos
 
+- `diagnostico-busqueda` y `aprendizajes-busqueda` separan mejor sus disparos: «no sé por qué me rechazan» va al diagnóstico; juntar el feedback que ya hay va a aprendizajes. El caso de disparo `d-charla-pm` pide una ronda de charlas en vez de una sola, y el caso nuevo `d-charla-una-persona` comprueba que pedirle una charla a una sola persona va a `redactar-mensaje`.
 - La versión 0.4.1 del CHANGELOG suma su título, el mismo de su release.
 
 ## 0.7.2 — 2026-11-15 · Licencia MIT en todo el repo

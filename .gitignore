@@ -20,3 +20,6 @@ __pycache__/
 
 # Material interno de quien da el taller
 taller/
+
+# Resultados de los evals (salen de cada corrida)
+evals/resultados/

@@ -1,6 +1,6 @@
 ---
 name: aprendizajes-busqueda
-description: "Junta el feedback real de tu búsqueda (mails de rechazo, notas de entrevistas, respuestas de recruiters, charlas de networking, el historial del tablero) y lo convierte en patrones con evidencia: qué buscan de verdad las empresas, dónde te frenás y qué ajustar primero según tu objetivo. Nada entra sin una cita literal. Escribe el Informe de aprendizajes en investigacion/. Usala cuando digas 'por qué me rechazan', 'qué aprendí', 'qué me dicen en las entrevistas', después de una ronda de networking, o cada dos o tres semanas de búsqueda."
+description: "Junta el feedback real de tu búsqueda (mails de rechazo, notas de entrevistas, respuestas de recruiters, charlas de networking, el historial del tablero) y lo convierte en patrones con evidencia: qué buscan de verdad las empresas, dónde te frenás y qué ajustar primero según tu objetivo. Nada entra sin una cita literal. Escribe el Informe de aprendizajes en investigacion/. Usala cuando ya tenés feedback para juntar y digas 'qué se repite en los rechazos', 'juntá lo que me dijeron', 'qué aprendí', 'qué me dicen en las entrevistas', después de una ronda de networking, o cada dos o tres semanas de búsqueda."
 license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .claude/skills/LICENSE-ai-first-product-skills.txt."
 ---
 
