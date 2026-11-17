@@ -1,0 +1,57 @@
+# Evals del sistema: corren solo cuando cambia algo que afecta cómo se comporta Claude.
+# El autotest de los controles no usa modelo y corre siempre.
+# Los casos con modelo corren si el repo tiene el secreto ANTHROPIC_API_KEY; si no, se saltean.
+name: evals
+
+on:
+  pull_request:
+    paths:
+      - ".claude/skills/**"
+      - "CLAUDE.md"
+      - "plantillas/**"
+      - "evals/**"
+      - ".github/workflows/evals.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  controles:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: python evals/correr.py --autotest
+
+  con-modelo:
+    needs: controles
+    runs-on: ubuntu-latest
+    env:
+      ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Sin clave, no hay casos con modelo
+        if: env.ANTHROPIC_API_KEY == ''
+        run: echo "El repo no tiene el secreto ANTHROPIC_API_KEY. Se saltean los casos con modelo."
+      - name: Instalar Claude Code
+        if: env.ANTHROPIC_API_KEY != ''
+        run: npm install -g @anthropic-ai/claude-code
+      - name: Correr los evals
+        if: env.ANTHROPIC_API_KEY != ''
+        run: python evals/correr.py
+      - name: Guardar el detalle
+        if: always() && env.ANTHROPIC_API_KEY != ''
+        uses: actions/upload-artifact@v4
+        with:
+          name: evals-resultados
+          path: evals/resultados/
+          if-no-files-found: ignore

@@ -1,0 +1,48 @@
+{
+  "version": 1,
+  "persona": "Lucía Ferraro",
+  "actualizado": "2026-11-10T10:00",
+  "postulaciones": [
+    {
+      "id": "nimbus-qa-automation-ssr",
+      "empresa": "Nimbus",
+      "rol": "QA Automation Semi Senior · remoto",
+      "link": "https://ejemplo.com/nimbus-qa",
+      "canal": "LinkedIn",
+      "columna": "esperando",
+      "resultado": null,
+      "encaje": 78,
+      "estado": "CV enviado a la recruiter, sin respuesta",
+      "proximo": "Follow-up a Carla si no responde",
+      "creada": "2026-11-03",
+      "enviada": "2026-11-03",
+      "ultimaNovedad": "2026-11-03",
+      "contacto": "Carla Gómez (recruiter)",
+      "historial": [
+        { "fecha": "2026-11-03", "texto": "Postulación enviada por LinkedIn y mensaje a Carla" }
+      ]
+    }
+  ],
+  "acciones": [
+    {
+      "id": "a-20261103-1",
+      "texto": "Follow-up a Carla de Nimbus",
+      "postulacion": "nimbus-qa-automation-ssr",
+      "fecha": "2026-11-10",
+      "condicion": "solo si no hubo respuesta",
+      "prioridad": "media",
+      "hecha": false,
+      "hechaEl": null,
+      "pedido": "/redactar-mensaje follow-up nimbus-qa-automation-ssr"
+    }
+  ],
+  "sync": {
+    "ultima": null,
+    "ultimoIntento": null,
+    "programada": false,
+    "horario": "",
+    "error": null,
+    "procesados": [],
+    "porRevisar": []
+  }
+}
