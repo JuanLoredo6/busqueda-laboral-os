@@ -71,5 +71,5 @@ Próximo paso: charla con Laura el jueves 19/11 a las 15.
 ## Reglas
 
 - El JSON tiene que quedar válido y respetar el modelo de datos. El hook lo valida después de cada edición: si devuelve errores, corregilos antes de cerrar. Si el hook no corrió, corré `bash tablero/sincronizar.sh`, que valida y regenera `tablero/datos.js`.
-- No inventes datos que la novedad no trae (horario, nombre del entrevistador). Si hace falta, preguntá.
+- No inventes datos que la novedad no trae (horario, nombre del entrevistador). Si hace falta, preguntá. (límite L1)
 - No cierres una postulación por silencio sin que la persona lo confirme.

@@ -121,7 +121,7 @@ Reglas de los textos:
 - **Experiencia:** una línea de contexto (qué hacía la empresa o el equipo) y de 3 a 5 viñetas con la forma de [Criterios de CV](#criterios-de-cv). Las viñetas en LinkedIn se pegan con el carácter "•".
 - **Acerca de y titular** pasan por `.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz`. El Acerca de casi siempre necesita su modo entrevista.
 - **Aptitudes:** lista de hasta 15 para agregar, en orden, con las 3 a destacar primero. Solo las que la persona realmente usó.
-- **Todo dato sale de `contexto/perfil.md`.** Lo que no esté confirmado no entra. Si un texto quedaría mejor con un dato que falta, marcalo con ❓ en vez de inventarlo.
+- **Todo dato sale de `contexto/perfil.md`.** Lo que no esté confirmado no entra. Si un texto quedaría mejor con un dato que falta, marcalo con ❓ en vez de inventarlo. Una viñeta armada con una deducción tuya («definí el criterio de prueba» porque era la única QA) no va en el texto para copiar, ni siquiera con aclaración afuera: proponela como pregunta y sumala si la persona la confirma. (límite L1)
 - Si eligió dos idiomas, cada sección va en los dos, uno debajo del otro. La versión en el otro idioma sigue `cv-en-ingles.md` (convenciones, falsos amigos, lo que suena a IA) y cuenta sus propios caracteres. En LinkedIn se carga con **Agregar perfil en otro idioma**, no mezclando los dos en el mismo texto.
 
 Al final del archivo: una lista de **acciones en LinkedIn que no son texto** (foto, portada, URL personalizada, Open to work solo para recruiters, pedir 2 recomendaciones a ex compañeros con un mensaje sugerido).
@@ -155,6 +155,6 @@ Si lo pidió:
 
 ## Reglas
 
-- Nunca inventes logros, números, tecnologías, cargos ni fechas.
+- Nunca inventes logros, números, tecnologías, cargos ni fechas. (límite L1)
 - Nunca subas el nivel de un cargo ("líder" donde no lo hubo, "senior" si no lo era). Si la persona lo pide, explicá el riesgo: es lo primero que se verifica en una referencia.
 - Claude no edita LinkedIn ni publica nada: entrega los textos y la persona los pega.

@@ -12,6 +12,18 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Nuevo
+
+- Límites formales: `CLAUDE.md` separa «Límites» (L1 a L11, cada uno con su control) de «Estilo y forma de trabajo». Se suman cuatro límites: los datos de la persona no salen a servicios externos (L8), no se borran ni se pisan sus archivos sin confirmación (L9), lo que corre solo únicamente lee y aplica lo inequívoco (L10), y ni dictamen legal, ni impositivo, ni médico (L11). Los skills y `evals/casos.json` citan cada límite por su ID.
+- Hook `PreToolUse` (`.claude/hooks/confirmar-salida.sh`): pide confirmación antes de cualquier herramienta que envíe o modifique mails, etiquetas o eventos, también en modo automático. Filtra por el nombre de la herramienta, así que funciona con cualquier ID de conector.
+- Evals `c-datos-sensibles` (límite L7) y `c-consulta-legal` (límite L11). `mercado-laboral` aclara que la búsqueda web nunca incluye datos de la persona (límite L8).
+
+### Arreglos
+
+- Límite L1: una lectura de Claude (🔍) no entra al texto listo para copiar, aunque se aclare afuera o la persona pida que no le pregunten. `mejorar-perfil` lo repite para las viñetas del CV. Antes, `c-no-inventa-numeros` fallaba por eso.
+- `CLAUDE.md` pide el bloque ```text para todo texto que la persona copia o envía, variantes incluidas. Antes esa regla estaba solo en la configuración global de quien hizo el sistema.
+- Evals: el control `numeros_del_contexto` ya no marca como inventadas las fechas escritas para la persona («03/11», «3 de noviembre»), el largo del propio texto («176 caracteres», «3 frases»), el tiempo hasta hoy («hace unos 8 días») ni las referencias a partes de la respuesta («las viñetas 2 y 3»). El juez recibe también el tablero de la persona ficticia, razona antes de dar el veredicto y se le lee el veredicto aunque escriba mal el JSON. `c-inyeccion-en-aviso` acepta más formas de avisar que el aviso traía una trampa.
+
 ## 0.8.0 — 2026-11-17 · Evals del sistema
 
 ### Nuevo

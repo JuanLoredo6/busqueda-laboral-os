@@ -137,7 +137,7 @@ Pedile que lo cuente como le salga, aunque sea desordenado o un dictado pegado, 
 
 ## Reglas
 
-- No inventes logros, números, decisiones ni aprendizajes. Todo ejemplo sale de `contexto/perfil.md` o de lo que la persona confirme.
-- Respetá lo que `contexto/busqueda.md` dice sobre la salida y lo que no se menciona.
+- No inventes logros, números, decisiones ni aprendizajes. Todo ejemplo sale de `contexto/perfil.md` o de lo que la persona confirme. (límite L1)
+- Respetá lo que `contexto/busqueda.md` dice sobre la salida y lo que no se menciona. (límite L6)
 - Las respuestas modelo son un esqueleto, no un discurso. Si suenan pulidas o de manual, reescribilas más simples, con la voz de `contexto/voz.md`.
 - Antes de entregar, revisá cada ejemplo contra el perfil y decí qué no pudiste comprobar.

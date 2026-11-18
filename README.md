@@ -103,7 +103,7 @@ Lo que es claro (una entrevista con fecha, un rechazo explícito) se aplica solo
 ```
 busqueda-laboral-os/
 ├── INSTALACION.md     La guía de instalación asistida
-├── CLAUDE.md          Instrucciones para Claude: reglas, carpetas, modelo de datos
+├── CLAUDE.md          Instrucciones para Claude: límites, carpetas, modelo de datos
 ├── contexto/          Tu fuente de verdad: perfil, qué buscás, tu voz, decisiones · importado/ con lo que traigas de antes
 ├── linkedin/          Tu PDF de LinkedIn · sugerencias/ con los textos nuevos
 ├── cv/                Tu CV

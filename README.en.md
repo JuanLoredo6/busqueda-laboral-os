@@ -105,7 +105,7 @@ What is clear (an interview with a date, an explicit rejection) is applied autom
 ```
 busqueda-laboral-os/
 ├── INSTALACION.md     The guided installation guide
-├── CLAUDE.md          Instructions for Claude: rules, folders, data model
+├── CLAUDE.md          Instructions for Claude: limits, folders, data model
 ├── contexto/          Your source of truth: profile, what you're looking for, your voice, decisions · importado/ with what you bring from before
 ├── linkedin/          Your LinkedIn PDF · sugerencias/ with the new texts
 ├── cv/                Your CV

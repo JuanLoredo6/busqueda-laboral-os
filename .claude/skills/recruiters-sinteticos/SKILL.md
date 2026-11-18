@@ -74,7 +74,7 @@ Revisá la pieza contra esta lista. Cada defecto encontrado se anota con su rees
 
 Si la pieza es un CV o la sección Experiencia de LinkedIn, revisala también contra `.claude/skills/mejorar-perfil/SKILL.md#criterios-de-cv`. Si es un texto en nombre de la persona (mensaje, pitch, Acerca de), contra las muletillas de `.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz`: un recruiter que ve diez mensajes iguales por día las reconoce.
 
-**Nunca se inventa un logro para arreglar un defecto.** Si la reescritura necesita un dato que no está en `contexto/perfil.md`, se marca ❓ y se te pregunta.
+**Nunca se inventa un logro para arreglar un defecto.** Si la reescritura necesita un dato que no está en `contexto/perfil.md`, se marca ❓ y se te pregunta. (límite L1)
 
 ## El entregable
 
