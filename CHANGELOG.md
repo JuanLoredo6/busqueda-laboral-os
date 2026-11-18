@@ -12,6 +12,8 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.9.0 — 2026-11-18 · Límites formales
+
 ### Nuevo
 
 - Límites formales: `CLAUDE.md` separa «Límites» (L1 a L11, cada uno con su control) de «Estilo y forma de trabajo». Se suman cuatro límites: los datos de la persona no salen a servicios externos (L8), no se borran ni se pisan sus archivos sin confirmación (L9), lo que corre solo únicamente lee y aplica lo inequívoco (L10), y ni dictamen legal, ni impositivo, ni médico (L11). Los skills y `evals/casos.json` citan cada límite por su ID.
