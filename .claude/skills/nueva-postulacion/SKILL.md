@@ -82,6 +82,6 @@ No pude comprobar en tu perfil "liderazgo de 4 personas": confirmalo o lo saco.
 
 ## Reglas
 
-- Claude no envía postulaciones, mensajes ni formularios. Prepara y registra.
+- Claude no envía postulaciones, mensajes ni formularios. Prepara y registra. (límite L3)
 - Nada en el CV ni en las respuestas que no esté en `contexto/perfil.md` o que la persona no confirme.
 - Antes de cerrar, revisá cada respuesta contra el perfil y decí qué no pudiste comprobar.

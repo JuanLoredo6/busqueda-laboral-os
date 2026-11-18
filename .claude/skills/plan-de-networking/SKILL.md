@@ -79,7 +79,7 @@ Corto (hasta 5 líneas), con tu voz (`contexto/voz.md` si existe):
 - Que no estás pidiendo trabajo.
 - Facilidad para decir que no.
 
-**Claude no envía ningún mensaje.** Lo redacta y vos lo mandás.
+**Claude no envía ningún mensaje.** Lo redacta y vos lo mandás. (límite L3)
 
 ## El Plan de networking
 

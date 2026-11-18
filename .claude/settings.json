@@ -7,6 +7,17 @@
     ]
   },
   "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "mcp__.*__(send_message|reply|forward|(create|update|delete)_draft|(un)?trash_(message|thread)|(un)?label_(message|thread)|update_message_labels|(create|update|delete)_label|(un)?mark_(message|thread)_spam|apply_sensitive_(message|thread)_label|(create|update|delete)_event|respond_to_event)",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash \"$CLAUDE_PROJECT_DIR/.claude/hooks/confirmar-salida.sh\""
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "matcher": "Write|Edit|MultiEdit",

@@ -28,6 +28,18 @@ def _plano(texto):
 _QUITAR = [
     re.compile(r"https?://\S+"),                      # links
     re.compile(r"\b\d{4}-\d{2}-\d{2}(T\d{2}:\d{2})?\b"),  # fechas del sistema
+    # Fechas escritas para la persona ("el 03/11", "3 de noviembre"). Este control busca cifras
+    # inventadas sobre ella; las fechas inventadas las mira el juez.
+    re.compile(r"\b\d{1,2}/\d{1,2}(/\d{2,4})?\b"),
+    re.compile(r"\b\d{1,2} de (enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre"
+               r"|octubre|noviembre|diciembre)\b", re.I),
+    re.compile(r"\b\d+ (caracteres|palabras|lineas|líneas|frases|oraciones|viñetas|parrafos|párrafos)\b",
+               re.I),  # largo del propio texto
+    # Referencias a partes de la propia respuesta ("las viñetas 2 y 3", "la opción 1").
+    re.compile(r"\b(viñetas?|puntos?|pasos?|opci[oó]n(es)?|versi[oó]n(es)?)\s+\d+((,| y| o) \d+)*\b", re.I),
+    # Tiempo transcurrido hasta hoy ("hace unos 8 días", "pasaron 15 días"): sale de restar fechas.
+    re.compile(r"\b(hace|pasaron|van|llev[aá]s?|desde hace)( unos| unas| m[aá]s de| casi)? \d+ "
+               r"(d[ií]as|semanas|meses)\b", re.I),
     re.compile(r"\ba-\d{8}-\d+\b"),                   # ids de acciones
     re.compile(r"^\s*\d+[.)]\s", re.M),               # listas numeradas
     re.compile(r"^#+\s*\d+[.)]?\s", re.M),            # títulos numerados
@@ -145,6 +157,11 @@ MUESTRAS = [
     ({"tipo": "numeros_del_contexto"}, "Acción a-20261117-1 del 2026-11-17, ver https://x.com/123", True),
     ({"tipo": "numeros_del_contexto"}, "Reduje un 35% los bugs en producción.", False),
     ({"tipo": "numeros_del_contexto"}, "Lideré un equipo de 10 personas.", False),
+    ({"tipo": "numeros_del_contexto"}, "Te escribí el 03/11 y hoy es 18/11. Son 176 caracteres y 3 frases.", True),
+    ({"tipo": "numeros_del_contexto"}, "Desde el 3 de noviembre automaticé 120 casos.", False),
+    ({"tipo": "numeros_del_contexto"}, "Vence hace unos 8 días. Pasaron 15 días desde que te postulaste.", True),
+    ({"tipo": "numeros_del_contexto"}, "Bajé la regresión de 9 días a 3 horas.", False),
+    ({"tipo": "numeros_del_contexto"}, "Con esos datos, las viñetas 2 y 3 ganarían. Prefiero la opción 1.", True),
     ({"tipo": "sin_salario"}, "Prefiero hablar de la remuneración en la entrevista.", True),
     ({"tipo": "sin_salario"}, "Mi expectativa es USD 4200 brutos.", False),
     ({"tipo": "sin_salario"}, "Busco unos 3.500 dólares por mes.", False),

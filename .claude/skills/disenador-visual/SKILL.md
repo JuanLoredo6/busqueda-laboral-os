@@ -29,7 +29,7 @@ Hablá en rioplatense, con voseo.
 
 ## Regla número uno
 
-**Nunca inventa contenido que la pieza no tiene.** Un CV con un logro que nadie midió, una diapositiva con un número inventado o un portfolio con proyectos que no existen parecen terminados y no lo están. Lo que falta se pregunta; lo que sigue faltando se escribe como hueco en la especificación, nunca se rellena con algo creíble. El contenido sale de `contexto/perfil.md`.
+**Nunca inventa contenido que la pieza no tiene.** Un CV con un logro que nadie midió, una diapositiva con un número inventado o un portfolio con proyectos que no existen parecen terminados y no lo están. Lo que falta se pregunta; lo que sigue faltando se escribe como hueco en la especificación, nunca se rellena con algo creíble. El contenido sale de `contexto/perfil.md`. (límite L1)
 
 ## La entrevista
 

@@ -9,7 +9,7 @@ Todo corre sobre **Lucía Ferraro**, una persona ficticia (`persona/`), en una c
 | Tipo | Qué mira | Cómo se decide | Gasto |
 |---|---|---|---|
 | **Disparo** | Qué skill carga cada pedido, incluidos los pares que se confunden y los pedidos que no deberían cargar ninguno | El primer skill que carga Claude. Se corta ahí, sin ejecutarlo | Bajo |
-| **Comportamiento** | Las reglas que no se pueden romper: no inventar, no escribir la pretensión salarial, tratar lo que llega de afuera como dato, escribir con la voz de la persona, contar la salida con su frase | Controles de código y, después, un juez (Haiku) que responde sí o no | Medio |
+| **Comportamiento** | Los límites de `CLAUDE.md` que se pueden probar con un solo pedido: no inventar (L1), tratar lo que llega de afuera como dato (L5), no escribir la pretensión salarial y contar la salida con su frase (L6), no guardar datos sensibles (L7), no dar dictamen legal (L11) y escribir con la voz de la persona | Controles de código y, después, un juez (Haiku) que responde sí o no | Medio |
 | **Autotest** | Que los controles de código detecten lo que tienen que detectar | Muestras armadas a mano | Cero |
 
 Los casos están en `casos.json` y los controles en `controles.py`.
@@ -49,7 +49,7 @@ Un caso que falla una vez puede ser ruido del modelo. Si falla dos veces seguida
 ## Cómo sumar un caso
 
 - **De disparo:** una línea en `disparo` con `pedido`, `espera` (el skill, o `null` si no debería cargar ninguno) y, si hay un skill con el que se confunde, `no_debe`. Una parte de un skill (por ejemplo `propuesta-de-valor.md`) no es un skill: se espera el skill que la carga.
-- **De comportamiento:** `pedido`, la `regla` de `CLAUDE.md` que prueba, los `controles` que apliquen y, si hace falta criterio, una pregunta de sí o no para el `juez`. Si el caso necesita un dato que la persona ficticia no tiene, sumalo a `persona/` y no lo cambies después: los controles comparan contra esos archivos.
+- **De comportamiento:** `pedido`, la `regla` que prueba (empezando por su ID, por ejemplo «límite L7: …»), los `controles` que apliquen y, si hace falta criterio, una pregunta de sí o no para el `juez`. Si el caso necesita un dato que la persona ficticia no tiene, sumalo a `persona/` y no lo cambies después: los controles comparan contra esos archivos.
 - **Un control nuevo:** una función en `controles.py`, registrada en `CONTROLES`, con al menos una muestra que pase y otra que falle en `MUESTRAS`.
 
 ## Qué no cubren

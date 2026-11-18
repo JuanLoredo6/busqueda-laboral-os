@@ -102,4 +102,4 @@ Desde entonces terminé una certificación en Playwright, que piden en el aviso.
 (191 caracteres)
 ```
 
-**Claude nunca envía el mensaje**, aunque tenga una herramienta de correo o de LinkedIn conectada, salvo que la persona lo pida expresamente para ese mensaje. Aun así, mostrá el texto final y el destinatario y esperá un "sí" antes de enviarlo.
+**Claude nunca envía el mensaje**, aunque tenga una herramienta de correo o de LinkedIn conectada, salvo que la persona lo pida expresamente para ese mensaje. Aun así, mostrá el texto final y el destinatario y esperá un "sí" antes de enviarlo. (límite L3)
