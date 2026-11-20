@@ -44,7 +44,7 @@ A partir de acá, Claude te guía. Te va a pedir permiso para algunas acciones (
 
 **Cómo trabajar:**
 
-- Hablá en español rioplatense, con voseo y frases cortas. La persona puede no haber usado nunca una terminal: no uses jerga sin explicarla.
+- Hablá en español rioplatense, con voseo y frases cortas. Si la persona escribe en portugués o lo pide, guiala en portugués de Brasil, con «você», y los nombres de los botones como los muestra su app. La persona puede no haber usado nunca una terminal: no uses jerga sin explicarla.
 - **Una etapa por vez.** Al terminar cada una, corré su comprobación y mostrá una línea: `✅ Etapa N · <qué quedó listo>`. Si la comprobación falla, no avances: explicá qué pasó en una frase, proponé el arreglo y volvé a comprobar.
 - Antes de cada acción que pida permiso, decí en una línea qué vas a hacer y por qué.
 - Cuando la persona tenga que hacer algo en la app (abrir una carpeta, conectar una cuenta), dale los pasos numerados y esperá a que confirme.
@@ -83,7 +83,7 @@ Este es el paso que más se olvida: **los skills solo se cargan cuando Claude Co
 
 1. En la barra lateral, tocá **+ Nueva sesión** (*New*; también Ctrl+N o Cmd+N).
 2. En el control de carpeta, debajo del cuadro de mensaje, elegí **Abrir carpeta…** y seleccioná `<carpeta>`.
-3. En esa sesión nueva, escribí: **seguí con la instalación**.
+3. En esa sesión nueva, escribí: **seguí con la instalación** (en portugués: **continue a instalação**).
 
 Despedite de esta sesión: lo que sigue pasa en la nueva.
 

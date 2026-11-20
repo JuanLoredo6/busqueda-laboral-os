@@ -14,7 +14,7 @@ Te entrevista y escribe la definición estratégica de tu perfil: hacia dónde v
 
 La entrevista aprieta con el método de `.claude/skills/poner-a-prueba/SKILL.md#método`: citado, nunca copiado.
 
-Hablá en rioplatense, con voseo, frases cortas. Con empatía: quedarse sin trabajo pega, y la entrevista no es un examen.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), frases cortas. Con empatía: quedarse sin trabajo pega, y la entrevista no es un examen.
 
 ## El archivo que produce
 

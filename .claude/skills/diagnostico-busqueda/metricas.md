@@ -6,7 +6,7 @@
 
 El Diagnóstico exige que "si no hay un número, el problema no está claro". Este modo arma ese número: define el indicador principal de tu búsqueda, el árbol de palancas que lo sostienen y, para cada hipótesis activa, un número, cómo se mide y cuánto vale hoy.
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Cuándo se usa
 

@@ -8,7 +8,7 @@ Es el criterio general de un CTO sobre arquitectura de software y sistemas con I
 
 En una entrevista técnica casi nunca se evalúa si llegás a "la" respuesta. Se evalúa cómo razonás, si preguntás antes de diseñar y si sabés lo que cuesta cada decisión.
 
-Hablá en rioplatense, con voseo. Si la entrevista es en inglés, las respuestas modelo van en inglés y las indicaciones en español.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`). Si la entrevista es en inglés o en portugués, las respuestas modelo van en ese idioma y las indicaciones en el idioma de la conversación.
 
 ## Lo que pone la empresa, nunca el método
 

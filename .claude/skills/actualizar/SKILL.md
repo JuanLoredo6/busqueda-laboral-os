@@ -8,7 +8,7 @@ license: "MIT. Ver LICENSE en la raíz del repo."
 
 El tablero solo sirve si refleja la realidad. Este skill traduce lo que contás (o lo que marcaste en el tablero) en cambios ordenados en `postulaciones/postulaciones.json`, siguiendo el modelo de datos de `CLAUDE.md`.
 
-Hablá en rioplatense, con voseo, corto.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), corto.
 
 ## Entradas posibles
 

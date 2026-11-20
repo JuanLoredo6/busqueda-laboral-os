@@ -10,7 +10,7 @@ license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .cl
 
 Prueba una pieza de tu búsqueda (CV, perfil de LinkedIn, pitch, mensaje, carta, respuestas de entrevista) contra personajes simulados con rasgos explícitos: un recruiter que filtra, un hiring manager, alguien escéptico. Sirve para encontrar defectos antes de gastar una postulación real.
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Cuándo se usa
 

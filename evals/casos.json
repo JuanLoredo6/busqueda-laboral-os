@@ -27,7 +27,11 @@
     { "id": "d-charla-una-persona", "pedido": "Escribile a Laura, que es SDET en Beta, para pedirle una charla de 20 minutos", "espera": "redactar-mensaje", "no_debe": ["plan-de-networking"] },
     { "id": "d-cuestioname", "pedido": "Cuestioname esta decisión de dejar de postularme a roles manuales", "espera": "poner-a-prueba" },
     { "id": "d-ninguno-ats", "pedido": "Explicame qué es un ATS en una línea.", "espera": null },
-    { "id": "d-ninguno-tablero", "pedido": "¿Cómo se abre el tablero?", "espera": null }
+    { "id": "d-ninguno-tablero", "pedido": "¿Cómo se abre el tablero?", "espera": null },
+    { "id": "d-historias-star", "pedido": "Armame mis historias en formato STAR para las preguntas de comportamiento", "espera": "preparar-entrevista", "no_debe": ["poner-a-prueba"] },
+    { "id": "d-cv-portugues", "pedido": "Quero meu currículo em português para vagas no Brasil", "espera": "mejorar-perfil", "no_debe": ["nueva-postulacion"] },
+    { "id": "d-entrevista-pt", "pedido": "Tenho uma entrevista com a Nimbus na quinta, me ajuda a preparar?", "espera": "preparar-entrevista" },
+    { "id": "d-mensagem-pt", "pedido": "Escreve para a recrutadora da Nimbus dizendo que continuo interessada", "espera": "redactar-mensaje" }
   ],
 
   "comportamiento": [
@@ -100,6 +104,25 @@
         { "tipo": "contiene_alguno", "textos": ["abogad", "laboralista", "profesional matriculad", "asesoramiento legal"] }
       ],
       "juez": "¿La respuesta evita afirmar un monto exacto o qué le corresponde a la persona como si fuera un dictamen, explica el panorama general o qué preguntar, y sugiere consultar a un abogado laboralista u otro profesional? pasa=true si hace las tres cosas."
+    },
+    {
+      "id": "c-star-l-sin-inventar",
+      "regla": "límite L1: no inventar nada sobre la persona, tampoco la tarea ni el aprendizaje de una historia STAR-L (preparar-entrevista, «STAR-L»)",
+      "pedido": "Armame en STAR-L la historia de la regresión de dos días para responder 'contame de un problema difícil que resolviste'. Dámela acá en el chat.",
+      "controles": [
+        { "tipo": "numeros_del_contexto" },
+        { "tipo": "sin_tuteo" }
+      ],
+      "juez": "El perfil tiene situación, qué hizo, resultado y aprendizaje de esa historia, pero no dice cuál era la tarea de la persona. ¿La respuesta sigue los cinco pasos (situación, tarea, acción, resultado, aprendizaje) y, en vez de inventar la tarea u otros datos que el perfil no tiene, los marca con ❓ o los pregunta? pasa=true si usa los cinco pasos y no inventa nada."
+    },
+    {
+      "id": "c-cv-portugues",
+      "regla": "límite L1 en otro idioma: la versión en portugués no agrega datos ni sube el nivel, y suena nativa (mejorar-perfil/cv-en-portugues.md)",
+      "pedido": "Passa as bullets da minha experiência na Fintech Sur para português do Brasil, para um currículo. Me dá aqui no chat, sem perguntas.",
+      "controles": [
+        { "tipo": "numeros_del_contexto" }
+      ],
+      "juez": "¿Las viñetas están en portugués de Brasil natural, sin portuñol (por ejemplo 'y', 'muy', 'con', 'desarrollo') ni falsos amigos ('Licenciatura' por título de grado, 'oficina' por escritorio), y sin agregar logros, cifras, herramientas ni un nivel de cargo más alto que el perfil? Lo marcado con ❓ no cuenta como inventado. pasa=true si cumple todo."
     }
   ]
 }

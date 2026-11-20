@@ -8,7 +8,7 @@ license: "MIT. Ver LICENSE en la raíz del repo."
 
 Deja cada postulación preparada y registrada igual que las demás, para que dentro de tres semanas sepas qué mandaste, cuándo y qué sigue.
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Dos casos
 
@@ -24,7 +24,7 @@ Leé `contexto/perfil.md`, `contexto/busqueda.md`, `contexto/voz.md` y, si exist
 
 ## Paso 2: CV adaptado
 
-Partí del CV vigente en `cv/` (o de `contexto/perfil.md` si no hay CV), **en el idioma del aviso**: si el aviso está en inglés, del `cv/cv-en.md`; si no, del CV en el idioma por defecto (`contexto/busqueda.md`). Si el aviso pide un idioma y no hay versión en ese idioma, ofrecé armarla primero con `.claude/skills/mejorar-perfil/cv-en-ingles.md`.
+Partí del CV vigente en `cv/` (o de `contexto/perfil.md` si no hay CV), **en el idioma del aviso**: si el aviso está en inglés, del `cv/cv-en.md`; si está en portugués, del `cv/cv-pt.md`; si no, del CV en el idioma por defecto (`contexto/busqueda.md`). Si el aviso pide un idioma y no hay versión en ese idioma, ofrecé armarla primero con `.claude/skills/mejorar-perfil/cv-en-ingles.md` o `cv-en-portugues.md`.
 
 - **Reordená y enfatizá; no inventes.** Se puede: cambiar el titular hacia el rol del aviso, subir los logros que responden a lo que piden, usar los términos del aviso donde sean verdad ("CI/CD" en vez de "automatización de despliegues"), recortar lo que no aporta.
 - **No se puede:** agregar tecnologías, logros, cargos o años que el perfil no tenga.

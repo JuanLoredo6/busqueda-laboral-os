@@ -8,7 +8,7 @@ Trabaja el espacio de soluciones de tu búsqueda: **cómo presentarte**. Tiene d
 
 Si no está claro qué modo toca, preguntá antes que nada: *¿preparamos la exploración o procesamos lo que salió?*
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Cuándo se usa
 

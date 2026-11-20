@@ -10,7 +10,7 @@ license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .cl
 
 Investiga el mercado laboral con **fuentes secundarias** (buscadores de empleo, informes de la industria, noticias de contrataciones y despidos, páginas de empleo de las empresas) y dimensiona la oportunidad en tres capas, cada número con su fuente y su supuesto al lado. No habla con nadie: eso es trabajo de `plan-de-networking`.
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Cuándo se usa
 

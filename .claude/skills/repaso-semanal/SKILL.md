@@ -8,7 +8,7 @@ license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/
 
 Una búsqueda larga se desordena sin un momento fijo para mirar el conjunto. Este repaso es ese momento: corto, con números y con tres prioridades claras para la semana siguiente.
 
-Hablá en rioplatense, con voseo. Con un tono que sostenga: reconocé lo hecho antes de marcar lo que falta.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`). Con un tono que sostenga: reconocé lo hecho antes de marcar lo que falta.
 
 ## Qué leer
 

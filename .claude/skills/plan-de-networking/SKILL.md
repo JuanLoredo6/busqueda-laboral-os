@@ -10,7 +10,7 @@ license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .cl
 
 Diseña la ronda de conversaciones que ataca la hipótesis más riesgosa de tu Diagnóstico (nunca todas juntas) y cierra con un plan listo para probar. Las charlas informativas no son pedir trabajo: son pedir 20 minutos para entender cómo contrata una empresa o qué pide un rol. Muchas veces terminan en una recomendación, pero ese no es el objetivo de la charla.
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Cuándo se usa
 

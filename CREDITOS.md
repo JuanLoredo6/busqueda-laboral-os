@@ -61,3 +61,11 @@ El texto de la licencia está en [`.claude/skills/LICENSE-phuryn.txt`](.claude/s
 
 Para que dos skills no compartan las mismas frases en su descripción, se usó la idea de probar cada skill con pedidos que sí y que no
 deberían activarlo, de [NVIDIA/SkillEvaluator](https://github.com/NVIDIA/SkillEvaluator) (licencia Apache 2.0). No se copió código ni texto.
+
+## Referencias sin licencia abierta
+
+Algunas secciones toman como referencia material publicado sin licencia abierta. De esas fuentes no se copió texto: se usó la estructura como guía y los ejemplos se escribieron de nuevo.
+
+| Fuente | Dónde se usó | Qué se tomó |
+|---|---|---|
+| [Product Manager Interview Questions](https://www.productcompass.pm/p/product-manager-interview-questions), de Paweł Huryn (The Product Compass) | `preparar-entrevista`, familias de preguntas de comportamiento y preguntas generales; `preparar-entrevista/criterio-producto.md`, «Los tipos de pregunta de Producto» | La clasificación de preguntas de entrevista de Producto y los pasos de product sense. Los ejemplos son propios y usan productos de la región |

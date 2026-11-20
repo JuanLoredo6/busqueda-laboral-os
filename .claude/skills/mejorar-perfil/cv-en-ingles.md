@@ -1,8 +1,8 @@
 # El CV en el otro idioma
 
-Parte de `mejorar-perfil`. La cargan su paso 5 y `nueva-postulacion` cuando hace falta el CV (o los textos de LinkedIn) en el idioma que no es el de por defecto. Casi siempre es pasar del español al inglés; las reglas de [Del inglés al español](#del-inglés-al-español) cubren el caso contrario.
+Parte de `mejorar-perfil`. La cargan su paso 5 y `nueva-postulacion` cuando hace falta el CV (o los textos de LinkedIn) en el idioma que no es el de por defecto. Casi siempre es pasar del español al inglés; las reglas de [Del inglés al español](#del-inglés-al-español) cubren el caso contrario. Para el portugués de Brasil está `cv-en-portugues.md`, con el mismo método.
 
-Hablá en rioplatense, con voseo, para explicar. El CV va en el idioma de destino.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), para explicar. El CV va en el idioma de destino.
 
 ## El rol
 

@@ -9,9 +9,15 @@
 - **Tipo de contratación (relación de dependencia, contractor, freelance):**
 - **Disponibilidad para empezar:**
 
+## Idioma de la conversación
+
+<!-- En qué idioma te habla Claude: español (rioplatense) o portugués (de Brasil). -->
+
+- **Idioma:** español
+
 ## Idioma del CV
 
-<!-- El idioma en que se escribe el CV base y los textos de LinkedIn. Si buscás afuera o en empresas que trabajan en inglés, cambialo a "inglés". La otra versión se arma cuando la pidas o cuando un aviso venga en el otro idioma. -->
+<!-- El idioma en que se escribe el CV base y los textos de LinkedIn. Si buscás afuera o en empresas que trabajan en inglés, cambialo a "inglés"; si buscás en Brasil, a "portugués". Las otras versiones se arman cuando las pidas o cuando un aviso venga en otro idioma. -->
 
 - **Idioma por defecto:** español
 - **Variante del inglés (si hay versión en inglés):** Estados Unidos

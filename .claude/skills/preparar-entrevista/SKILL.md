@@ -1,16 +1,18 @@
 ---
 name: preparar-entrevista
-description: "Prepara una entrevista con un método de criterio, no de respuestas de memoria: según el tipo (RR. HH., comportamiento, técnica, caso, hiring manager, panel) arma las preguntas probables, las preguntas que conviene hacer antes de responder, la estructura de cada respuesta atada a una historia real de tu perfil y lo que el entrevistador evalúa, y después te toma un simulacro y te devuelve feedback. Para las preguntas técnicas y de caso trae dos criterios: el de un CTO (diseño de sistemas, arquitectura, depuración, código en vivo; verifica tecnologías con fuentes actuales) y el de un líder de Producto (qué construirías, qué priorizás, qué harías si cayó una métrica), siempre en cuatro pasos: diagnóstico, dos opciones con lo que cuestan, una postura y próximos pasos. Sirve para cualquier perfil IT. Usala cuando digas 'tengo una entrevista', 'preparame para X', 'qué me pueden preguntar', 'tomame la entrevista', 'hagamos un mock', 'tengo una entrevista técnica', 'practiquemos system design', 'cómo respondo esta pregunta técnica', 'tengo un caso', 'practiquemos un caso', o desde una acción del tablero."
+description: "Prepara una entrevista con un método de criterio, no de respuestas de memoria: según el tipo (RR. HH., comportamiento, técnica, caso, hiring manager, panel) arma las preguntas probables, las preguntas que conviene hacer antes de responder, la estructura de cada respuesta atada a una historia real de tu perfil (las de comportamiento, en formato STAR-L: situación, tarea, acción, resultado y aprendizaje) y lo que el entrevistador evalúa, y después te toma un simulacro y te devuelve feedback. Para las preguntas técnicas y de caso trae dos criterios: el de un CTO (diseño de sistemas, arquitectura, depuración, código en vivo; verifica tecnologías con fuentes actuales) y el de un líder de Producto (qué construirías, qué priorizás, qué harías si cayó una métrica), siempre en cuatro pasos: diagnóstico, dos opciones con lo que cuestan, una postura y próximos pasos. Sirve para cualquier perfil IT. Usala cuando digas 'tengo una entrevista', 'preparame para X', 'qué me pueden preguntar', 'tomame la entrevista', 'hagamos un mock', 'tengo una entrevista técnica', 'practiquemos system design', 'cómo respondo esta pregunta técnica', 'tengo un caso', 'practiquemos un caso', 'armame mis historias en STAR', 'cómo cuento esta historia', o desde una acción del tablero."
 license: "MIT. Adapta material de Pedro Romero Luna y de Paweł Huryn (MIT); ver CREDITOS.md, .claude/skills/LICENSE-ai-first-product-skills.txt y .claude/skills/LICENSE-phuryn.txt."
 ---
 
 # preparar-entrevista — llegar con criterio, no con un guion
 
 > Los criterios de producto (`criterio-producto.md`) y técnico (`criterio-tecnico.md`) están adaptados de `cpo` y `cto`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
+>
+> Las familias de preguntas toman como referencia la clasificación de [Product Manager Interview Questions](https://www.productcompass.pm/p/product-manager-interview-questions), de Paweł Huryn (The Product Compass). Ese artículo no tiene licencia abierta: no se copió texto, las preguntas de ejemplo se escribieron de nuevo y se llevaron a productos de la región.
 
 La mayoría de las preguntas de entrevista no tienen una respuesta correcta: se evalúa cómo pensás. Los buenos candidatos no se apuran: preguntan antes de responder, deciden, explican lo que ceden y se apoyan en experiencias reales. Este skill entrena eso.
 
-Hablá en rioplatense, con voseo, frases cortas. Si la entrevista es en inglés, las respuestas modelo van en inglés y las indicaciones en español.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), frases cortas. Si la entrevista es en inglés o en portugués, las respuestas modelo van en ese idioma y las indicaciones en el idioma de la conversación.
 
 ## Antes de empezar
 
@@ -32,23 +34,47 @@ Si en el perfil hay menos de tres historias para entrevistas, antes de preparar 
 | Tipo | Qué evalúan | Qué preparar |
 |---|---|---|
 | **RR. HH. / primera charla** | Motivación, encaje con la cultura, condiciones, cómo contás tu historia | Pitch de 1 minuto ("contame de vos"), por qué esta empresa, motivo de salida con la frase acordada, disponibilidad. La pretensión salarial solo si la persona decidió qué decir |
-| **Comportamiento** | Cómo actuaste en situaciones reales | 5 a 7 historias del perfil en formato situación → qué hiciste vos → resultado → qué aprendiste |
+| **Comportamiento** | Cómo actuaste en situaciones reales | 5 a 7 historias del perfil en formato STAR-L (ver abajo) |
 | **Técnica** | Cómo razonás un problema técnico | Leé y seguí `.claude/skills/preparar-entrevista/criterio-tecnico.md` |
 | **Caso de producto o negocio** | Cómo pasás de un problema ambiguo a una decisión | Leé y seguí `.claude/skills/preparar-entrevista/criterio-producto.md` |
 | **Hiring manager** | Si resolviste problemas como los del equipo y cómo trabajás | Lo que le duele al equipo (del aviso y de la investigación), 2 historias que lo respondan, preguntas sobre el equipo |
 | **Panel o ronda final** | Todo lo anterior, más consistencia | Repaso de todo, sobre todo lo que se dijo en rondas anteriores |
 
+## STAR-L: cómo se cuenta una historia
+
+Toda respuesta de comportamiento se arma con una historia de `contexto/perfil.md` en cinco pasos. Es un orden para pensar en voz alta, no un texto para memorizar:
+
+| Paso | Qué va | Tiempo |
+|---|---|---|
+| **S · Situación** | El contexto justo: producto, tamaño de equipo, etapa de la empresa, qué estaba en juego | 10 a 15 s |
+| **T · Tarea** | Qué te tocaba a vos: el objetivo o el problema que era tuyo. Separa tu parte de la del equipo | 10 s |
+| **A · Acción** | Qué hiciste **vos**, en primera persona: qué decidiste, qué priorizaste y qué cediste. Es el centro de la respuesta | 40 a 60 s |
+| **R · Resultado** | Qué cambió, con número si lo hay. Sin inflarlo ni quedarte con el mérito del equipo | 10 a 15 s |
+| **L · Aprendizaje** | Qué trade-off entendiste después, qué harías distinto hoy o qué regla te quedó para el próximo proyecto | 10 a 15 s |
+
+La **L** es lo que separa una respuesta de ejecución de una con criterio: muestra que no te enamorás de tu solución y que no maquillás los tropiezos. Un aprendizaje sirve si es concreto y cambia una conducta ("hoy pacto la métrica de éxito antes de arrancar"); no sirve si es genérico ("aprendí la importancia de comunicar").
+
+Cómo se usa con el perfil:
+
+- Si una historia del perfil no tiene **Tarea** o **Aprendizaje** (las plantillas viejas no tenían Tarea), marcalo ❓ y preguntalo, o proponé completarlo con `poner-a-prueba`. **Nunca lo deduzcas ni lo inventes** (límite L1).
+- La misma historia puede responder varias familias de preguntas: cambia qué parte se estira (en un conflicto, la Acción; en un error, el Aprendizaje).
+- El puente con el CV: la viñeta del CV da la señal y el resultado para que te llamen; en la entrevista, STAR-L muestra el criterio y el aprendizaje que hay detrás. Si una historia ya está en el CV, el número tiene que coincidir.
+
 ## Las familias de preguntas de comportamiento
 
-Las preguntas cambian, las familias se repiten. Traducilas al dominio de la empresa:
+Las preguntas cambian, las familias se repiten. Traducilas al dominio de la empresa. Los ejemplos son ilustrativos: sirven para reconocer la familia cuando la pregunta llega con otras palabras.
 
-1. **Un problema difícil que resolviste.** Evalúan: si entendiste el problema antes de resolverlo.
-2. **Un conflicto con alguien** (compañero, líder, cliente). Evalúan: si escuchás, si separás a la persona del problema, cómo cerró.
-3. **Una decisión con información incompleta.** Evalúan: si decidís, qué supuestos declaraste, qué cediste.
-4. **Un error o un fracaso.** Evalúan: honestidad, si te hacés cargo y qué aprendiste. No hay truco: importa menos el error que lo que hiciste después.
-5. **Prioridades en conflicto o poco tiempo.** Evalúan: cómo elegís y cómo comunicás lo que queda afuera.
-6. **Aprender algo rápido.** Evalúan: cómo aprendés. Cada vez más: cómo usás herramientas de IA en tu trabajo.
-7. **Influir sin autoridad o liderar** (según seniority). Evalúan: cómo lográs que otros se muevan.
+1. **Un problema difícil que resolviste.** Evalúan: si entendiste el problema antes de resolverlo. Ejemplos: "Contame de una vez que tuviste que salir del molde para resolver algo." · "¿Qué decisión tomaste mirando datos y qué cambió?"
+2. **Un conflicto con alguien** (compañero, líder, cliente). Evalúan: si escuchás, si separás a la persona del problema, cómo cerró. Ejemplos: "Contame de un desacuerdo con alguien de tu equipo." · "¿Cómo trabajaste con un stakeholder difícil?" · "Una vez que alguien de tu equipo se opuso a una decisión tuya: ¿qué hiciste?" · "¿Cómo construiste confianza con un jefe con el que costaba entenderse?"
+3. **Una decisión con información incompleta.** Evalúan: si decidís, qué supuestos declaraste, qué cediste. Ejemplos: "¿Cómo manejaste feedback contradictorio de distintas áreas?" · "Contame de un pedido de Comercial y uno de Tecnología que chocaban: ¿cómo lo resolviste?"
+4. **Un error o un fracaso.** Evalúan: honestidad, si te hacés cargo y qué aprendiste. No hay truco: importa menos el error que lo que hiciste después. Ejemplos: "Contame de algo que salió mal y qué hiciste después." · "¿Cómo manejaste comentarios negativos de usuarios sobre algo que lanzaste?"
+5. **Prioridades en conflicto o poco tiempo.** Evalúan: cómo elegís y cómo comunicás lo que queda afuera. Ejemplos: "Contame de un proyecto con una fecha imposible." · "¿Cómo equilibrás las urgencias del día con lo importante?"
+6. **Aprender algo rápido.** Evalúan: cómo aprendés. Cada vez más: cómo usás herramientas de IA en tu trabajo. Ejemplos: "¿Cómo te mantenés al día con lo que cambia en tu área?" · "Contame de una vez que probaste un enfoque experimental."
+7. **Influir sin autoridad o liderar** (según seniority). Evalúan: cómo lográs que otros se muevan. Ejemplos: "¿Cómo hacés avanzar una decisión cuando no tenés autoridad formal?" · "¿Cómo alineaste a áreas con objetivos distintos para un lanzamiento?" · "¿El consenso es siempre bueno?" · "Contame de una vez que trabajaste con un proveedor o socio externo."
+
+### Las preguntas generales de la primera charla
+
+No son de comportamiento, pero aparecen en casi todos los procesos y conviene tenerlas preparadas con `posicionamiento`: "Contame de vos" (el pitch, no el CV leído en voz alta) · "¿Por qué esta empresa?" y "¿Por qué esta industria?" (con el vocabulario de la empresa, después de investigarla) · "¿Por qué este rol?" (en Producto: "¿Por qué querés ser PM?") · "¿Cuál es tu producto favorito y por qué?" · "¿Dónde te ves en cinco años?". Evalúan motivación y encaje. Se responden con seguridad, sin dudas en voz alta sobre la empresa ni sobre tu experiencia.
 
 ## Modo 1: preparación escrita
 
@@ -72,7 +98,7 @@ Ejemplo de una pregunta preparada, ilustrativo y con datos ficticios:
 ```text
 Pregunta: "Contame de una vez que tuviste que decidir sin toda la información." (familia 3)
 Antes de responder: nada; es de comportamiento.
-Estructura: situación (10 s) → qué faltaba saber → qué decidiste y qué supuesto declaraste → resultado → qué harías distinto.
+Estructura (STAR-L): situación (10 s) → tarea: qué te tocaba decidir y qué faltaba saber → acción: qué decidiste y qué supuesto declaraste → resultado → aprendizaje: qué harías distinto.
 Historia: la migración de pruebas con fecha de entrega fija 📌 perfil.md, Historias para entrevistas, n.º 2.
 Evalúan: si decidís en lugar de esperar, y si nombrás lo que cediste.
 Tiempo: 1 minuto y medio.
@@ -88,6 +114,7 @@ Cuando la persona pida que le tomes la entrevista:
    - **¿Frenó a entender antes de responder?** (en casos y técnicas)
    - **¿Respondió lo que le preguntaron?** ¿Con estructura?
    - **¿Usó un ejemplo real?** ¿Coincide con `contexto/perfil.md`? Si dijo algo que el perfil no tiene y es real, preguntá si lo sumás.
+   - **En las de comportamiento, ¿siguió STAR-L?** ¿La acción es suya y no del equipo? ¿El resultado está sin inflar? ¿Cerró con un aprendizaje concreto?
    - **¿Duración razonable?**
    - **Lo que el entrevistador se lleva**, en una frase, y **una** mejora concreta.
 4. Al terminar: la respuesta más fuerte, la más floja y qué practicar antes de la entrevista. Si quiere, guardalo en `entrevistas/<empresa>/simulacro-<AAAA-MM-DD>.md`.
