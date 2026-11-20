@@ -38,11 +38,13 @@
 ## Historias para entrevistas
 
 <!-- Situaciones reales que sirven para responder preguntas de comportamiento.
-     Formato: situación, qué hiciste vos, resultado, qué aprendiste. -->
+     Formato STAR-L: situación, tarea (lo que te tocaba a vos), acción (qué hiciste vos),
+     resultado y aprendizaje. Lo que no recuerdes queda vacío: no se completa. -->
 
 ### <Título corto de la historia>
 
-- **Situación:**
-- **Qué hice:**
-- **Resultado:**
-- **Qué aprendí / qué haría distinto:**
+- **Situación:** <!-- contexto: producto, tamaño de equipo, etapa de la empresa, qué estaba en juego -->
+- **Tarea:** <!-- qué te tocaba a vos: el objetivo o el problema que era tuyo -->
+- **Qué hice:** <!-- tus decisiones, en primera persona; qué priorizaste y qué cediste -->
+- **Resultado:** <!-- qué cambió, con número si lo hay -->
+- **Qué aprendí / qué haría distinto:** <!-- qué trade-off entendiste después, qué ajustarías hoy, qué regla te quedó -->

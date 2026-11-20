@@ -8,7 +8,7 @@ license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/
 
 Los mensajes de una búsqueda tienen que ser cortos, concretos y sonar escritos por una persona. Este skill los redacta; vos los revisás y los mandás.
 
-Hablá en rioplatense, con voseo, para explicar. El mensaje va en el idioma y el registro que corresponda (si el destinatario escribe en inglés o de usted, se responde igual).
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), para explicar. El mensaje va en el idioma y el registro que corresponda (si el destinatario escribe en inglés, en portugués o de usted, se responde igual; en portugués de Brasil, con «você» y el saludo cercano que se usa allá).
 
 ## Antes de escribir
 

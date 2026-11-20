@@ -33,7 +33,7 @@ qué hacía yo, logros con su número o hecho concreto, tecnologías y herramien
 Técnicas y de trabajo con personas.
 
 ## 5. Historias para entrevistas
-Situaciones reales que te conté: situación, qué hice, resultado, qué aprendí.
+Situaciones reales que te conté, en formato STAR-L: situación, tarea (lo que me tocaba a mí), qué hice, resultado y qué aprendí o haría distinto. Si de una historia no te conté alguna de esas partes, dejala vacía.
 
 ## 6. Qué busco
 Roles, seniority, industrias, modalidad y ubicación, tipo de contratación, disponibilidad, qué descarto.

@@ -12,6 +12,24 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.10.0 — 2026-11-20 · Portugués y STAR-L
+
+### Nuevo
+
+- **Portugués de Brasil.** Claude conversa en portugués si la persona lo elige (nuevo campo `## Idioma de la conversación` en `plantillas/busqueda.md`; `empezar` lo pregunta si le escriben en portugués) y escribe en portugués el CV, LinkedIn, los mensajes y las respuestas modelo de entrevista. Nueva sección «Idioma» en `CLAUDE.md`: qué va en el idioma de la conversación, qué en el de cada texto y qué no se traduce (nombres de skills, carpetas, títulos de plantillas y tablero).
+- `mejorar-perfil/cv-en-portugues.md`: el CV en portugués de Brasil con criterio de recruiter de ese mercado. Niveles Júnior, Pleno y Sênior, *Licenciatura* como falso amigo, falsos amigos y marcas de portuñol, verbos con el mismo peso y el camino inverso, del portugués al español. `ats.md` suma los títulos de sección en portugués y `nueva-postulacion` usa `cv/cv-pt.md` para los avisos en portugués.
+- `README.pt-BR.md`, enlazado desde los README en español e inglés. `INSTALACION.md` guía la instalación en portugués si la persona lo pide.
+- `preparar-entrevista`: las historias de comportamiento se cuentan en formato **STAR-L** (situación, tarea, acción, resultado y aprendizaje), con tiempos por paso, qué hace bueno a un aprendizaje y el puente con el CV. Si a una historia le falta la tarea o el aprendizaje, se pregunta: nunca se deduce (límite L1).
+- `preparar-entrevista`: ejemplos de preguntas para cada familia de comportamiento y las preguntas generales de la primera charla. `criterio-producto.md` suma los tipos de pregunta de Producto (product sense, estrategia, analítica, ejecución y técnica para Producto) con ejemplos de productos de la región y cómo recorrer product sense en los cuatro pasos. La clasificación toma como referencia un artículo de Paweł Huryn; ver `CREDITOS.md`.
+- `mejorar-perfil`: dos criterios de CV nuevos, **Alcance y ownership** (¿ejecutaste o llevaste el problema de punta a punta?) y **Se entiende rápido** (sin jerga interna).
+- Evals `d-historias-star`, `c-star-l-sin-inventar`, `d-cv-portugues`, `d-entrevista-pt`, `d-mensagem-pt` y `c-cv-portugues`.
+
+### Cambios
+
+- `plantillas/perfil.md` y `plantillas/prompt-importar-contexto.md`: las historias para entrevistas suman el campo **Tarea** y guías para cada campo. Los perfiles armados con la plantilla anterior siguen funcionando: el skill pregunta lo que falta.
+- Todos los skills: «Hablá en rioplatense» suma la excepción del portugués de Brasil; `preparar-entrevista` y sus criterios preparan entrevistas en portugués como ya lo hacían en inglés; `redactar-mensaje` responde en portugués a quien escribe en portugués.
+- Límite L7: los datos sensibles nombran también el CPF y el RG.
+
 ## 0.9.0 — 2026-11-18 · Límites formales
 
 ### Nuevo

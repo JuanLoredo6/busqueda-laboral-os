@@ -1,12 +1,12 @@
 # Búsqueda laboral OS (Job Search OS)
 
-**English** · [Español](README.md)
+**English** · [Español](README.md) · [Português](README.pt-BR.md)
 
 A system to organize your job search with **Claude Code**: your profile, LinkedIn and CV, every application, interview preparation and a dashboard that tells you what to do today. Everything stays in folders on your own computer.
 
 We built it for a workshop among IT colleagues who are looking for their next challenge. It works for any profile: development, QA, data, product, design, infrastructure, projects.
 
-> **Language:** the system works in Spanish (Rioplatense). Commands, skills, templates and the dashboard are in Spanish. This page explains what it does for English-speaking readers.
+> **Language:** Claude talks to you in Spanish (Rioplatense) or Brazilian Portuguese, and writes your CV, LinkedIn, messages and interview answers in Spanish, English or Brazilian Portuguese. Commands, skills, templates and the dashboard are in Spanish. This page explains what it does for English-speaking readers.
 
 > **🎓 Live workshop «Buscá con sistema»** (in Spanish): two sessions with personal guidance to use this system in your job search. Dates, prices and scholarships at **[busca-con-sistema.pages.dev](https://busca-con-sistema.pages.dev/)**.
 >
@@ -124,13 +124,13 @@ busqueda-laboral-os/
 | Skill | What it's for |
 |---|---|
 | `empezar` | Setup: brings in what you already have (CV, LinkedIn, notes, the context from another AI), loads your profile, what you're looking for and your voice, and gets the dashboard ready |
-| `mejorar-perfil` | Reads your LinkedIn PDF, your CV or both, compares what each one has, interviews you and gives you ready-to-paste texts, plus the CV |
+| `mejorar-perfil` | Reads your LinkedIn PDF, your CV or both, compares what each one has, interviews you and gives you ready-to-paste texts, plus the CV. Also in English or Brazilian Portuguese, written the way a native speaker would |
 | `analizar-oferta` | How well a job post fits your profile (0 to 100), requirement by requirement, and whether it's worth it |
 | `nueva-postulacion` | Folder, tailored CV, form answers and a card on the dashboard |
 | `actualizar` | Takes every update to the dashboard and creates the next actions |
 | `sincronizar-correo` | Brings updates from Gmail and Google Calendar to the dashboard, on demand (🔄 SYNC) or every 2 hours from 8 am to 10 pm |
 | `redactar-mensaje` | Messages to recruiters, referrals, follow-ups and thank-you notes in your voice |
-| `preparar-entrevista` | Likely questions, real stories for each one, and a mock interview with feedback |
+| `preparar-entrevista` | Likely questions, real stories for each one in STAR-L format (Situation, Task, Action, Result, Learnings), and a mock interview with feedback |
 | `repaso-semanal` | The week's numbers, what's slipping, and three priorities |
 
 **Search strategy**

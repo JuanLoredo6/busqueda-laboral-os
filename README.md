@@ -1,6 +1,6 @@
 # Búsqueda laboral OS
 
-[English](README.en.md) · **Español**
+[English](README.en.md) · **Español** · [Português](README.pt-BR.md)
 
 Un sistema para ordenar tu búsqueda laboral con **Claude Code**: tu perfil, LinkedIn y CV, cada postulación, la preparación de entrevistas y un tablero que te dice qué hacer hoy. Todo queda en carpetas de tu computadora.
 
@@ -122,13 +122,13 @@ busqueda-laboral-os/
 | Skill | Para qué |
 |---|---|
 | `empezar` | Puesta en marcha: trae lo que ya tenés (CV, LinkedIn, notas, el contexto de otra IA), carga tu perfil, qué buscás y tu voz, y deja el tablero listo |
-| `mejorar-perfil` | Lee tu PDF de LinkedIn, tu CV o los dos, compara qué tiene cada uno, te entrevista y te da textos listos para copiar y pegar, más el CV |
+| `mejorar-perfil` | Lee tu PDF de LinkedIn, tu CV o los dos, compara qué tiene cada uno, te entrevista y te da textos listos para copiar y pegar, más el CV. También en inglés o en portugués de Brasil, como los escribiría alguien nativo |
 | `analizar-oferta` | Encaje de un aviso con tu perfil (0 a 100), requisitos uno por uno, si vale la pena |
 | `nueva-postulacion` | Carpeta, CV adaptado, respuestas del formulario y tarjeta en el tablero |
 | `actualizar` | Lleva cada novedad al tablero y crea las acciones que siguen |
 | `sincronizar-correo` | Trae las novedades de Gmail y Google Calendar al tablero, a demanda (🔄 SYNC) o cada 2 horas de 8 a 22 |
 | `redactar-mensaje` | Mensajes a recruiters, referidos, follow-ups y agradecimientos con tu voz |
-| `preparar-entrevista` | Preguntas probables, historias reales para cada una y simulacro con feedback |
+| `preparar-entrevista` | Preguntas probables, historias reales para cada una en formato STAR-L y simulacro con feedback |
 | `repaso-semanal` | Números de la semana, lo que se está cayendo y tres prioridades |
 
 **Estrategia de la búsqueda**

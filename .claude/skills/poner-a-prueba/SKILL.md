@@ -13,7 +13,7 @@ Un recruiter o un entrevistador va a repreguntar todo lo que digas. Mejor que lo
 - **Solo:** pone a prueba un texto concreto (CV, perfil de LinkedIn, respuesta de entrevista, mensaje) o una decisión de la búsqueda.
 - **Como método:** cualquier skill del repo que entrevista cita la sección **Método** en vez de copiarla. Puede cambiar los ejemplos o a quién apunta; el método es uno solo.
 
-Hablá en rioplatense, con voseo, frases cortas.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), frases cortas.
 
 ## Método
 

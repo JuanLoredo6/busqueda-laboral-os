@@ -8,7 +8,7 @@ license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .cl
 
 > Adaptado de `product-builder-resolver`, de Pedro Romero Luna ([ai-first-product-skills](https://github.com/pedroromeroluna/ai-first-product-skills), licencia MIT).
 
-Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.claude/skills/<skill>/SKILL.md`. Hablá en rioplatense, con voseo.
+Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.claude/skills/<skill>/SKILL.md`. Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## El día a día
 
@@ -17,6 +17,7 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 | Arrancar el sistema por primera vez: traer el CV, LinkedIn o el contexto que armaste con otra IA, entrevista inicial, perfil, qué buscás y tu voz | `empezar` |
 | Mejorar LinkedIn y el CV a partir del PDF de LinkedIn, del CV o de los dos, con textos listos para copiar y pegar | `mejorar-perfil` |
 | Tener el CV en inglés (o en español, si el base está en inglés) sin que suene traducido | `mejorar-perfil` (su parte `cv-en-ingles.md`) |
+| Tener el CV en portugués de Brasil sin portuñol, o usar el sistema en portugués | `mejorar-perfil` (su parte `cv-en-portugues.md`); el idioma de la conversación se elige en `contexto/busqueda.md` |
 | Comprobar que el CV lo lea bien un sistema de selección (ATS) y que tenga las palabras clave de un aviso | `mejorar-perfil` (su parte `ats.md`); para un aviso puntual, `nueva-postulacion` |
 | Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena | `analizar-oferta` |
 | Registrar una postulación nueva: carpeta, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |

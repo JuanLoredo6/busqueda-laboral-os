@@ -1,6 +1,6 @@
 ---
 name: mejorar-perfil
-description: "Mejora tu perfil de LinkedIn y tu CV a partir de lo que tengas más completo (el PDF que exporta LinkedIn, tu CV o los dos): lo lee sección por sección, hace un diagnóstico, compara CV y LinkedIn para encontrar lo que está en uno y falta en el otro, te entrevista para conseguir los logros y datos que faltan, y entrega sugerencias listas para copiar y pegar (titular, Acerca de, cada experiencia, aptitudes) respetando los límites de caracteres, más un CV actualizado en español (o el idioma por defecto que configures), su versión en inglés escrita como la escribiría alguien nativo, y la comprobación de que se lee bien en los sistemas de selección (ATS). Nunca inventa logros. Usala cuando digas 'mejorá mi LinkedIn', 'revisá mi perfil', 'acá está mi PDF', 'actualizá mi CV', 'revisá mi CV', 'mi perfil no atrae recruiters', 'tengo el CV pero no el LinkedIn', 'pasá mi CV al inglés', 'necesito el CV en inglés', '¿mi CV pasa los ATS?', 'revisá que lo lea el ATS', o cuando dejes un PDF en linkedin/ o un CV en cv/."
+description: "Mejora tu perfil de LinkedIn y tu CV a partir de lo que tengas más completo (el PDF que exporta LinkedIn, tu CV o los dos): lo lee sección por sección, hace un diagnóstico, compara CV y LinkedIn para encontrar lo que está en uno y falta en el otro, te entrevista para conseguir los logros y datos que faltan, y entrega sugerencias listas para copiar y pegar (titular, Acerca de, cada experiencia, aptitudes) respetando los límites de caracteres, más un CV actualizado en español (o el idioma por defecto que configures), su versión en inglés o en portugués de Brasil escrita como la escribiría alguien nativo, y la comprobación de que se lee bien en los sistemas de selección (ATS). Nunca inventa logros. Usala cuando digas 'mejorá mi LinkedIn', 'revisá mi perfil', 'acá está mi PDF', 'actualizá mi CV', 'revisá mi CV', 'mi perfil no atrae recruiters', 'tengo el CV pero no el LinkedIn', 'pasá mi CV al inglés', 'necesito el CV en inglés', 'quiero el CV en portugués', 'quero meu currículo em português', '¿mi CV pasa los ATS?', 'revisá que lo lea el ATS', o cuando dejes un PDF en linkedin/ o un CV en cv/."
 license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/skills/LICENSE-phuryn.txt."
 ---
 
@@ -8,11 +8,12 @@ license: "MIT. Adapta material de Paweł Huryn (MIT); ver CREDITOS.md y .claude/
 
 Toma el PDF de LinkedIn, el CV o los dos (lo que esté más completo es la base), detecta qué le falta para que un recruiter lo encuentre y lo entienda en 30 segundos, te entrevista para conseguir lo que falta, y te devuelve los textos nuevos listos para pegar.
 
-Hablá en rioplatense, con voseo. Los textos del perfil van con tu voz (`contexto/voz.md`) y en el idioma por defecto de `contexto/busqueda.md` (`## Idioma del CV`); si ese campo no está, en español. La versión en el otro idioma sigue `cv-en-ingles.md`.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`). Los textos del perfil van con tu voz (`contexto/voz.md`) y en el idioma por defecto de `contexto/busqueda.md` (`## Idioma del CV`); si ese campo no está, en español. La versión en otro idioma sigue `cv-en-ingles.md` (inglés) o `cv-en-portugues.md` (portugués de Brasil).
 
 Partes de este skill que se cargan cuando hacen falta:
 
-- `cv-en-ingles.md`: el CV y los textos de LinkedIn en el otro idioma, con criterio de recruiter bilingüe.
+- `cv-en-ingles.md`: el CV y los textos de LinkedIn en inglés (o del inglés al español), con criterio de recruiter bilingüe.
+- `cv-en-portugues.md`: lo mismo para el portugués de Brasil (o del portugués al español).
 - `ats.md`: formato, títulos y palabras clave para que el CV lo lea bien un sistema de selección, y cómo comprobarlo con `revisar-ats.py`.
 
 ## Antes de empezar
@@ -29,7 +30,7 @@ Partes de este skill que se cargan cuando hacen falta:
    Un CV en .docx se lee con el skill de documentos si está disponible; si no, pedí que lo pegue en el chat o lo exporte a PDF.
 2. Leé completos: el PDF y el CV que haya, `contexto/perfil.md`, `contexto/busqueda.md` y, si existen, `contexto/posicionamiento.md` y el último `investigacion/*-mapa-de-valor.md`.
 3. Si no hay posicionamiento, avisá en una línea: el perfil queda mejor si antes se define a qué rol apuntás (`/posicionamiento`). Ofrecé hacerlo primero o seguir con lo que dice `contexto/busqueda.md`.
-4. Leé el idioma por defecto en `contexto/busqueda.md`. Si el campo no está, preguntá una vez cuál quiere (español si no tiene preferencia) y sumalo a `busqueda.md` con la sección `## Idioma del CV` de `plantillas/busqueda.md`. Después preguntá en una ronda: si también quiere el CV, y si quiere la versión en el otro idioma (recomendalo si `busqueda.md` dice que busca afuera, en empresas que trabajan en inglés o en remoto internacional).
+4. Leé el idioma por defecto en `contexto/busqueda.md`. Si el campo no está, preguntá una vez cuál quiere (español si no tiene preferencia) y sumalo a `busqueda.md` con la sección `## Idioma del CV` de `plantillas/busqueda.md`. Después preguntá en una ronda: si también quiere el CV, y si quiere la versión en el otro idioma (recomendalo si `busqueda.md` dice que busca afuera, en empresas que trabajan en inglés o en remoto internacional; portugués, si busca en Brasil).
 
 ## Criterios de CV
 
@@ -40,6 +41,8 @@ Valen para el CV, para la sección Experiencia de LinkedIn y para el CV adaptado
 | Criterio | Qué se revisa | Cómo se arregla |
 |---|---|---|
 | **Viñeta con resultado** | ¿Dice qué lograste, cómo se midió y qué hiciste vos? | Logro (X) + medido por (Y) + haciendo (Z): "Bajé el ciclo de release de 3 días a 1 (X, Y) automatizando 340 casos de regresión (Z)". Solo con datos de `contexto/perfil.md`; si falta Y, va a `poner-a-prueba`. No todas las viñetas tienen que tener número: alcanza con que la mayoría de los logros lo tenga |
+| **Alcance y ownership** | ¿Se entiende si ejecutaste una tarea o si definiste el problema y lo llevaste de punta a punta? | Decir qué parte era tuya: "Definí y lancé…" solo si fue así; si ejecutaste dentro de un plan ajeno, se dice con su alcance real. Si no se sabe, ❓ y a `poner-a-prueba` |
+| **Se entiende rápido** | ¿Alguien de afuera entiende el impacto en una lectura, o hay jerga interna, siglas del equipo o nombres de proyectos? | Reemplazar nombres internos por lo que son ("el proyecto Orion" → "la migración del sistema de pagos"); el resultado al principio de la viñeta |
 | **De 3 a 5 viñetas por puesto** | ¿Hay puestos con 6 o más, o con una sola? | Fusionar o recortar las que no tienen resultado; los puestos de hace más de 7 años pueden quedar en una línea |
 | **Sin primera persona** | "Yo lideré", "mi equipo", "nosotros" | Arrancar con el verbo: "Lideré", "Coordiné" |
 | **Resumen específico** | 2 o 3 líneas arriba: ¿dicen el rol, el dominio y un logro, o son genéricas? | Reemplazar "profesional proactivo" por lo que solo vos podés decir |
@@ -50,7 +53,7 @@ Valen para el CV, para la sección Experiencia de LinkedIn y para el CV adaptado
 | **Cambio de rol o poca experiencia** | Si apunta a un rol que nunca tuvo con ese nombre | Proyectos propios, cursos terminados, voluntariado y tareas del rol objetivo dentro de puestos anteriores, contados con la lente del rol nuevo y sin inflar |
 | **Mail y link** | ¿El mail se ve profesional? ¿Está el link a LinkedIn? | Sugerirlo; nunca se crea una cuenta en nombre de la persona |
 | **Lo lee un ATS** | Una columna, sin tablas ni cuadros de texto, contacto en el cuerpo, títulos estándar, fechas con mes y año, palabras clave del rol escritas como en los avisos | Seguir `ats.md` y comprobarlo con `revisar-ats.py` |
-| **El otro idioma suena nativo** | Si hay versión en inglés (o en español desde un CV en inglés): ¿dice lo mismo que el original, sin calcos ni verbos más fuertes? | Seguir `cv-en-ingles.md` |
+| **El otro idioma suena nativo** | Si hay versión en inglés o en portugués (o en español desde otro idioma): ¿dice lo mismo que el original, sin calcos ni verbos más fuertes? | Seguir `cv-en-ingles.md` o `cv-en-portugues.md` |
 
 ## Paso 1: diagnóstico
 
@@ -122,7 +125,7 @@ Reglas de los textos:
 - **Acerca de y titular** pasan por `.claude/skills/redactar-mensaje/SKILL.md#revisión-de-voz`. El Acerca de casi siempre necesita su modo entrevista.
 - **Aptitudes:** lista de hasta 15 para agregar, en orden, con las 3 a destacar primero. Solo las que la persona realmente usó.
 - **Todo dato sale de `contexto/perfil.md`.** Lo que no esté confirmado no entra. Si un texto quedaría mejor con un dato que falta, marcalo con ❓ en vez de inventarlo. Una viñeta armada con una deducción tuya («definí el criterio de prueba» porque era la única QA) no va en el texto para copiar, ni siquiera con aclaración afuera: proponela como pregunta y sumala si la persona la confirma. (límite L1)
-- Si eligió dos idiomas, cada sección va en los dos, uno debajo del otro. La versión en el otro idioma sigue `cv-en-ingles.md` (convenciones, falsos amigos, lo que suena a IA) y cuenta sus propios caracteres. En LinkedIn se carga con **Agregar perfil en otro idioma**, no mezclando los dos en el mismo texto.
+- Si eligió dos idiomas, cada sección va en los dos, uno debajo del otro. La versión en el otro idioma sigue `cv-en-ingles.md` o `cv-en-portugues.md` (convenciones, falsos amigos, lo que suena a IA) y cuenta sus propios caracteres. En LinkedIn se carga con **Agregar perfil en otro idioma**, no mezclando los dos en el mismo texto.
 
 Al final del archivo: una lista de **acciones en LinkedIn que no son texto** (foto, portada, URL personalizada, Open to work solo para recruiters, pedir 2 recomendaciones a ex compañeros con un mensaje sugerido).
 
@@ -134,9 +137,9 @@ Ofrecé pasar el titular y el Acerca de por `recruiters-sinteticos` con un recru
 
 Si lo pidió:
 
-1. **El CV base, en el idioma por defecto:** escribí el contenido en `cv/cv-es.md` (o `cv/cv-en.md` si el idioma por defecto es inglés) con la misma información (el CV puede ser algo más largo y detallado que LinkedIn, hasta 2 páginas), cumpliendo [Criterios de CV](#criterios-de-cv).
+1. **El CV base, en el idioma por defecto:** escribí el contenido en `cv/cv-es.md` (o `cv/cv-en.md` o `cv/cv-pt.md` si el idioma por defecto es inglés o portugués) con la misma información (el CV puede ser algo más largo y detallado que LinkedIn, hasta 2 páginas), cumpliendo [Criterios de CV](#criterios-de-cv).
 2. **El formato** sigue `ats.md`: una columna, títulos de sección estándar, contacto en el cuerpo, fechas con mes y año, palabras clave del rol objetivo. Para lo visual, `.claude/skills/disenador-visual/SKILL.md#método`, sin ir en contra de `ats.md`.
-3. **La versión en el otro idioma**, si la pidió: cargá `cv-en-ingles.md` y escribí `cv/cv-en.md` (o `cv/cv-es.md`) a partir del CV base ya confirmado, con su tabla de decisiones de traducción al final. Mostrá esa tabla y esperá la confirmación de los cargos y títulos.
+3. **La versión en el otro idioma**, si la pidió: cargá `cv-en-ingles.md` o `cv-en-portugues.md` y escribí `cv/cv-en.md`, `cv/cv-pt.md` (o `cv/cv-es.md`) a partir del CV base ya confirmado, con su tabla de decisiones de traducción al final. Mostrá esa tabla y esperá la confirmación de los cargos y títulos.
 4. Ofrecé generarlo como .docx o PDF (con los skills de documentos si están disponibles en la sesión) o como página HTML imprimible en `cv/`. Si no hay con qué, el .md queda como fuente para que lo pase a su plantilla. Nombre del archivo: `Nombre-Apellido-CV.pdf` y `Nombre-Apellido-CV-EN.pdf`.
 5. **Comprobá cada archivo con el script** (ver `ats.md#la-comprobación-con-el-script`), con el idioma de cada versión y las palabras clave del rol objetivo:
 

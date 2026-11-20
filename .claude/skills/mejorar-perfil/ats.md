@@ -2,7 +2,7 @@
 
 Parte de `mejorar-perfil`. La cargan su paso 5, `nueva-postulacion` (CV adaptado), `disenador-visual` (cuando la pieza es un CV) y `recruiters-sinteticos` (el recruiter que filtra).
 
-Hablá en rioplatense, con voseo.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`).
 
 ## Qué se puede garantizar y qué no
 
@@ -23,22 +23,22 @@ Un ATS (Workday, Greenhouse, Lever, Taleo, SmartRecruiters, iCIMS y otros) hace 
 | **Fuentes estándar** (Calibri, Arial, Helvetica, Garamond, Georgia, Times), entre 10 y 12 pt; títulos un poco más grandes | Las fuentes raras pueden extraerse con caracteres cambiados |
 | **Viñetas simples** (•, -, ▪) | Símbolos decorativos pueden salir como caracteres sueltos |
 | **Formato de archivo:** .docx o PDF exportado desde un procesador de texto (no "imprimir como imagen"). Si el aviso pide uno, ese | Los dos se leen bien si están bien hechos; un PDF de Canva con capas o un diseño en columnas suele fallar |
-| **Nombre del archivo:** `Nombre-Apellido-CV.pdf`, o `Nombre-Apellido-CV-EN.pdf` para el inglés | Quien lo descarga lo encuentra; `cv_final_v3.pdf` no ayuda |
+| **Nombre del archivo:** `Nombre-Apellido-CV.pdf`, o `Nombre-Apellido-CV-EN.pdf` y `Nombre-Apellido-CV-PT.pdf` para el inglés y el portugués | Quien lo descarga lo encuentra; `cv_final_v3.pdf` no ayuda |
 | **Sin texto oculto** (palabras clave en blanco o en tamaño 1) | Varios ATS lo muestran en texto plano y quien lo ve descarta el CV. **Prohibido** |
 
 ## Títulos de sección
 
 Los comunes, sin creatividad:
 
-| Español | Inglés |
-|---|---|
-| Resumen (o Perfil profesional) | Summary |
-| Experiencia (o Experiencia laboral) | Experience (o Work Experience) |
-| Educación (o Formación) | Education |
-| Certificaciones | Certifications |
-| Habilidades (o Herramientas) | Skills |
-| Idiomas | Languages |
-| Proyectos | Projects |
+| Español | Inglés | Portugués |
+|---|---|---|
+| Resumen (o Perfil profesional) | Summary | Resumo |
+| Experiencia (o Experiencia laboral) | Experience (o Work Experience) | Experiência profissional |
+| Educación (o Formación) | Education | Formação acadêmica |
+| Certificaciones | Certifications | Certificações |
+| Habilidades (o Herramientas) | Skills | Competências (o Habilidades) |
+| Idiomas | Languages | Idiomas |
+| Proyectos | Projects | Projetos |
 
 Nada de "Mi recorrido", "Lo que sé hacer" o "Where I've been".
 

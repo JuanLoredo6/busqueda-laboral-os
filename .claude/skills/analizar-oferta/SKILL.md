@@ -8,7 +8,7 @@ license: "MIT. Ver LICENSE en la raíz del repo."
 
 Postularse a todo cansa y baja la tasa de respuesta. Este skill te ayuda a decidir rápido y con criterio, y deja todo listo para postularte bien si decidís que sí.
 
-Hablá en rioplatense, con voseo. Directo: si el encaje es bajo, se dice.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`). Directo: si el encaje es bajo, se dice.
 
 ## Entrada
 

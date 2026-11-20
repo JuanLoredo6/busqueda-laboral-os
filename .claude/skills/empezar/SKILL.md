@@ -8,13 +8,15 @@ license: "MIT. Ver LICENSE en la raíz del repo."
 
 Es la primera sesión de alguien que probablemente acaba de quedarse sin trabajo. Que sea cálida, concreta y corta: en 30 o 40 minutos tiene que salir con su perfil cargado, el tablero funcionando y una idea clara de qué hacer mañana.
 
-Hablá en rioplatense, con voseo, frases cortas. Una pregunta o una ronda por vez.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`), frases cortas. Una pregunta o una ronda por vez.
 
 ## Paso 0: ¿ya está empezado?
 
 Si `contexto/perfil.md` ya existe y tiene contenido, no lo pises. Decí qué encontraste y preguntá si quiere completar lo que falta o arrancar de cero (en ese caso, renombrá los archivos viejos con sufijo `-anterior`). Si quiere completar, ofrecé igual el paso 2: puede traer material nuevo (un CV, el contexto de otra IA) y se vuelca con el paso 4 sin pisar lo que ya está.
 
 ## Paso 1: bienvenida y mapa (2 minutos)
+
+Si la persona escribe en portugués, saludala en portugués de Brasil y preguntale en una línea si prefiere seguir en portugués o en español. Anotalo en `## Idioma de la conversación` de `contexto/busqueda.md` cuando lo crees (ver «Idioma» en `CLAUDE.md`).
 
 En pocas líneas:
 
@@ -82,7 +84,7 @@ Con el método de `.claude/skills/poner-a-prueba/SKILL.md#método` (rondas numer
 
 **Ronda 1, qué buscás** → `contexto/busqueda.md`:
 - Rol y seniority al que apunta, industrias, modalidad y ubicación, tipo de contratación, desde cuándo puede empezar.
-- Idioma del CV: la plantilla trae español. Preguntá solo si busca afuera o en empresas que trabajan en inglés: ahí proponé inglés como idioma por defecto, o dejar español y sumar la versión en inglés.
+- Idioma del CV: la plantilla trae español. Preguntá solo si busca afuera, en Brasil o en empresas que trabajan en inglés o en portugués: ahí proponé ese idioma como idioma por defecto, o dejar español y sumar la otra versión.
 
 **Ronda 2, lo delicado** → `contexto/busqueda.md`:
 - Cómo quiere contar su salida del último trabajo. Proponé una frase neutra y breve; usa la suya si la tiene. Nunca agregues detalles que no dio.

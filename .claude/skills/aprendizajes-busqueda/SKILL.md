@@ -10,7 +10,7 @@ license: "MIT. Adapta material de Pedro Romero Luna (MIT); ver CREDITOS.md y .cl
 
 Es el primer paso que corre **después** de tener feedback real. Toma lo que te dijeron o escribieron personas reales (recruiters, entrevistadores, gente de tus charlas de networking) y lo convierte en aprendizajes con su evidencia, en un perfil de lo que busca el tipo de empresa al que apuntás, y en ajustes ordenados contra tu objetivo.
 
-Hablá en rioplatense, con voseo. Un rechazo duele: tratá el material con cuidado, sin dramatizar ni minimizar.
+Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de la conversación; ver «Idioma» en `CLAUDE.md`). Un rechazo duele: tratá el material con cuidado, sin dramatizar ni minimizar.
 
 ## Cuándo se usa
 
