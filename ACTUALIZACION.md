@@ -41,7 +41,7 @@ Comprobación: sabés la carpeta y el camino (Git o ZIP).
 
 ### Etapa 2 · Versiones
 
-1. **Versión del código instalado:** el primer título con número de `CHANGELOG.md` en la carpeta (`## X.Y.Z — …`). Si no hay `CHANGELOG.md`, es la 0.1.0.
+1. **Versión del código instalado:** el primer título con número de `CHANGELOG.md` en la carpeta (`## X.Y.Z — …`). Si no hay `CHANGELOG.md`, la copia es anterior a la 0.7.0 y no se sabe cuál es: tomala como 0.1.0. Es seguro porque las migraciones se pueden aplicar dos veces; las que ya estén hechas no cambian nada.
 2. **Versión de los datos:** lo que dice `.version-datos`. Si el archivo no existe, es la misma del código instalado.
 3. **Versión nueva:** el primer título con número de https://raw.githubusercontent.com/JuanLoredo6/busqueda-laboral-os/main/CHANGELOG.md.
 4. Si la de los datos ya es la nueva, decí que está al día y terminá.
