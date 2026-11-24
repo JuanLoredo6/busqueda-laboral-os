@@ -66,6 +66,7 @@ Comprobación: el respaldo existe y está completo.
 1. Si `git ls-files` muestra archivos de datos de la persona en el repositorio (algo más que los `.gitkeep` de sus carpetas), pará y preguntá: alguien los subió a mano y la actualización podría moverlos.
 2. **Cambios propios en archivos del sistema:** `git status --porcelain --untracked-files=no`. Si hay alguno, mostrale cuáles son y en qué cambian, en criollo. Recomendá guardarlos en una rama aparte antes de seguir:
    - `git switch -c mis-cambios-<AAAA-MM-DD>`, `git commit -am "Mis cambios antes de actualizar"` y `git switch -` para volver.
+   - Si Git no tiene nombre ni mail configurados (pasa seguido en quien nunca lo usó), el commit falla. No cambies su configuración: hacé solo ese commit con `git -c user.name="Respaldo local" -c user.email="respaldo@localhost" commit -am "Mis cambios antes de actualizar"`.
    - Si prefiere no guardarlos, preguntá dos veces antes de descartarlos: no tienen otra copia que el respaldo.
 3. Fijate en qué rama está. Si no es `main`, preguntale si cambia a `main` (lo normal) o si sabe por qué está en otra.
 4. `git fetch origin` y `git merge --ff-only origin/main`.
