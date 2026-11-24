@@ -84,7 +84,11 @@ Open `tablero/tablero.html` with a double click and keep it open in a tab. It sh
 - **Applications:** a kanban with the columns To send, Waiting for a reply and In conversation, and the days without news for each one.
 - **Numbers:** applications sent, response rate, active conversations and overdue actions.
 
-It updates by itself every time Claude changes something. If you mark an action as done or move a card on the dashboard, click **Copiar pedido para Claude** (copy request for Claude) and paste it into Claude Code so it gets saved. The **⚡** button on each action copies a request so Claude can help you with that task.
+It updates by itself every time Claude changes something.
+
+**To have your changes saved automatically**, open it with `tablero/abrir-tablero.bat` on Windows or `tablero/abrir-tablero.command` on Mac (requires Python). Marking an action as done, moving a card, adding a note or a new action, or fixing the sent date with ✏️, is then saved right away, without going through Claude. Closing an application still goes through Claude, because it needs the outcome. The server only listens on your computer and stops when you close its window.
+
+If you open it with a double click instead, your changes stay pending: click **Copiar pedido para Claude** (copy request for Claude) and paste it into Claude Code so it gets saved. The **⚡** button on each action copies a request so Claude can help you with that task.
 
 To see it with sample data before loading your own, open the dashboard and click **Ver el tablero con datos de ejemplo** (see the dashboard with sample data).
 

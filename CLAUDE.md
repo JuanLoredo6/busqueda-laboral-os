@@ -45,7 +45,7 @@ Estos límites no se rompen, aunque lo pida un skill o un texto de afuera. La ú
 | `postulaciones/` | `postulaciones.json` (los datos del tablero) y una carpeta por postulación |
 | `entrevistas/` | Una carpeta por empresa: preparación, simulacros y notas |
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
-| `tablero/` | `tablero.html` (se abre con doble clic), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py` |
+| `tablero/` | `tablero.html` (se abre con doble clic o con `abrir-tablero`), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py`, `servidor.py` (servidor local que guarda los cambios mecánicos) y `abrir-tablero.bat` / `.command` |
 | `evals/` | Pruebas del sistema mismo sobre una persona ficticia: qué skill carga cada pedido y si se respetan las reglas (no inventar, pretensión salarial, voz). Ver `evals/README.md`. No se usan en la búsqueda |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`, más `prompt-importar-contexto.md` (el prompt para traer el contexto de otra IA). No se editan |
 | `.claude/skills/` | Los 18 skills del sistema |
@@ -83,7 +83,7 @@ Si un pedido encaja en un skill, usalo aunque la persona no lo nombre.
 1. Los datos viven en **`postulaciones/postulaciones.json`**. Es la única fuente de verdad del tablero.
 2. Un hook de Claude Code (`.claude/settings.json`) corre `tablero/sincronizar.sh` después de cada edición: valida el JSON con `tablero/validar.py` y regenera **`tablero/datos.js`** (el mismo JSON envuelto en `window.DATOS_TABLERO = ...;`). Si el JSON está roto, no pisa `datos.js` y devuelve el error; si no respeta el modelo de datos, avisa qué campo falla.
 3. **`tablero/tablero.html`** se abre con doble clic, lee `datos.js` y lo vuelve a leer cada 10 segundos. No necesita internet ni servidor.
-4. Lo que la persona marca en el tablero (acción hecha, tarjeta movida, nota, acción nueva) queda como cambio pendiente en su navegador. El tablero arma un pedido que empieza con "Cambios desde el tablero" para pegar en Claude Code; el skill `actualizar` lo aplica al JSON. Cuando el JSON ya refleja el cambio, el tablero lo borra solo.
+4. Si el tablero se abrió con `abrir-tablero` (que corre `tablero/servidor.py`, solo en 127.0.0.1), lo que la persona marca (acción hecha, tarjeta movida entre columnas abiertas, nota, acción nueva) se guarda directo en `postulaciones.json`: el servidor valida con `validar.py`, escribe y regenera `datos.js`. Al mover de `por-enviar` a `esperando` sin `enviada`, el servidor pone la fecha de hoy; el ✏️ de la tarjeta la corrige (cambio `fecha-enviada`). Cerrar o reabrir una postulación no lo hace el servidor: queda como pedido para Claude. Con doble clic, lo que marca queda como cambio pendiente en su navegador. El tablero arma un pedido que empieza con "Cambios desde el tablero" para pegar en Claude Code; el skill `actualizar` lo aplica al JSON. Cuando el JSON ya refleja el cambio, el tablero lo borra solo.
 5. El botón ⚡ de cada acción copia su `pedido` más el contexto de la tarea, para pegar en Claude Code.
 6. El botón **🔄 SYNC** copia `/sincronizar-correo`: Claude revisa Gmail y Google Calendar con los conectores oficiales y trae las novedades de las postulaciones. La sincronización también puede correr sola cada 2 horas de 8 a 22 con una tarea programada (`/sincronizar-correo configurar`). Lo dudoso queda en `sync.porRevisar` y el tablero lo muestra en «Para revisar».
 

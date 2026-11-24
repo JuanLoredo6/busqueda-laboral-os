@@ -84,7 +84,11 @@ Abra `tablero/tablero.html` com dois cliques e deixe aberto em uma aba. Ele most
 - **Postulaciones (candidaturas):** um kanban com as colunas A enviar, Esperando resposta e Em conversa, e os dias sem novidade de cada uma.
 - **Números:** candidaturas enviadas, taxa de resposta, conversas ativas e ações atrasadas.
 
-Ele se atualiza sozinho cada vez que o Claude muda algo. Se você marcar uma ação como feita ou mover um cartão no painel, toque em **Copiar pedido para Claude** e cole no Claude Code para que fique salvo. O botão **⚡** de cada ação copia um pedido para o Claude ajudar você com essa tarefa.
+Ele se atualiza sozinho cada vez que o Claude muda algo.
+
+**Para que o que você marca seja salvo sozinho**, abra com `tablero/abrir-tablero.bat` no Windows ou `tablero/abrir-tablero.command` no Mac (precisa de Python). Assim, marcar uma ação como feita, mover um cartão, anotar uma novidade, adicionar uma ação ou corrigir com ✏️ a data de envio fica salvo na hora, sem passar pelo Claude. Encerrar uma candidatura continua passando pelo Claude, porque precisa do resultado. O servidor só escuta no seu computador e para quando você fecha a janela dele.
+
+Se você abrir com dois cliques, o que marcar fica pendente: toque em **Copiar pedido para Claude** e cole no Claude Code para que fique salvo. O botão **⚡** de cada ação copia um pedido para o Claude ajudar você com essa tarefa.
 
 Para ver o painel com dados de exemplo antes de carregar os seus, abra o painel e toque em **Ver el tablero con datos de ejemplo**.
 
