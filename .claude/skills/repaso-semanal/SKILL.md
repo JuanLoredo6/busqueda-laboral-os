@@ -49,6 +49,7 @@ Si no hay indicador definido, decilo en una línea y ofrecé definirlo al termin
 
 - **Acciones vencidas:** fecha anterior a hoy y sin hacer. Por cada una: hacerla, reprogramarla o descartarla (lo decide la persona).
 - **Postulaciones olvidadas:** en `esperando` con más de 14 días sin novedad y sin acción de seguimiento. Proponé un follow-up, buscar un contacto, o cerrarla como `sin-respuesta` (solo si la persona confirma).
+- **Entrevistas sin práctica:** acciones de entrevista sin hacer cuya postulación no tiene `practica.json`. Armalas con `preparar-entrevista` en el mismo repaso, o decí cuáles faltan si la persona prefiere dejarlo para después.
 - **Antimétricas:** si alguna pasó su umbral, decilo claro. Por ejemplo, demasiadas postulaciones fuera de lo que buscás o una semana sin ninguna conversación con una persona.
 - **Datos pendientes** viejos en `contexto/datos-pendientes.md`.
 

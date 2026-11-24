@@ -38,11 +38,15 @@ Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de l
 5. **Acciones:**
    - Marcá como hechas (`hecha: true`, `hechaEl`) las que la novedad resuelve. Un follow-up condicionado a "si no respondió" se cierra con nota "no hizo falta" cuando respondieron.
    - Creá las que siguen, con fecha y pedido. Por ejemplo:
-     - Entrevista agendada: "Preparar la entrevista con <empresa>" para el día anterior, con pedido `/preparar-entrevista <empresa-rol>`. El texto empieza con «Preparar la entrevista» y el pedido con `/preparar-entrevista`: así el tablero le pone 🎯 Practicar cuando la entrevista tiene práctica. Si hay que confirmar la entrevista, otra acción para hoy.
+     - Entrevista agendada: "Preparar la entrevista con <empresa>" para el día anterior, con pedido `/preparar-entrevista <empresa-rol>`. El texto empieza con «Preparar la entrevista» y el pedido con `/preparar-entrevista`: así el tablero le pone 🎯 Practicar. **En el mismo turno, armá su práctica** (`entrevistas/<empresa>/practica.json`, con `entrevista.postulacion`), como dice «Práctica en el navegador» de `preparar-entrevista`: con lo que hay en el perfil, `rol.md` y la novedad, sin inventar (lo que falta va a `faltan` como ❓). Si la práctica ya existe, sumale lo nuevo (fecha, entrevistador) sin pisarla. Si hay que confirmar la entrevista, otra acción para hoy.
      - Después de una entrevista: "Mandar agradecimiento a <persona>" para hoy (`/redactar-mensaje agradecimiento <empresa-rol>`) y "Follow-up si no hay novedades" a los 7 días.
      - Rechazo: opcional, "Agradecer y pedir feedback" (`/redactar-mensaje`), solo si hubo contacto humano.
 6. **Fecha relativa a fecha exacta:** "el jueves" se convierte en AAAA-MM-DD a partir de la fecha de hoy. Si es ambiguo, preguntá.
 7. Actualizá `actualizado` en la raíz del JSON con la fecha y hora.
+
+## Toda entrevista tiene su práctica
+
+Antes de cerrar, revisá las acciones sin hacer que son de entrevista (el pedido empieza con `/preparar-entrevista` o el texto con «Preparar la entrevista» o «Preparar la charla»). Si alguna no tiene `practica.json` con su `postulacion`, armala en este mismo turno. Si una práctica vieja es de esa postulación pero no tiene `entrevista.postulacion`, proponé vincularla y preguntá antes de escribir (límite L9).
 
 ## Contradicciones
 

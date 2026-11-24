@@ -26,8 +26,10 @@ import io
 import json
 import os
 import re
+import socket
 import sys
 import urllib.parse
+import urllib.request
 import tempfile
 import threading
 import webbrowser
@@ -440,7 +442,9 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         ruta, _, consulta = self.path.partition("?")
         if ruta == "/api/estado":
-            self.responder(200, {"servidor": True, "version": VERSION})
+            # La carpeta de datos identifica a este tablero: así otro lanzador sabe si el puerto es suyo.
+            self.responder(200, {"servidor": True, "version": VERSION, "raiz": os.path.normcase(self.raiz),
+                                 "carpeta": os.path.basename(self.raiz.rstrip("\\/"))})
             return
         if ruta == "/api/transcripcion":
             self.responder(200, transcriptor.info())
@@ -459,13 +463,26 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         nombre = self.path.split("?")[0].lstrip("/")
         if nombre == "datos.js":
-            # Se lee de la raíz elegida (puede no ser la carpeta de este script).
-            ruta = os.path.join(self.raiz, "tablero", "datos.js")
-            if not os.path.isfile(ruta):
-                self.send_error(404)
-                return
-            with open(ruta, "rb") as f:
-                cuerpo = f.read()
+            # Se arma en el momento desde postulaciones.json de la raíz elegida: así el tablero ve los
+            # cambios aunque esa carpeta no tenga el hook que regenera datos.js (por ejemplo, si los datos
+            # viven fuera del repo). Si el JSON está roto, se sirve el último datos.js bueno.
+            cuerpo = None
+            ruta_json = os.path.join(self.raiz, "postulaciones", "postulaciones.json")
+            if os.path.isfile(ruta_json):
+                with open(ruta_json, encoding="utf-8") as f:
+                    texto = f.read()
+                try:
+                    json.loads(texto)
+                    cuerpo = ("window.DATOS_TABLERO = " + texto.strip() + ";\n").encode("utf-8")
+                except json.JSONDecodeError:
+                    cuerpo = None
+            if cuerpo is None:
+                ruta = os.path.join(self.raiz, "tablero", "datos.js")
+                if not os.path.isfile(ruta):
+                    self.send_error(404)
+                    return
+                with open(ruta, "rb") as f:
+                    cuerpo = f.read()
             self.send_response(200)
             self.send_header("Content-Type", "text/javascript; charset=utf-8")
             self.send_header("Content-Length", str(len(cuerpo)))
@@ -534,6 +551,27 @@ class Manejador(SimpleHTTPRequestHandler):
         self.responder(*transcriptor.transcribir(audio, idioma))
 
 
+class Servidor(ThreadingHTTPServer):
+    # HTTPServer reusa la dirección por defecto. En Windows eso deja abrir un segundo tablero en un puerto
+    # que ya está en uso, y el navegador termina viendo los datos del otro. Se pide el puerto en exclusiva.
+    allow_reuse_address = False
+
+    def server_bind(self):
+        if hasattr(socket, "SO_EXCLUSIVEADDRUSE"):
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
+
+
+def raiz_en_puerto(puerto):
+    """La carpeta de datos del tablero que ya escucha en ese puerto, o None si no es un tablero."""
+    try:
+        with urllib.request.urlopen(f"http://127.0.0.1:{puerto}/api/estado", timeout=2) as r:
+            j = json.loads(r.read().decode("utf-8"))
+        return j.get("raiz") or "" if j.get("servidor") else None
+    except Exception:
+        return None
+
+
 def main():
     ap = argparse.ArgumentParser(description="Servidor local del tablero de búsqueda.")
     ap.add_argument("--puerto", type=int, default=8765)
@@ -544,19 +582,31 @@ def main():
     ap.add_argument("--sin-transcripcion", action="store_true")
     args = ap.parse_args()
 
-    Manejador.raiz = os.path.abspath(args.raiz)
-    Manejador.puerto = args.puerto
-    try:
-        servidor = ThreadingHTTPServer(("127.0.0.1", args.puerto), Manejador)
-    except OSError:
-        url = f"http://127.0.0.1:{args.puerto}/tablero.html"
-        print(f"El puerto {args.puerto} está ocupado. Si el tablero ya está abierto, entrá a {url}")
-        if not args.no_abrir:
-            webbrowser.open(url)
-        return 1
     global transcriptor
     with contextlib.suppress(Exception):  # tildes bien escritas también si la salida va a un archivo
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    Manejador.raiz = os.path.abspath(args.raiz)
+    # Si el puerto lo usa otro tablero (otra carpeta de datos), no se abre ese: se busca el siguiente libre.
+    # Si lo usa este mismo tablero, se abre el que ya está andando.
+    servidor = None
+    for puerto in range(args.puerto, args.puerto + 20):
+        try:
+            servidor = Servidor(("127.0.0.1", puerto), Manejador)
+            break
+        except OSError:
+            otra = raiz_en_puerto(puerto)
+            if otra is not None and otra == os.path.normcase(Manejador.raiz):
+                url = f"http://127.0.0.1:{puerto}/tablero.html"
+                print(f"Este tablero ya está abierto en {url}")
+                if not args.no_abrir:
+                    webbrowser.open(url)
+                return 0
+            print(f"El puerto {puerto} lo usa otro programa" + (" (otro tablero, con otra carpeta de datos)" if otra else "") + ": pruebo el siguiente.")
+    if servidor is None:
+        print(f"No encontré un puerto libre entre {args.puerto} y {args.puerto + 19}. Cerrá otros tableros y volvé a probar.")
+        return 1
+    Manejador.puerto = puerto
+    args.puerto = puerto
     transcriptor =Transcriptor(None if args.sin_transcripcion else args.modelo)
     if transcriptor.estado == "sin-libreria":
         print("Transcripción local: no está instalada (se abre con abrir-tablero, que usa uv). La práctica usa el dictado del navegador.")
