@@ -51,7 +51,9 @@ Comprobación: tenés las tres versiones anotadas.
 
 ### Etapa 3 · Respaldo
 
-1. Copiá a `respaldos/<AAAA-MM-DD-HHMM>/` las carpetas y archivos de datos de la persona que existan (la lista de «Reglas»). Con Git, sumá también `git rev-parse HEAD` en un archivo `respaldos/<…>/commit.txt`.
+1. Copiá a `respaldos/<AAAA-MM-DD-HHMM>/` las carpetas y archivos de datos de la persona que existan (la lista de «Reglas»).
+   - **Con Git**, sumá `git rev-parse HEAD` en un archivo `respaldos/<…>/commit.txt`: el código viejo queda en Git.
+   - **Con el ZIP**, sumá también la carpeta `.claude/` completa: el ZIP reemplaza skills y configuración, y no hay otra copia de la versión vieja (ni de un skill propio que la persona haya armado).
 2. Comprobá que la copia tiene la misma cantidad de archivos que el original.
 3. Decile dónde quedó el respaldo, en una línea.
 
