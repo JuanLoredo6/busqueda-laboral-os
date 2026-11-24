@@ -12,6 +12,8 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.12.0 — 2026-11-24 · Actualización asistida
+
 ### Nuevo
 
 - **Actualización asistida** (`ACTUALIZACION.md` y skill `actualizar-sistema`): lleva cualquier copia vieja a la versión nueva, instalada con Git o con el ZIP. Hace un respaldo de los datos en `respaldos/`, trae el código nuevo (si hay cambios propios en archivos del sistema, los guarda en una rama aparte), adapta los datos con las migraciones de cada versión y cuenta qué hay de nuevo. Las copias anteriores a esta versión se actualizan pegando el pedido con el link a la guía.
