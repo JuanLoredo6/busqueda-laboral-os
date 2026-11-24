@@ -147,6 +147,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
 
   var params = new URLSearchParams(location.search);
   var carpeta = params.get("e");
+  var accionId = params.get("accion");
   var CLAVE = "practica-borrador-" + carpeta;
   var CLAVE_DICTADO = "practica-dictado";
   var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -246,6 +247,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
         '<p class="muted">Esta página lee y guarda archivos de tu carpeta, así que necesita el servidor local.<br>Abrí <code>tablero/abrir-tablero.bat</code> (Windows) o <code>abrir-tablero.command</code> (Mac) y entrá a «🎯 Práctica».</p></div>';
       return;
     }
+    if (accionId) { cargarPendiente(); return; }
     if (!carpeta) { cargarLista(); return; }
     consultarTranscripcion();
     cargarPractica(true);
@@ -259,15 +261,80 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
       if (antes !== local.estado && info && !activa) render();
     }, function () {});
   }
-  function cargarLista() {
-    api("/api/practicas").then(function (res) {
-      var lista = (res.j && res.j.practicas) || [];
+  // ---------- entrevistas del tablero que todavía no tienen práctica ----------
+  // Mismo criterio que el tablero: el pedido empieza con /preparar-entrevista o el texto con
+  // «Preparar la entrevista» / «Preparar la charla».
+  function esEntrevista(a) {
+    return /^\/preparar-entrevista\b/.test((a.pedido || "").trim()) || /^prepar\w*\s+(la\s+)?(entrevista|charla)/i.test(a.texto || "");
+  }
+  function leerTablero() {
+    return new Promise(function (ok) {
+      var s = document.createElement("script");
+      s.src = "datos.js?t=" + Date.now();
+      s.onload = function () { s.remove(); ok(window.DATOS_TABLERO || null); };
+      s.onerror = function () { s.remove(); ok(null); };
+      document.body.appendChild(s);
+    });
+  }
+  function pedidoArmar(a, p) {
+    return (a.pedido && /^\/preparar-entrevista\b/.test(a.pedido.trim()) ? a.pedido.trim() : "/preparar-entrevista" + (p ? " " + p.id : "")) +
+      "\n\nArmá la práctica en el navegador de esta entrevista (entrevistas/<empresa>/practica.json" + (p ? ', con "postulacion": "' + p.id + '"' : "") + ")." +
+      "\nTarea del tablero: «" + a.texto + "» (id " + a.id + ")" + (a.fecha ? ", para el " + a.fecha : "") + "." +
+      (p ? "\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." : "");
+  }
+  // Las entrevistas pendientes del tablero sin práctica: [{accion, postulacion}].
+  function sinPractica(datosTablero, practicas) {
+    if (!datosTablero) return [];
+    var con = {}; practicas.forEach(function (p) { if (p.postulacion) con[p.postulacion] = true; });
+    var posts = {}; (datosTablero.postulaciones || []).forEach(function (p) { posts[p.id] = p; });
+    return (datosTablero.acciones || []).filter(function (a) { return !a.hecha && esEntrevista(a) && !(a.postulacion && con[a.postulacion]); })
+      .map(function (a) { return { accion: a, postulacion: posts[a.postulacion] || null }; });
+  }
+  function htmlSinPractica(lista) {
+    if (!lista.length) return "";
+    return '<h2 style="font-size:17px;margin:0 0 8px">Entrevistas sin práctica todavía</h2><div class="lista">' + lista.map(function (x) {
+      var a = x.accion, p = x.postulacion;
+      return '<a class="caja" href="practica.html?accion=' + encodeURIComponent(a.id) + '"><div class="fila"><strong>' + esc(p ? p.empresa : a.texto) + "</strong>" +
+        '<span class="faint">falta armarla</span></div><div class="muted">' + esc([a.texto, a.fecha ? "para el " + a.fecha : ""].filter(Boolean).join(" · ")) + "</div></a>";
+    }).join("") + '</div><h2 style="font-size:17px;margin:18px 0 8px">Prácticas armadas</h2>';
+  }
+  // ?accion=<id>: la acción todavía no tiene práctica. Se muestra el pedido para que Claude la arme
+  // y la página se abre sola cuando aparece.
+  function cargarPendiente() {
+    Promise.all([leerTablero(), api("/api/practicas")]).then(function (r) {
+      var datosTablero = r[0], practicas = (r[1].j && r[1].j.practicas) || [];
+      var a = ((datosTablero && datosTablero.acciones) || []).filter(function (x) { return x.id === accionId; })[0];
       var c = document.getElementById("contenido");
-      if (!lista.length) {
+      if (!a) { c.innerHTML = '<div class="caja vacio"><h2>No encontré esa acción en el tablero</h2><p><a href="practica.html">Ver todas las prácticas</a></p></div>'; return; }
+      var ya = practicas.filter(function (p) { return a.postulacion && p.postulacion === a.postulacion; })[0];
+      if (ya) { location.replace("practica.html?e=" + encodeURIComponent(ya.carpeta)); return; }
+      var p = ((datosTablero.postulaciones || []).filter(function (x) { return x.id === a.postulacion; }))[0] || null;
+      var pedido = pedidoArmar(a, p);
+      document.getElementById("titulo").textContent = p ? p.empresa + " · " + p.rol : a.texto;
+      c.innerHTML = '<div class="caja"><h2 style="margin-top:0">La práctica de esta entrevista todavía no está armada</h2>' +
+        '<p class="muted">Pegá este pedido en Claude Code. Claude arma las preguntas con tu perfil y lo que se sabe del rol, y esta página se abre sola cuando la práctica esté lista.</p>' +
+        '<div class="pedido"><pre>' + esc(pedido) + '</pre><button class="btn btn-primary btn-sm" id="copiar-armar">Copiar pedido</button></div>' +
+        '<p class="faint" style="font-size:13px;margin-bottom:0">Esperando la práctica… <a href="practica.html">Ver todas las prácticas</a></p></div>';
+      document.getElementById("copiar-armar").onclick = function () { copiar(pedido, "Pedido copiado. Pegalo en Claude Code."); };
+      setInterval(function () {
+        api("/api/practicas").then(function (res) {
+          var nueva = ((res.j && res.j.practicas) || []).filter(function (x) { return a.postulacion && x.postulacion === a.postulacion; })[0];
+          if (nueva) location.replace("practica.html?e=" + encodeURIComponent(nueva.carpeta));
+        }, function () {});
+      }, 5000);
+    }, function () { toast("No pude hablar con el servidor."); });
+  }
+  function cargarLista() {
+    Promise.all([api("/api/practicas"), leerTablero()]).then(function (r) {
+      var res = r[0];
+      var lista = (res.j && res.j.practicas) || [];
+      var faltan = sinPractica(r[1], lista);
+      var c = document.getElementById("contenido");
+      if (!lista.length && !faltan.length) {
         c.innerHTML = '<div class="caja vacio"><h2>Todavía no hay prácticas armadas</h2><p class="muted">Pedile a Claude <code>/preparar-entrevista</code> para una entrevista y decile que te arme la práctica.</p></div>';
         return;
       }
-      c.innerHTML = '<div class="lista">' + lista.map(function (p) {
+      c.innerHTML = htmlSinPractica(faltan) + '<div class="lista">' + lista.map(function (p) {
         return '<a class="caja" href="practica.html?e=' + encodeURIComponent(p.carpeta) + '"><div class="fila"><strong>' + esc(p.empresa || p.carpeta) + "</strong>" +
           (p.puntaje != null ? '<span class="puntaje ' + claseP(p.puntaje) + '">' + esc(p.puntaje) + "/100</span>" : '<span class="faint">sin puntaje todavía</span>') + "</div>" +
           '<div class="muted">' + esc([p.rol, p.tipo, p.fecha ? "entrevista el " + p.fecha : "", p.preguntas ? p.preguntas + " preguntas" : ""].filter(Boolean).join(" · ")) +

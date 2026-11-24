@@ -120,7 +120,7 @@ busqueda-laboral-os/
 ├── investigacion/     Relatórios datados: diagnóstico, mercado, métricas, revisões
 ├── tablero/           tablero.html (abra com dois cliques)
 ├── plantillas/        O que o /empezar copia na primeira vez
-└── .claude/skills/    Os 18 skills
+└── .claude/skills/    Os 19 skills
 ```
 
 ### Os skills
@@ -169,13 +169,13 @@ busqueda-laboral-os/
 
 ## Atualizar o sistema
 
-Quando houver melhorias, peça ao Claude "atualize o sistema" ou rode:
+Quando houver uma versão nova, abra o Claude Code na pasta do sistema e peça «atualize o sistema». Se a sua cópia for anterior à 0.12.0, cole este pedido:
 
-```bash
-git pull
+```text
+Actualizá el sistema de búsqueda laboral siguiendo la guía https://raw.githubusercontent.com/JuanLoredo6/busqueda-laboral-os/main/ACTUALIZACION.md
 ```
 
-Seus dados não são tocados: ficam fora do que é versionado.
+O Claude primeiro faz um backup dos seus dados, traz o código novo (com Git ou com o ZIP, conforme você instalou), adapta seus dados ao que mudou e conta o que há de novo. O passo a passo está em [ACTUALIZACION.md](ACTUALIZACION.md) (em espanhol).
 
 O que mudou em cada versão: [CHANGELOG.md](CHANGELOG.md) (em espanhol).
 

@@ -90,7 +90,7 @@ No son de comportamiento, pero aparecen en casi todos los procesos y conviene te
 4. **Preguntas para hacerle a la empresa:** 3 o 4 que muestren criterio (qué problema tiene hoy el equipo, cómo se mide el éxito en el rol a los 6 meses, qué decisión difícil tienen abierta).
 5. **Repaso de 5 minutos:** una lista corta para leer antes de entrar.
 6. Guardalo en `entrevistas/<empresa>/preparacion-<tipo>.md`. Si ya existe una preparación para esa empresa, sumá una sección en vez de pisarla.
-7. **Ofrecé la práctica en el navegador:** con las mismas preguntas, escribí `entrevistas/<empresa>/practica.json` (ver «Práctica en el navegador», más abajo) y decile que la abra desde el tablero con el servidor local (🎯 Práctica).
+7. **Armá siempre la práctica en el navegador:** con las mismas preguntas, escribí `entrevistas/<empresa>/practica.json` (ver «Práctica en el navegador», más abajo) y decile que la abra con 🎯 Practicar en el tablero. Toda entrevista del tablero tiene que tener su práctica: si ya existe, sumá lo nuevo sin pisarla.
 
 Marcas: 📌 dato literal de una fuente, con su ubicación · 🔍 lectura tuya que ninguna fuente afirma · ❓ dato que falta y completa la persona.
 

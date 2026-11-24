@@ -18,6 +18,10 @@ Thumbs.db
 __pycache__/
 .claude/settings.local.json
 
+# Respaldos que hace la actualización y versión hasta la que se adaptaron tus datos
+respaldos/
+.version-datos
+
 # Material interno de quien da el taller
 taller/
 

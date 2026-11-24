@@ -28,6 +28,7 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 | Practicar una entrevista en el navegador (🎯 Práctica, con voz y tiempos) y recibir la devolución con puntaje | `preparar-entrevista` (su Modo 3; el pedido empieza con `/preparar-entrevista feedback`) |
 | Practicar o responder casos de Producto, Negocio o Liderazgo, o preguntas técnicas y de diseño de sistemas | `preparar-entrevista` (sus criterios de producto y técnico) |
 | Repasar la semana: qué venció, qué sigue, cómo van los números | `repaso-semanal` |
+| Pasar a la versión nueva del sistema sin perder nada («actualizá el sistema») | `actualizar-sistema` |
 
 ## Estrategia de la búsqueda
 

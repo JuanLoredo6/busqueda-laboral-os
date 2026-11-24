@@ -215,7 +215,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         <li>Dejá esta pestaña abierta: se actualiza sola cada 10 segundos.</li>
         <li>Si abriste el tablero con <code>abrir-tablero</code> (el servidor local), lo que marques acá (una acción hecha, una tarjeta movida, una nota, una acción nueva, la fecha de envío corregida con ✏️) <strong>se guarda solo</strong> en el archivo. Al pasar una tarjeta a «Esperando respuesta», la fecha de envío es la de hoy. Cerrar una postulación sigue pasando por Claude, porque necesita el resultado.</li>
         <li>Si lo abriste con doble clic, lo que marques queda como <strong>cambio pendiente</strong> en este navegador. Tocá <strong>Copiar pedido para Claude</strong>, pegalo en Claude Code y Claude lo pasa al archivo. Cuando el archivo ya lo refleja, el cambio pendiente desaparece solo.</li>
-        <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea. Con el servidor, las acciones de preparar una entrevista que ya tiene práctica llevan <strong>🎯 Practicar</strong>, que abre la práctica; si todavía no la tiene, el ⚡ le pide a Claude que la arme.</li>
+        <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea. Con el servidor, las acciones de preparar una entrevista llevan siempre <strong>🎯 Practicar</strong>: si la práctica ya está, la abre; si todavía no, te da el pedido para que Claude la arme y se abre sola cuando está lista.</li>
         <li>Para mover una tarjeta, arrastrala a otra columna o abrí su detalle y elegí la columna.</li>
         <li><strong>🔄 SYNC</strong> copia el pedido para que Claude revise Gmail y Google Calendar y traiga las novedades de tus postulaciones. Si activaste la sincronización automática (<code>/sincronizar-correo configurar</code>), corre sola cada 2 horas de 8 a 22 mientras la app de Claude esté abierta. Lo dudoso aparece en «Para revisar».</li>
       </ol>
@@ -496,15 +496,16 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
   }
   function practicaDe(a) { return servidor && esEntrevista(a) && a.postulacion ? practicas[a.postulacion] || null : null; }
   // El botón de una acción: 🎯 si ya tiene práctica; si no, el ⚡ de siempre.
+  // Una acción de entrevista lleva siempre 🎯: si la práctica existe, la abre; si todavía no, abre
+  // la página de práctica con el pedido para que Claude la arme (y se abre sola cuando está lista).
   function botonAccion(a, estilo, texto) {
     var c = practicaDe(a);
-    if (c) {
-      return '<a class="btn ' + (estilo === "chico" ? "btn-ghost btn-sm" : estilo === "principal" ? "btn-primary" : "") +
-        '" style="text-decoration:none' + (estilo === "principal" ? "" : ";color:inherit") + '" href="practica.html?e=' + encodeURIComponent(c) +
-        '" title="Practicar esta entrevista">' + (estilo === "chico" ? "🎯" : "🎯 Practicar") + "</a>";
-    }
     if (servidor && esEntrevista(a)) {
-      texto = estilo === "chico" ? "⚡" : "⚡ Armar la práctica con Claude";
+      var href = c ? "practica.html?e=" + encodeURIComponent(c) : "practica.html?accion=" + encodeURIComponent(a.id);
+      return '<a class="btn ' + (estilo === "chico" ? "btn-ghost btn-sm" : estilo === "principal" ? "btn-primary" : "") +
+        '" style="text-decoration:none' + (estilo === "principal" ? "" : ";color:inherit") + '" href="' + href +
+        '" title="' + (c ? "Practicar esta entrevista" : "Practicar esta entrevista (Claude arma la práctica primero)") + '">' +
+        (estilo === "chico" ? "🎯" : "🎯 Practicar") + "</a>";
     }
     return '<button class="btn' + (estilo === "chico" ? " btn-ghost btn-sm" : estilo === "principal" ? " btn-primary" : "") + '" data-pedido="' + esc(a.id) +
       '" title="Copiar un pedido para que Claude te ayude con esta tarea">' + texto + "</button>";

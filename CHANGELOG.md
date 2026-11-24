@@ -12,6 +12,21 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.12.0 — 2026-11-24 · Actualización asistida
+
+### Nuevo
+
+- **Actualización asistida** (`ACTUALIZACION.md` y skill `actualizar-sistema`): lleva cualquier copia vieja a la versión nueva, instalada con Git o con el ZIP. Hace un respaldo de los datos en `respaldos/`, trae el código nuevo (si hay cambios propios en archivos del sistema, los guarda en una rama aparte), adapta los datos con las migraciones de cada versión y cuenta qué hay de nuevo. Las copias anteriores a esta versión se actualizan pegando el pedido con el link a la guía.
+- `migraciones/`: un archivo por versión que cambió algo de los datos de la persona (0.2.0, 0.6.0, 0.7.0, 0.10.0, 0.11.0 y 0.12.0), con pasos que se pueden aplicar dos veces sin romper nada. Lo inequívoco se aplica solo; lo que borra, renombra o depende de un dato de la persona se pregunta.
+- `.version-datos`: la versión hasta la que se adaptaron los datos. La escriben la actualización y `empezar`.
+- **Toda entrevista tiene su práctica.** `actualizar`, `sincronizar-correo` (en la corrida a mano) y `preparar-entrevista` arman `practica.json` en el mismo turno en que se agenda o prepara una entrevista; la sincronización programada lo deja en «Para revisar» (límite L10). `actualizar` y `repaso-semanal` revisan que ninguna acción de entrevista quede sin práctica. En el tablero, una acción de entrevista lleva siempre 🎯 Practicar: si la práctica todavía no existe, abre la página de práctica con el pedido para armarla y se abre sola cuando está lista. 🎯 Práctica lista también las entrevistas que todavía no tienen práctica.
+
+### Cambios
+
+- Servidor del tablero: si el puerto lo usa otro tablero (otra carpeta de datos), busca el siguiente libre en vez de abrir el ajeno; si es el mismo, abre el que ya anda. Antes, el lanzador podía mostrar los datos de otra carpeta sin avisar.
+- Servidor del tablero: arma `datos.js` en el momento desde `postulaciones.json`, así el tablero ve los cambios aunque la carpeta de datos no tenga el hook que lo regenera (por ejemplo, datos fuera del repo con `--raiz`).
+- `CLAUDE.md`: todo cambio del sistema que toque los datos de la persona suma su migración. Los README explican cómo actualizar. `respaldos/` y `.version-datos` quedan en el `.gitignore`.
+
 ## 0.11.0 — 2026-11-24 · Tablero local y práctica de entrevistas
 
 ### Nuevo
