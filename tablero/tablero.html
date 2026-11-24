@@ -150,6 +150,9 @@ form.nueva .fila { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
 .tarjeta .estado { font-size: 13px; margin-top: 6px; }
 .tarjeta .antig { font-size: 12px; color: var(--text-3); margin-top: 4px; }
 .tarjeta .antig.alerta { color: var(--warn); font-weight: 600; }
+.tarjeta .envio { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+.tarjeta .envio .btn-sm { padding: 0 4px; }
+.tarjeta .envio input[type=date] { font-size: 12px; padding: 1px 4px; border: 1px solid var(--border); border-radius: 4px; background: var(--surface); }
 .tarjeta .proximo { font-size: 13px; margin-top: 8px; padding: 6px 8px; background: var(--surface-2); border-radius: 6px; }
 .tarjeta details summary { font-size: 12px; color: var(--text-3); cursor: pointer; margin-top: 6px; }
 .tarjeta .detalle { font-size: 12px; color: var(--text-2); margin-top: 6px; }
@@ -209,7 +212,8 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       <ol>
         <li>Los datos viven en <code>postulaciones/postulaciones.json</code>. Claude los actualiza cuando le contás novedades y genera <code>tablero/datos.js</code>, que es lo que lee esta página.</li>
         <li>Dejá esta pestaña abierta: se actualiza sola cada 10 segundos.</li>
-        <li>Lo que marques acá (una acción hecha, una tarjeta movida, una nota) queda como <strong>cambio pendiente</strong> en este navegador. Tocá <strong>Copiar pedido para Claude</strong>, pegalo en Claude Code y Claude lo pasa al archivo. Cuando el archivo ya lo refleja, el cambio pendiente desaparece solo.</li>
+        <li>Si abriste el tablero con <code>abrir-tablero</code> (el servidor local), lo que marques acá (una acción hecha, una tarjeta movida, una nota, una acción nueva, la fecha de envío corregida con ✏️) <strong>se guarda solo</strong> en el archivo. Al pasar una tarjeta a «Esperando respuesta», la fecha de envío es la de hoy. Cerrar una postulación sigue pasando por Claude, porque necesita el resultado.</li>
+        <li>Si lo abriste con doble clic, lo que marques queda como <strong>cambio pendiente</strong> en este navegador. Tocá <strong>Copiar pedido para Claude</strong>, pegalo en Claude Code y Claude lo pasa al archivo. Cuando el archivo ya lo refleja, el cambio pendiente desaparece solo.</li>
         <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea.</li>
         <li>Para mover una tarjeta, arrastrala a otra columna o abrí su detalle y elegí la columna.</li>
         <li><strong>🔄 SYNC</strong> copia el pedido para que Claude revise Gmail y Google Calendar y traiga las novedades de tus postulaciones. Si activaste la sincronización automática (<code>/sincronizar-correo configurar</code>), corre sola cada 2 horas de 8 a 22 mientras la app de Claude esté abierta. Lo dudoso aparece en «Para revisar».</li>
@@ -310,12 +314,59 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
   var cambios = leerCambios();
   function sumarCambio(c) {
     cambios = cambios.filter(function (x) {
-      return !(x.tipo === c.tipo && x.id === c.id && (c.tipo === "hecha" || c.tipo === "mover"));
+      return !(x.tipo === c.tipo && x.id === c.id && (c.tipo === "hecha" || c.tipo === "mover" || c.tipo === "fecha-enviada"));
     });
     c.fecha = hoyISO();
     cambios.push(c);
     guardarCambios(cambios);
     render();
+    if (guardaSolo()) enviarCambios([c]);
+  }
+
+  // ---------- servidor local (tablero/servidor.py) ----------
+  // Si la página se abrió desde el servidor, los cambios mecánicos se guardan solos en
+  // postulaciones.json. Con doble clic (file://) todo sigue como pedido para Claude.
+  var servidor = false;
+  function guardaSolo() { return servidor && !modoEjemplo; }
+  function detectarServidor() {
+    if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
+    fetch("/api/estado", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      servidor = !!(j && j.servidor);
+      if (guardaSolo()) {
+        var sinMotivo = cambios.filter(function (c) { return !c.motivo; });
+        if (sinMotivo.length) enviarCambios(sinMotivo); else render();
+      }
+    }, function () {});
+  }
+  function enviarCambios(lista) {
+    fetch("/api/cambios", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cambios: lista })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    }).then(function (res) {
+      if (!res.ok) {
+        lista.forEach(function (c) { c.motivo = res.j.error || "no se pudo guardar"; });
+        guardarCambios(cambios); render();
+        toast(res.j.error || "No pude guardar. Quedó como pedido para Claude.");
+        return;
+      }
+      var guardados = 0, pendientes = 0;
+      (res.j.resultados || []).forEach(function (r) {
+        var c = lista[r.indice];
+        if (!c) return;
+        if (r.ok) { cambios = cambios.filter(function (x) { return x !== c; }); guardados++; }
+        else { c.motivo = r.motivo; pendientes++; }
+      });
+      guardarCambios(cambios);
+      firmaDatos = ""; cargar();
+      render();
+      if (pendientes) toast(guardados ? "Guardé " + guardados + ". Lo otro necesita a Claude." : "Esto necesita a Claude: quedó como pedido.");
+      else toast(guardados === 1 ? "Guardado." : "Guardados " + guardados + " cambios.");
+    }, function () {
+      servidor = false; render();
+      toast("Se cortó el servidor del tablero. El cambio quedó como pedido para Claude.");
+    });
   }
   function quitarCambio(i) { cambios.splice(i, 1); guardarCambios(cambios); render(); }
 
@@ -329,6 +380,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     cambios = cambios.filter(function (c) {
       if (c.tipo === "hecha") { var a = buscarAccion(c.id); return a && !a.hecha; }
       if (c.tipo === "mover") { var p = buscarPost(c.id); return p && p.columna !== c.destino; }
+      if (c.tipo === "fecha-enviada") { var e = buscarPost(c.id); return e && e.enviada !== c.fechaNueva; }
       if (c.tipo === "nota") {
         var q = buscarPost(c.id);
         return !(q && (q.historial || []).some(function (h) { return (h.texto || "").indexOf(c.texto.slice(0, 40)) !== -1; }));
@@ -345,6 +397,11 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     if (c.tipo === "hecha") { a = buscarAccion(c.id); return "Marcar como hecha la acción «" + (a ? a.texto : c.id) + "» (id " + c.id + ")."; }
     if (c.tipo === "mover") { p = buscarPost(c.id); return "Mover la postulación " + (p ? p.empresa + " · " + p.rol : c.id) + " (id " + c.id + ") a «" + NOMBRE_COLUMNA[c.destino] + "»."; }
     if (c.tipo === "nota") { p = buscarPost(c.id); return "Sumar al historial de " + (p ? p.empresa : c.id) + " (id " + c.id + "): " + c.texto; }
+    if (c.tipo === "fecha-enviada") {
+      p = buscarPost(c.id);
+      return "Corregir la fecha de envío de " + (p ? p.empresa + " · " + p.rol : c.id) + " (id " + c.id + ") a " + c.fechaNueva +
+        (p && p.enviada ? " (hoy figura " + p.enviada + ")" : "") + ".";
+    }
     if (c.tipo === "accion-nueva") {
       p = c.postulacion ? buscarPost(c.postulacion) : null;
       return "Sumar la acción «" + c.texto + "»" + (c.fechaAccion ? " para el " + c.fechaAccion : " sin fecha") + (p ? ", de la postulación " + p.empresa + " (id " + p.id + ")" : "") + ".";
@@ -362,6 +419,11 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     var m = cambios.filter(function (c) { return c.tipo === "mover" && c.id === p.id; })[0];
     return m ? m.destino : p.columna;
   }
+  function fechaEnviadaLocal(p) {
+    var m = cambios.filter(function (c) { return c.tipo === "fecha-enviada" && c.id === p.id; })[0];
+    return m ? m.fechaNueva : null;
+  }
+  var editandoFecha = null; // id de la tarjeta con el selector de fecha abierto
   function accionHechaLocal(a) { return cambios.some(function (c) { return c.tipo === "hecha" && c.id === a.id; }); }
 
   // ---------- cálculos ----------
@@ -463,10 +525,17 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
 
   function htmlCambios() {
     if (!cambios.length) return "";
-    return '<section class="cambios visible" aria-live="polite"><div class="cambios-fila"><strong>Tenés ' + cambios.length +
-      (cambios.length === 1 ? " cambio que todavía no le pasaste a Claude" : " cambios que todavía no le pasaste a Claude") +
-      '</strong><span><button class="btn btn-primary" id="copiar-cambios">Copiar pedido para Claude</button></span></div><ul>' +
-      cambios.map(function (c, i) { return "<li>" + esc(describirCambio(c)) + ' <button class="btn btn-ghost btn-sm" data-quitar="' + i + '">Deshacer</button></li>'; }).join("") +
+    var titulo = guardaSolo()
+      ? (cambios.length === 1 ? " cambio que necesita a Claude" : " cambios que necesitan a Claude")
+      : (cambios.length === 1 ? " cambio que todavía no le pasaste a Claude" : " cambios que todavía no le pasaste a Claude");
+    var reintentar = guardaSolo() && cambios.some(function (c) { return !c.motivo; });
+    return '<section class="cambios visible" aria-live="polite"><div class="cambios-fila"><strong>Tenés ' + cambios.length + titulo +
+      '</strong><span>' + (reintentar ? '<button class="btn" id="guardar-cambios">Guardar en el archivo</button> ' : "") +
+      '<button class="btn btn-primary" id="copiar-cambios">Copiar pedido para Claude</button></span></div><ul>' +
+      cambios.map(function (c, i) {
+        return "<li>" + esc(describirCambio(c)) + (c.motivo ? ' <span class="faint">(' + esc(c.motivo) + ")</span>" : "") +
+          ' <button class="btn btn-ghost btn-sm" data-quitar="' + i + '">Deshacer</button></li>';
+      }).join("") +
       "</ul></section>";
   }
 
@@ -588,11 +657,28 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       return '<option value="' + c + '"' + (c === col ? " selected" : "") + ">" + NOMBRE_COLUMNA[c] + "</option>";
     }).join("");
     var hist = (p.historial || []).slice().sort(function (a, b) { return (b.fecha || "") < (a.fecha || "") ? -1 : 1; });
+    // Fecha de envío con su ✏️ (en la cara de la tarjeta, para corregirla rápido después de moverla).
+    var fechaLocal = fechaEnviadaLocal(p);
+    var enviada = fechaLocal || p.enviada;
+    var lineaEnvio = "";
+    if (col !== "por-enviar" && (col !== "cerrada" || enviada)) {
+      if (editandoFecha === p.id) {
+        lineaEnvio = '<div class="antig envio"><label for="fecha-env-' + esc(p.id) + '">Enviada el</label> ' +
+          '<input type="date" id="fecha-env-' + esc(p.id) + '" value="' + esc(enviada || "") + '" max="' + hoy + '"> ' +
+          '<button class="btn btn-sm" data-fecha-ok="' + esc(p.id) + '">Guardar</button> ' +
+          '<button class="btn btn-ghost btn-sm" data-fecha-cancelar="1">Cancelar</button></div>';
+      } else {
+        lineaEnvio = '<div class="antig envio">' + (enviada ? "Enviada el " + esc(fechaCorta(enviada)) : "Sin fecha de envío") +
+          ' <button class="btn btn-ghost btn-sm" data-fecha-editar="' + esc(p.id) + '" title="Corregir la fecha de envío" aria-label="Corregir la fecha de envío de ' + esc(p.empresa) + '">✏️</button>' +
+          (fechaLocal ? ' <span class="tag tag-local">falta pasarla a Claude</span>' : "") + "</div>";
+      }
+    }
     return '<article class="tarjeta" draggable="true" data-id="' + esc(p.id) + '">' +
       "<h4><span>" + esc(p.empresa) + "</span>" + (p.encaje != null ? '<span class="encaje" title="Encaje calculado por analizar-oferta">' + esc(p.encaje) + "/100</span>" : "") + "</h4>" +
       '<div class="rol">' + esc(p.rol) + "</div>" +
       (p.columna === "cerrada" && p.resultado ? '<div class="estado"><span class="tag">' + esc(RESULTADOS[p.resultado] || p.resultado) + "</span></div>" : "") +
       (p.estado ? '<div class="estado">' + esc(p.estado) + "</div>" : "") +
+      lineaEnvio +
       (antig && p.columna !== "cerrada" ? '<div class="antig' + (alerta ? " alerta" : "") + '">' + esc(antig) + "</div>" : "") +
       (movida ? '<div class="estado"><span class="tag tag-local">Movida a ' + esc(NOMBRE_COLUMNA[col]) + " · falta pasarla a Claude</span></div>" : "") +
       (mostrarProx && p.columna !== "cerrada" ? '<div class="proximo"><strong>Próximo:</strong> ' + esc(prox) + "</div>" : "") +
@@ -601,7 +687,6 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         '<div>Carpeta: <span class="mono">postulaciones/' + esc(p.id) + "/</span></div>" +
         (p.canal ? "<div>Canal: " + esc(p.canal) + "</div>" : "") +
         (p.contacto ? "<div>Contacto: " + esc(p.contacto) + "</div>" : "") +
-        (p.enviada ? "<div>Enviada: " + esc(p.enviada) + "</div>" : "") +
         (hist.length ? "<ul>" + hist.map(function (x) { return '<li><span class="mono">' + esc(x.fecha ? fechaCorta(x.fecha) : "") + "</span> " + esc(x.texto) + (x.fuente ? ' <span class="tag">' + esc(x.fuente === "calendar" ? "Calendar" : x.fuente === "gmail" ? "Gmail" : x.fuente) + "</span>" : "") + "</li>"; }).join("") + "</ul>" : "") +
         '<div class="mover"><label for="mover-' + esc(p.id) + '">Mover a</label><select id="mover-' + esc(p.id) + '" data-mover="' + esc(p.id) + '">' + opciones + "</select></div>" +
         '<label class="sr" for="nota-' + esc(p.id) + '">Nota</label><textarea id="nota-' + esc(p.id) + '" placeholder="Anotá una novedad (por ejemplo: me escribió la recruiter)"></textarea>' +
@@ -647,7 +732,8 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     document.getElementById("titulo").textContent = datos.persona ? "Búsqueda de " + datos.persona : "Mi búsqueda";
     document.title = datos.persona ? "Búsqueda de " + datos.persona : "Mi búsqueda";
     document.getElementById("conteo").textContent = abiertas + (abiertas === 1 ? " abierta" : " abiertas") + " · " + (ps.length - abiertas) + (ps.length - abiertas === 1 ? " cerrada" : " cerradas");
-    document.getElementById("actualizado").textContent = datos.actualizado ? "Datos actualizados: " + datos.actualizado.replace("T", " ") : "";
+    document.getElementById("actualizado").textContent = (datos.actualizado ? "Datos actualizados: " + datos.actualizado.replace("T", " ") : "") +
+      (guardaSolo() ? " · lo que marcás se guarda solo" : "");
 
     var abiertos = {};
     Array.prototype.forEach.call(cont.querySelectorAll("details[open]"), function (d, i) {
@@ -690,8 +776,33 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     }
     if (b.id === "revisar-correo") { copiar("/sincronizar-correo revisar", "Pedido copiado. Pegalo en Claude Code."); return; }
     if (b.id === "copiar-cambios") { copiar(pedidoCambios(), "Pedido copiado. Pegalo en Claude Code."); return; }
+    if (b.id === "guardar-cambios") { enviarCambios(cambios.filter(function (c) { return !c.motivo; })); return; }
+    if (b.hasAttribute("data-fecha-editar")) {
+      editandoFecha = b.getAttribute("data-fecha-editar"); render();
+      var inp = document.getElementById("fecha-env-" + editandoFecha);
+      if (inp) inp.focus();
+      return;
+    }
+    if (b.hasAttribute("data-fecha-cancelar")) { editandoFecha = null; render(); return; }
+    if (b.hasAttribute("data-fecha-ok")) {
+      var pid = b.getAttribute("data-fecha-ok");
+      var campo = document.getElementById("fecha-env-" + pid);
+      var nueva = campo && campo.value;
+      if (!nueva || !/^\d{4}-\d{2}-\d{2}$/.test(nueva)) { toast("Elegí una fecha."); return; }
+      if (nueva > hoyISO()) { toast("La fecha de envío no puede ser futura."); return; }
+      editandoFecha = null;
+      var post = buscarPost(pid);
+      if (post && post.enviada === nueva) {
+        cambios = cambios.filter(function (c) { return !(c.tipo === "fecha-enviada" && c.id === pid); });
+        guardarCambios(cambios); render();
+        return;
+      }
+      if (!guardaSolo()) toast("Fecha cambiada. Acordate de pasarle el cambio a Claude.");
+      sumarCambio({ tipo: "fecha-enviada", id: pid, fechaNueva: nueva });
+      return;
+    }
     if (b.hasAttribute("data-quitar")) { quitarCambio(+b.getAttribute("data-quitar")); return; }
-    if (b.hasAttribute("data-hecha")) { sumarCambio({ tipo: "hecha", id: b.getAttribute("data-hecha") }); toast("Marcada. Acordate de pasarle el cambio a Claude."); return; }
+    if (b.hasAttribute("data-hecha")) { if (!guardaSolo()) toast("Marcada. Acordate de pasarle el cambio a Claude."); sumarCambio({ tipo: "hecha", id: b.getAttribute("data-hecha") }); return; }
     if (b.hasAttribute("data-pedido")) {
       var a = buscarAccion(b.getAttribute("data-pedido"));
       if (a) copiar(pedidoDeAccion(a), "Pedido copiado. Pegalo en Claude Code.");
@@ -703,8 +814,8 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       var txt = ta && ta.value.trim();
       if (!txt) { toast("Escribí la nota primero."); return; }
       ta.value = "";
+      if (!guardaSolo()) toast("Nota guardada como cambio pendiente.");
       sumarCambio({ tipo: "nota", id: id, texto: txt });
-      toast("Nota guardada como cambio pendiente.");
     }
   });
   document.addEventListener("change", function (e) {
@@ -726,8 +837,8 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     var c = { tipo: "accion-nueva", id: "nueva-" + Date.now(), texto: texto, fechaAccion: document.getElementById("nueva-fecha").value || null, postulacion: document.getElementById("nueva-post").value || null };
     document.getElementById("nueva-texto").value = "";
     document.getElementById("nueva-fecha").value = "";
+    if (!guardaSolo()) toast("Acción agregada como cambio pendiente.");
     sumarCambio(c);
-    toast("Acción agregada como cambio pendiente.");
   });
   // Arrastrar tarjetas
   var arrastrando = null;
@@ -791,6 +902,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
   }
   render();
   cargar();
+  detectarServidor();
   setInterval(cargar, 10000);
 })();
 </script>

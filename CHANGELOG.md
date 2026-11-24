@@ -12,6 +12,11 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Nuevo
+
+- Servidor local del tablero (`tablero/servidor.py`, solo biblioteca estándar, escucha en 127.0.0.1) y lanzadores `abrir-tablero.bat` y `abrir-tablero.command`. Abierto así, el tablero guarda solo en `postulaciones.json` las acciones hechas, las tarjetas movidas entre columnas abiertas, las notas y las acciones nuevas, validando con `validar.py` antes de escribir. Cerrar o reabrir una postulación sigue pasando por Claude. Con doble clic, el tablero funciona como antes.
+- Tablero: al mover una tarjeta de «Por enviar» a «Esperando respuesta», la fecha de envío es la de hoy. El botón ✏️ de cada tarjeta enviada la corrige. Con el servidor se guarda sola; con doble clic entra al pedido para Claude.
+
 ## 0.10.0 — 2026-11-20 · Portugués y STAR-L
 
 ### Nuevo

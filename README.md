@@ -82,7 +82,11 @@ Abrí `tablero/tablero.html` con doble clic y dejalo abierto en una pestaña. Mu
 - **Postulaciones:** un kanban con las columnas Por enviar, Esperando respuesta y En conversación, y los días sin novedades de cada una.
 - **Números:** postulaciones enviadas, tasa de respuesta, conversaciones activas y acciones vencidas.
 
-Se actualiza solo cada vez que Claude cambia algo. Si marcás una acción como hecha o movés una tarjeta en el tablero, tocá **Copiar pedido para Claude** y pegalo en Claude Code para que quede guardado. El botón **⚡** de cada acción copia un pedido para que Claude te ayude con esa tarea.
+Se actualiza solo cada vez que Claude cambia algo.
+
+**Para que lo que marcás se guarde solo**, abrilo con `tablero/abrir-tablero.bat` en Windows o `tablero/abrir-tablero.command` en Mac (necesita Python). Así, marcar una acción como hecha, mover una tarjeta, anotar una novedad, sumar una acción o corregir con ✏️ la fecha de envío queda guardado al instante, sin pasar por Claude. Cerrar una postulación sigue pasando por Claude, porque necesita el resultado. El servidor solo escucha en tu computadora y deja de andar cuando cerrás su ventana.
+
+Si lo abrís con doble clic, lo que marcás queda pendiente: tocá **Copiar pedido para Claude** y pegalo en Claude Code para que quede guardado. El botón **⚡** de cada acción copia un pedido para que Claude te ayude con esa tarea.
 
 Para verlo con datos de ejemplo antes de cargar los tuyos, abrí el tablero y tocá **Ver el tablero con datos de ejemplo**.
 
