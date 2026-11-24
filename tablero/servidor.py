@@ -285,8 +285,10 @@ def listar_practicas(raiz):
                 continue
             e = d.get("entrevista") or {}
             prep = d.get("preparacion") or {}
-            lista.append({"carpeta": nombre, "postulacion": e.get("postulacion"), "empresa": e.get("empresa"), "rol": e.get("rol"),
-                          "tipo": e.get("tipo"), "fecha": e.get("fecha"), "puntaje": prep.get("puntaje"),
+            # Acepta también el formato de las prácticas armadas como artefacto (empresa y rol arriba, «cuando» en texto).
+            lista.append({"carpeta": nombre, "postulacion": e.get("postulacion"),
+                          "empresa": e.get("empresa") or d.get("empresa"), "rol": e.get("rol") or d.get("rol"),
+                          "tipo": e.get("tipo"), "fecha": e.get("fecha") or e.get("cuando"), "puntaje": prep.get("puntaje"),
                           "preguntas": len(d.get("preguntas") or [])})
     return 200, {"practicas": lista}
 
@@ -312,7 +314,7 @@ def guardar_sesion(raiz, pedido):
         dur = int(dur) if isinstance(dur, (int, float)) and 0 < dur < 4 * 3600 else None
         limpias.append({
             "pregunta": pid,
-            "preguntaTexto": preguntas[pid].get("texto"),
+            "preguntaTexto": preguntas[pid].get("texto") or preguntas[pid].get("pregunta") or preguntas[pid].get("corta"),
             "texto": texto,
             "fuente": "dictado" if r.get("fuente") == "dictado" else "escrita",
             "duracionSeg": dur,

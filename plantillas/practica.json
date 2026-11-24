@@ -10,14 +10,17 @@
     "entrevistador": ""
   },
   "actualizado": "",
+  "lead": "",
   "preparacion": {
     "puntaje": null,
     "resumen": "",
     "areas": []
   },
+  "grupos": [],
   "preguntas": [
     {
       "id": "p1",
+      "grupo": null,
       "texto": "",
       "tipo": "comportamiento",
       "antesDeResponder": "",
@@ -25,6 +28,8 @@
       "historia": "",
       "evalua": "",
       "tiempoSeg": 90,
+      "modelo": "",
+      "avisos": "",
       "puntaje": null,
       "criterios": null,
       "devolucion": null,
@@ -33,5 +38,8 @@
       "ultimaPractica": null
     }
   ],
+  "paraLaEmpresa": [],
+  "repaso": {},
+  "faltan": [],
   "sesiones": []
 }

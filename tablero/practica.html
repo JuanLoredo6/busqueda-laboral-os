@@ -199,7 +199,39 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     return new Date(+p[0], +p[1] - 1, +p[2]);
   }
   function claseP(n) { return n == null ? "" : n >= 75 ? "alto" : n >= 50 ? "medio" : "bajo"; }
-  function preguntas() { return (info && info.practica && info.practica.preguntas) || []; }
+  // Acepta los dos formatos de pregunta: el de la plantilla (texto, tipo, evalua…) y el de las
+  // prácticas armadas antes como artefacto (pregunta, familia, evaluan, objetivo, previas, ejemplo…).
+  function normPregunta(q) {
+    return {
+      id: q.id, grupo: q.grupo,
+      texto: q.texto || q.pregunta || q.corta || "",
+      tipo: q.tipo || q.familia,
+      antesDeResponder: q.antesDeResponder || q.previas,
+      estructura: q.estructura,
+      historia: q.historia || q.ejemplo,
+      evalua: q.evalua || q.evaluan,
+      modelo: q.modelo, avisos: q.avisos,
+      tiempoSeg: q.tiempoSeg || q.objetivo,
+      puntaje: q.puntaje, criterios: q.criterios, devolucion: q.devolucion, mejora: q.mejora,
+      practicas: q.practicas, ultimaPractica: q.ultimaPractica
+    };
+  }
+  function preguntas() { return ((info && info.practica && info.practica.preguntas) || []).filter(function (q) { return q && q.id; }).map(normPregunta); }
+  // Texto de un campo que puede ser texto, lista u objeto ({texto, fuente}).
+  function txt(v) {
+    if (v == null || v === "") return "";
+    if (Array.isArray(v)) return v.map(txt).filter(Boolean).join("<br>");
+    if (typeof v === "object") {
+      if (v.texto || v.pregunta) return esc(v.texto || v.pregunta) + (v.fuente ? ' <span class="faint">' + esc(v.fuente) + "</span>" : "") + (v.por ? ' <span class="faint">· ' + esc(v.por) + "</span>" : "");
+      return Object.keys(v).map(function (k) { return esc(k) + ": " + txt(v[k]); }).join("<br>");
+    }
+    return esc(v);
+  }
+  function idiomaDictado(e) {
+    var i = String((e && e.idioma) || "es").toLowerCase();
+    if (i.indexOf("-") > 0) return i;
+    return { es: "es-AR", en: "en-US", pt: "pt-BR" }[i.slice(0, 2)] || "es-AR";
+  }
   function palabras(t) { var m = String(t || "").trim().match(/\S+/g); return m ? m.length : 0; }
 
   // ---------- carga ----------
@@ -299,8 +331,9 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     var obj = q.tiempoSeg || 0;
     var pal = palabras(b.texto);
     var ppm = dur > 5 ? Math.round(pal / (dur / 60)) : null;
-    var pista = [["Antes de responder", q.antesDeResponder], ["Estructura", q.estructura], ["Historia que la sostiene", q.historia], ["Qué evalúan", q.evalua]]
-      .filter(function (x) { return x[1]; }).map(function (x) { return "<dt>" + esc(x[0]) + "</dt><dd>" + esc(x[1]) + "</dd>"; }).join("");
+    var pista = [["Antes de responder", q.antesDeResponder], ["Estructura", q.estructura], ["Historia que la sostiene", q.historia], ["Qué evalúan", q.evalua],
+      ["Respuesta modelo", q.modelo], ["Cuidado", q.avisos]]
+      .filter(function (x) { return txt(x[1]); }).map(function (x) { return "<dt>" + esc(x[0]) + "</dt><dd>" + txt(x[1]) + "</dd>"; }).join("");
     var dev = q.devolucion || q.mejora || q.criterios;
     var criterios = q.criterios && typeof q.criterios === "object"
       ? "<dd>" + Object.keys(q.criterios).map(function (k) { return esc(k) + ": " + esc(q.criterios[k]); }).join(" · ") + "</dd>" : "";
@@ -331,19 +364,58 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     return '<span class="' + (pasado ? "pasado" : "") + '">' + mmss(dur) + (obj ? " de " + mmss(obj) : "") + "</span>" +
       (pal ? " · " + pal + " palabras" : "") + (ppm ? " · " + ppm + " por minuto" : "");
   }
+  // Las preguntas, agrupadas si la práctica trae «grupos».
+  function htmlPreguntas(p) {
+    var qs = preguntas(), grupos = p.grupos || [];
+    if (!grupos.length) return qs.map(htmlPregunta).join("");
+    var usadas = {}, h = "", n = 0;
+    grupos.forEach(function (g) {
+      var delGrupo = qs.filter(function (q) { return q.grupo === g.id; });
+      if (!delGrupo.length) return;
+      h += '<h2 style="font-size:17px;margin:22px 0 4px">' + esc(g.titulo || g.id) + "</h2>" + (g.intro ? '<p class="muted" style="margin:0 0 10px;font-size:14px">' + esc(g.intro) + "</p>" : "");
+      delGrupo.forEach(function (q) { usadas[q.id] = true; h += htmlPregunta(q, n++); });
+    });
+    var resto = qs.filter(function (q) { return !usadas[q.id]; });
+    if (resto.length) h += '<h2 style="font-size:17px;margin:22px 0 8px">Otras preguntas</h2>' + resto.map(function (q) { return htmlPregunta(q, n++); }).join("");
+    return h;
+  }
+  // Lo que no se responde pero conviene tener a mano: preguntas para la empresa, repaso y lo que falta.
+  var ETIQUETAS_REPASO = { empresa: "La empresa", idea: "La idea", sacar: "Qué sacar", antes: "Antes de entrar", cifras: "Cifras", noDecir: "Qué no decir" };
+  function htmlExtras(p) {
+    var h = "";
+    if ((p.paraLaEmpresa || []).length) {
+      h += '<section class="caja"><h2 style="font-size:17px;margin:0 0 6px">Preguntas para hacerles</h2>' +
+        (p.paraLaEmpresaIntro ? '<p class="muted" style="margin:0 0 8px;font-size:14px">' + esc(p.paraLaEmpresaIntro) + "</p>" : "") +
+        "<ol>" + p.paraLaEmpresa.map(function (x) { return "<li>" + txt(x) + "</li>"; }).join("") + "</ol>" +
+        (p.paraLaEmpresaExtra ? '<p class="muted" style="margin:0;font-size:14px">' + esc(p.paraLaEmpresaExtra) + "</p>" : "") + "</section>";
+    }
+    if (p.repaso && typeof p.repaso === "object") {
+      h += '<details class="caja"><summary style="font-size:15px;font-weight:600;color:var(--text)">Repaso antes de entrar</summary><dl class="pista">' +
+        Object.keys(p.repaso).map(function (k) { return "<dt>" + esc(ETIQUETAS_REPASO[k] || k) + "</dt><dd>" + txt(p.repaso[k]) + "</dd>"; }).join("") + "</dl></details>";
+    }
+    if ((p.faltan || []).length) {
+      h += '<section class="caja"><h2 style="font-size:15px;margin:0 0 6px">❓ Lo que todavía falta saber</h2><ul style="margin:0;padding-left:18px;font-size:14px">' +
+        p.faltan.map(function (f) {
+          return "<li>" + esc(f.dato || txt(f)) + (f.donde ? ' <span class="faint">· ' + esc(f.donde) + "</span>" : "") + (f.quien ? ' <span class="faint">· lo cierra ' + esc(f.quien) + "</span>" : "") + "</li>";
+        }).join("") + "</ul></section>";
+    }
+    return h;
+  }
   function render() {
     var p = info.practica, e = p.entrevista || {};
-    document.title = "Práctica · " + (e.empresa || carpeta);
-    document.getElementById("titulo").textContent = e.empresa ? e.empresa + (e.rol ? " · " + e.rol : "") : carpeta;
+    var empresa = e.empresa || p.empresa, rol = e.rol || p.rol;
+    document.title = "Práctica · " + (empresa || carpeta);
+    document.getElementById("titulo").textContent = empresa ? empresa + (rol ? " · " + rol : "") : carpeta;
     var f = aFecha(e.fecha), falta = "";
     if (f) {
       var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
       var d = Math.round((f - hoy) / 86400000);
       falta = d > 1 ? "faltan " + d + " días" : d === 1 ? "es mañana" : d === 0 ? "es hoy" : "ya pasó";
       falta = DIAS_LARGOS[f.getDay()] + " " + f.getDate() + " de " + MESES[f.getMonth()] + " (" + falta + ")";
-    }
-    document.getElementById("eyebrow").textContent = ["Práctica", e.tipo, falta, e.entrevistador].filter(Boolean).join(" · ");
-    document.getElementById("contenido").innerHTML = htmlPreparacion() + htmlDictado() + preguntas().map(htmlPregunta).join("") +
+    } else if (e.cuando) falta = e.cuando;
+    document.getElementById("eyebrow").textContent = ["Práctica", e.tipo, falta, e.entrevistador || e.con, e.formato].filter(Boolean).join(" · ");
+    document.getElementById("contenido").innerHTML = (p.lead ? '<p class="muted" style="margin:0 0 16px">' + esc(p.lead) + "</p>" : "") +
+      htmlPreparacion() + htmlDictado() + htmlPreguntas(p) + htmlExtras(p) +
       (info.archivos && info.archivos.length ? '<p class="faint" style="font-size:13px">Prácticas guardadas: ' + info.archivos.map(esc).join(", ") + "</p>" : "");
     document.getElementById("pie").hidden = false;
     estadoPie();
@@ -416,7 +488,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     if (!blob.size) return;
     transcribiendo++; estadoPie();
     var el = document.getElementById("prov-" + pid); if (el) el.textContent = "Transcribiendo…";
-    var idioma = (info.practica.entrevista && info.practica.entrevista.idioma) || "es-AR";
+    var idioma = idiomaDictado(info.practica.entrevista);
     fetch("/api/transcribir?idioma=" + encodeURIComponent(idioma), {
       method: "POST", headers: { "Content-Type": (blob.type || "audio/webm").split(";")[0] }, body: blob
     }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
@@ -444,7 +516,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
   function iniciarDictado(pid) {
     try {
       rec = new SR();
-      rec.lang = (info.practica.entrevista && info.practica.entrevista.idioma) || "es-AR";
+      rec.lang = idiomaDictado(info.practica.entrevista);
       rec.continuous = true; rec.interimResults = true;
       rec.onresult = function (ev) {
         var prov = "";

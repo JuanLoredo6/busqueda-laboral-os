@@ -130,9 +130,23 @@ Si la persona prefiere practicar en voz alta o a su ritmo, ofrecé la práctica 
 
 Lo escribís vos en `entrevistas/<empresa>/practica.json`, a partir de `plantillas/practica.json`. Es la fuente de verdad de la página: las preguntas, las pistas y los puntajes.
 
+- El nombre de la carpeta va en minúsculas, sin tildes y con guiones (`nimbo-pagos`), como las de `postulaciones/`. Con otro nombre, el servidor no la abre.
+- Completá `entrevista.postulacion` con el id del tablero cuando la entrevista es de una postulación: con eso el tablero cambia el botón de la acción por 🎯 Practicar.
+
 - `entrevista`: `postulacion` (id del tablero o `null`), `empresa`, `rol`, `tipo`, `fecha` (`AAAA-MM-DD` o `null`), `idioma` (`es-AR`, `en-US` o `pt-BR`: es el idioma del dictado y el de la entrevista) y `entrevistador`.
 - `preguntas`: de 6 a 10, cada una con `id` (`p1`, `p2`…), `texto`, `tipo` y las pistas de la preparación escrita: `antesDeResponder`, `estructura`, `historia` (con su 📌 o ❓, como en el Modo 1), `evalua` y `tiempoSeg`. Los campos de la devolución (`puntaje`, `criterios`, `devolucion`, `mejora`, `practicas`, `ultimaPractica`) arrancan vacíos.
 - `preparacion` y `sesiones` arrancan vacíos: los completa la devolución.
+
+Campos opcionales, que la página muestra si están:
+
+- `lead`: una o dos frases arriba de todo, con qué entrevista es y por dónde empezar.
+- `grupos`: `[{"id", "titulo", "intro"}]`, para ordenar las preguntas por entrevistador o por tema. Cada pregunta dice el suyo en `grupo`.
+- En cada pregunta, `modelo` (un esqueleto de respuesta con la voz de `contexto/voz.md`, no un discurso) y `avisos` (lo que conviene no decir).
+- `paraLaEmpresa`: `[{"pregunta", "por"}]`, las preguntas para hacerle a la empresa, con `paraLaEmpresaIntro` y `paraLaEmpresaExtra` si hacen falta.
+- `repaso`: el repaso de 5 minutos, como objeto (`empresa`, `idea`, `sacar`, `antes`, `cifras`, `noDecir`).
+- `faltan`: `[{"dato", "donde", "quien"}]`, lo que todavía no se sabe y quién lo averigua (❓). Nunca se completa con una suposición.
+
+La página también abre las prácticas armadas antes como artefacto, que usan otros nombres: `pregunta` y `corta` por `texto`, `familia` por `tipo`, `evaluan` por `evalua`, `objetivo` por `tiempoSeg`, `previas` por `antesDeResponder` y `ejemplo` (`{"texto", "fuente"}`) por `historia`. Si actualizás una de esas, conservá sus nombres: no la reescribas al formato nuevo sin que la persona lo pida.
 
 Si ya existe un `practica.json` para esa empresa, no lo pises: sumá las preguntas nuevas con ids que no se repitan y conservá los puntajes. (límite L9)
 
@@ -151,8 +165,8 @@ Se activa con el pedido que copia la página: `/preparar-entrevista feedback <ca
 3. **Transcripción:** si la respuesta es `dictado` (Whisper en la computadora o el dictado del navegador), puede tener palabras mal reconocidas. No las cuentes como error: marcá ❓ la frase dudosa y seguí. La transcripción no muestra el tono ni las pausas: no los evalúes.
 4. **Lo nuevo que no está en el perfil:** si en la respuesta aparece un logro, un número o una decisión que `perfil.md` no tiene, no lo des por cierto ni lo uses en la devolución como dato. Preguntá si es real y si lo sumás. (límite L1)
 5. **En el chat**, por respuesta: el puntaje, qué se lleva el entrevistador en una frase y **una** mejora concreta. Al final: la más fuerte, la más floja y qué practicar antes de la entrevista.
-6. **En `practica.json`**, para que la página lo muestre (el pedido de la persona es la confirmación para actualizar este archivo; el de respuestas no se toca nunca):
-   - En cada pregunta practicada: `puntaje`, `criterios` (por ejemplo `{"respondió": 20, "estructura": 12, "ejemplo": 16, "concreto": 10, "duración": 14}`), `devolucion` (qué se lleva el entrevistador), `mejora`, `practicas` + 1 y `ultimaPractica` con la fecha.
+6. **En `practica.json`**, para que la página lo muestre. El pedido de devolución es la confirmación para actualizar este archivo (límite L9); el de respuestas no se toca nunca:
+   - En cada pregunta practicada (con cualquiera de los dos formatos): `puntaje`, `criterios` (por ejemplo `{"respondió": 20, "estructura": 12, "ejemplo": 16, "concreto": 10, "duración": 14}`), `devolucion` (qué se lleva el entrevistador), `mejora`, `practicas` + 1 y `ultimaPractica` con la fecha.
    - `preparacion.puntaje`: el promedio de todas las preguntas, con 0 para las que nunca se practicaron. Así el número también mide cuánto falta practicar.
    - `preparacion.areas`: el promedio por `tipo` de pregunta, con una nota corta de qué falta en cada una.
    - `preparacion.resumen`: una o dos frases sobre qué practicar primero.
