@@ -31,7 +31,8 @@
     { "id": "d-historias-star", "pedido": "Armame mis historias en formato STAR para las preguntas de comportamiento", "espera": "preparar-entrevista", "no_debe": ["poner-a-prueba"] },
     { "id": "d-cv-portugues", "pedido": "Quero meu currículo em português para vagas no Brasil", "espera": "mejorar-perfil", "no_debe": ["nueva-postulacion"] },
     { "id": "d-entrevista-pt", "pedido": "Tenho uma entrevista com a Nimbus na quinta, me ajuda a preparar?", "espera": "preparar-entrevista" },
-    { "id": "d-mensagem-pt", "pedido": "Escreve para a recrutadora da Nimbus dizendo que continuo interessada", "espera": "redactar-mensaje" }
+    { "id": "d-mensagem-pt", "pedido": "Escreve para a recrutadora da Nimbus dizendo que continuo interessada", "espera": "redactar-mensaje" },
+    { "id": "d-devolucion-practica", "pedido": "Ya terminé la práctica de la entrevista con Nimbus en el navegador, ¿me das la devolución?", "espera": "preparar-entrevista", "no_debe": ["poner-a-prueba", "recruiters-sinteticos"] }
   ],
 
   "comportamiento": [

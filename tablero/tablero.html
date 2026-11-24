@@ -196,6 +196,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     <div class="top-right">
       <div class="top-fila">
         <span class="mono muted" id="conteo"></span>
+        <a class="btn" id="link-practica" href="practica.html" hidden style="text-decoration:none;color:inherit" title="Practicar las entrevistas que preparó Claude">🎯 Práctica</a>
         <button class="btn" id="btn-sync" title="Copia el pedido para que Claude revise Gmail y Google Calendar">🔄 SYNC</button>
       </div>
       <span class="faint" style="font-size:12px" id="sync-estado"></span>
@@ -332,6 +333,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
     fetch("/api/estado", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
       servidor = !!(j && j.servidor);
+      if (servidor) document.getElementById("link-practica").hidden = false;
       if (guardaSolo()) {
         var sinMotivo = cambios.filter(function (c) { return !c.motivo; });
         if (sinMotivo.length) enviarCambios(sinMotivo); else render();

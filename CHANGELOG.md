@@ -16,6 +16,8 @@ Cómo se lleva:
 
 - Servidor local del tablero (`tablero/servidor.py`, solo biblioteca estándar, escucha en 127.0.0.1) y lanzadores `abrir-tablero.bat` y `abrir-tablero.command`. Abierto así, el tablero guarda solo en `postulaciones.json` las acciones hechas, las tarjetas movidas entre columnas abiertas, las notas y las acciones nuevas, validando con `validar.py` antes de escribir. Cerrar o reabrir una postulación sigue pasando por Claude. Con doble clic, el tablero funciona como antes.
 - Tablero: al mover una tarjeta de «Por enviar» a «Esperando respuesta», la fecha de envío es la de hoy. El botón ✏️ de cada tarjeta enviada la corrige. Con el servidor se guarda sola; con doble clic entra al pedido para Claude.
+- **Práctica de entrevistas en el navegador** (`tablero/practica.html`, botón 🎯 Práctica del tablero con el servidor local). `preparar-entrevista` escribe `entrevistas/<empresa>/practica.json` (plantilla en `plantillas/practica.json`) con las preguntas, las pistas y los puntajes. La página mide cuánto tarda cada respuesta y, si la persona lo prende, la transcribe con el dictado del navegador (apagado por defecto, con aviso de que el audio se procesa en la nube de Google o Microsoft). Guarda cada práctica en un archivo nuevo, `practica-<fecha>.json`, que nunca se pisa, y copia un pedido de una línea.
+- `preparar-entrevista`, Modo 3: devolución de una práctica guardada, con un puntaje de 0 a 100 por respuesta (cinco criterios de 0 a 20), el puntaje de preparación y el de cada área en `practica.json`. Lo nuevo que aparece en una respuesta y no está en el perfil se pregunta antes de usarlo (límite L1). Eval de disparo `d-devolucion-practica`.
 
 ## 0.10.0 — 2026-11-20 · Portugués y STAR-L
 

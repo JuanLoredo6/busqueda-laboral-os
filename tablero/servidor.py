@@ -3,7 +3,9 @@
 # Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
 """Servidor local del tablero: sirve tablero.html y guarda en postulaciones.json
 los cambios mecánicos que la persona marca (acción hecha, tarjeta movida, nota,
-acción nueva), sin pasar por Claude.
+acción nueva), sin pasar por Claude. También sirve practica.html: lee la práctica
+de cada entrevista (entrevistas/<carpeta>/practica.json) y guarda las respuestas
+en un archivo nuevo por práctica.
 
 Solo usa la biblioteca estándar. Escucha solo en 127.0.0.1: nada sale de la
 computadora (límite L8). Lo que necesita criterio (cerrar una postulación, cambiar
@@ -23,7 +25,9 @@ import datetime
 import io
 import json
 import os
+import re
 import sys
+import urllib.parse
 import tempfile
 import threading
 import webbrowser
@@ -233,6 +237,105 @@ def guardar_cambios(raiz, cambios):
         return 200, {"resultados": resultados}
 
 
+# ---------- práctica de entrevistas ----------
+# Cada entrevista tiene entrevistas/<carpeta>/practica.json (lo escribe Claude con
+# preparar-entrevista). Las respuestas de cada práctica van a un archivo nuevo,
+# practica-<AAAA-MM-DD>[-n].json, que nunca se pisa (límite L9).
+CARPETA = re.compile(r"^[a-z0-9][a-z0-9-]{0,80}$")
+SESION = re.compile(r"^practica-\d{4}-\d{2}-\d{2}(-\d+)?\.json$")
+MAX_TEXTO = 20000
+MAX_RESPUESTAS = 60
+
+
+def carpeta_entrevista(raiz, carpeta):
+    if not isinstance(carpeta, str) or not CARPETA.match(carpeta):
+        return None
+    return os.path.join(raiz, "entrevistas", carpeta)
+
+
+def leer_practica(raiz, carpeta):
+    base = carpeta_entrevista(raiz, carpeta)
+    if not base:
+        return 400, {"error": "Nombre de carpeta inválido."}
+    ruta = os.path.join(base, "practica.json")
+    if not os.path.isfile(ruta):
+        return 404, {"error": "Esa entrevista no tiene práctica armada. Pedísela a Claude con /preparar-entrevista."}
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            datos = json.load(f)
+    except json.JSONDecodeError as e:
+        return 409, {"error": f"practica.json está roto ({e.msg}, línea {e.lineno}). Pedile a Claude que lo corrija."}
+    sesiones = sorted(n for n in os.listdir(base) if SESION.match(n))
+    return 200, {"carpeta": carpeta, "practica": datos, "archivos": sesiones}
+
+
+def listar_practicas(raiz):
+    base = os.path.join(raiz, "entrevistas")
+    lista = []
+    if os.path.isdir(base):
+        for nombre in sorted(os.listdir(base)):
+            ruta = os.path.join(base, nombre, "practica.json")
+            if not CARPETA.match(nombre) or not os.path.isfile(ruta):
+                continue
+            try:
+                with open(ruta, encoding="utf-8") as f:
+                    d = json.load(f)
+            except (json.JSONDecodeError, OSError):
+                lista.append({"carpeta": nombre, "error": True})
+                continue
+            e = d.get("entrevista") or {}
+            prep = d.get("preparacion") or {}
+            lista.append({"carpeta": nombre, "empresa": e.get("empresa"), "rol": e.get("rol"),
+                          "tipo": e.get("tipo"), "fecha": e.get("fecha"), "puntaje": prep.get("puntaje"),
+                          "preguntas": len(d.get("preguntas") or [])})
+    return 200, {"practicas": lista}
+
+
+def guardar_sesion(raiz, pedido):
+    carpeta = pedido.get("carpeta")
+    codigo, info = leer_practica(raiz, carpeta)
+    if codigo != 200:
+        return codigo, info
+    preguntas = {p.get("id"): p for p in (info["practica"].get("preguntas") or []) if isinstance(p, dict)}
+    respuestas = pedido.get("respuestas")
+    if not isinstance(respuestas, list) or not respuestas or len(respuestas) > MAX_RESPUESTAS:
+        return 400, {"error": "No hay respuestas para guardar."}
+    limpias = []
+    for r in respuestas:
+        if not isinstance(r, dict):
+            continue
+        texto = str(r.get("texto") or "").strip()[:MAX_TEXTO]
+        pid = r.get("pregunta")
+        if not texto or pid not in preguntas:
+            continue
+        dur = r.get("duracionSeg")
+        dur = int(dur) if isinstance(dur, (int, float)) and 0 < dur < 4 * 3600 else None
+        limpias.append({
+            "pregunta": pid,
+            "preguntaTexto": preguntas[pid].get("texto"),
+            "texto": texto,
+            "fuente": "dictado" if r.get("fuente") == "dictado" else "escrita",
+            "duracionSeg": dur,
+            "palabras": len(texto.split()),
+        })
+    if not limpias:
+        return 400, {"error": "No hay respuestas para guardar."}
+    base = carpeta_entrevista(raiz, carpeta)
+    sesion = {"version": 1, "carpeta": carpeta, "fecha": ahora().strftime("%Y-%m-%dT%H:%M"), "respuestas": limpias}
+    texto = json.dumps(sesion, ensure_ascii=False, indent=2) + "\n"
+    with candado:
+        for n in range(1, 100):
+            nombre = f"practica-{hoy()}.json" if n == 1 else f"practica-{hoy()}-{n}.json"
+            try:
+                # "x": falla si el archivo existe, así nunca se pisa una práctica anterior.
+                with open(os.path.join(base, nombre), "x", encoding="utf-8", newline="\n") as f:
+                    f.write(texto)
+                return 200, {"archivo": nombre, "respuestas": len(limpias)}
+            except FileExistsError:
+                continue
+    return 409, {"error": "Hay demasiadas prácticas guardadas hoy."}
+
+
 class Manejador(SimpleHTTPRequestHandler):
     raiz = None
     puerto = None
@@ -268,8 +371,16 @@ class Manejador(SimpleHTTPRequestHandler):
         if not self.host_valido():
             self.send_error(403)
             return
-        if self.path.split("?")[0] == "/api/estado":
+        ruta, _, consulta = self.path.partition("?")
+        if ruta == "/api/estado":
             self.responder(200, {"servidor": True, "version": VERSION})
+            return
+        if ruta == "/api/practicas":
+            self.responder(*listar_practicas(self.raiz))
+            return
+        if ruta == "/api/practica":
+            carpeta = (urllib.parse.parse_qs(consulta).get("e") or [""])[0]
+            self.responder(*leer_practica(self.raiz, carpeta))
             return
         if self.path in ("/", ""):
             self.send_response(302)
@@ -291,7 +402,7 @@ class Manejador(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(cuerpo)
             return
-        if nombre not in {"tablero.html", "ejemplo.js"}:
+        if nombre not in {"tablero.html", "practica.html", "ejemplo.js"}:
             self.send_error(404)
             return
         super().do_GET()
@@ -300,7 +411,7 @@ class Manejador(SimpleHTTPRequestHandler):
         if not self.host_valido() or not self.origen_valido():
             self.send_error(403)
             return
-        if self.path != "/api/cambios":
+        if self.path not in ("/api/cambios", "/api/practica/respuestas"):
             self.send_error(404)
             return
         if "application/json" not in (self.headers.get("Content-Type") or ""):
@@ -315,6 +426,16 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         try:
             pedido = json.loads(self.rfile.read(largo).decode("utf-8"))
+        except Exception:
+            self.responder(400, {"error": "Pedido mal formado."})
+            return
+        if self.path == "/api/practica/respuestas":
+            if not isinstance(pedido, dict):
+                self.responder(400, {"error": "Pedido mal formado."})
+                return
+            self.responder(*guardar_sesion(self.raiz, pedido))
+            return
+        try:
             cambios = pedido["cambios"]
             assert isinstance(cambios, list)
         except Exception:

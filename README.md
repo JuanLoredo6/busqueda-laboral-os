@@ -88,6 +88,8 @@ Se actualiza solo cada vez que Claude cambia algo.
 
 Si lo abrís con doble clic, lo que marcás queda pendiente: tocá **Copiar pedido para Claude** y pegalo en Claude Code para que quede guardado. El botón **⚡** de cada acción copia un pedido para que Claude te ayude con esa tarea.
 
+Con el servidor, el botón **🎯 Práctica** abre la práctica de las entrevistas que preparaste con `/preparar-entrevista`. Respondés cada pregunta escribiendo o en voz alta (el dictado es opcional y usa el reconocimiento de voz del navegador, que procesa el audio en la nube). La página mide cuánto tardás, guarda tus respuestas en la carpeta de la entrevista y te da un pedido de una línea para que Claude te devuelva el feedback y actualice tu puntaje de preparación.
+
 Para verlo con datos de ejemplo antes de cargar los tuyos, abrí el tablero y tocá **Ver el tablero con datos de ejemplo**.
 
 ### Novedades desde Gmail y Google Calendar (opcional)

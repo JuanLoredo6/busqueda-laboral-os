@@ -90,6 +90,8 @@ It updates by itself every time Claude changes something.
 
 If you open it with a double click instead, your changes stay pending: click **Copiar pedido para Claude** (copy request for Claude) and paste it into Claude Code so it gets saved. The **⚡** button on each action copies a request so Claude can help you with that task.
 
+With the server running, the **🎯 Práctica** button opens the practice for the interviews you prepared with `/preparar-entrevista`. You answer each question by typing or out loud (dictation is optional and uses the browser's speech recognition, which processes the audio in the cloud). The page times your answers, saves them in the interview folder and gives you a one-line request so Claude can give you feedback and update your preparation score.
+
 To see it with sample data before loading your own, open the dashboard and click **Ver el tablero con datos de ejemplo** (see the dashboard with sample data).
 
 ### Updates from Gmail and Google Calendar (optional)
