@@ -285,7 +285,7 @@ def listar_practicas(raiz):
                 continue
             e = d.get("entrevista") or {}
             prep = d.get("preparacion") or {}
-            lista.append({"carpeta": nombre, "empresa": e.get("empresa"), "rol": e.get("rol"),
+            lista.append({"carpeta": nombre, "postulacion": e.get("postulacion"), "empresa": e.get("empresa"), "rol": e.get("rol"),
                           "tipo": e.get("tipo"), "fecha": e.get("fecha"), "puntaje": prep.get("puntaje"),
                           "preguntas": len(d.get("preguntas") or [])})
     return 200, {"practicas": lista}
