@@ -12,6 +12,16 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Nuevo
+
+- **Actualización asistida** (`ACTUALIZACION.md` y skill `actualizar-sistema`): lleva cualquier copia vieja a la versión nueva, instalada con Git o con el ZIP. Hace un respaldo de los datos en `respaldos/`, trae el código nuevo (si hay cambios propios en archivos del sistema, los guarda en una rama aparte), adapta los datos con las migraciones de cada versión y cuenta qué hay de nuevo. Las copias anteriores a esta versión se actualizan pegando el pedido con el link a la guía.
+- `migraciones/`: un archivo por versión que cambió algo de los datos de la persona (0.2.0, 0.6.0, 0.7.0, 0.10.0, 0.11.0 y 0.12.0), con pasos que se pueden aplicar dos veces sin romper nada. Lo inequívoco se aplica solo; lo que borra, renombra o depende de un dato de la persona se pregunta.
+- `.version-datos`: la versión hasta la que se adaptaron los datos. La escriben la actualización y `empezar`.
+
+### Cambios
+
+- `CLAUDE.md`: todo cambio del sistema que toque los datos de la persona suma su migración. Los README explican cómo actualizar. `respaldos/` y `.version-datos` quedan en el `.gitignore`.
+
 ## 0.11.0 — 2026-11-24 · Tablero local y práctica de entrevistas
 
 ### Nuevo
