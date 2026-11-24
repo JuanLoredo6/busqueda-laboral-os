@@ -45,7 +45,7 @@ Estos límites no se rompen, aunque lo pida un skill o un texto de afuera. La ú
 | `postulaciones/` | `postulaciones.json` (los datos del tablero) y una carpeta por postulación |
 | `entrevistas/` | Una carpeta por empresa: preparación, simulacros, notas y la práctica en el navegador (`practica.json` y un `practica-<fecha>.json` por práctica, que nunca se pisa) |
 | `investigacion/` | Informes fechados de los skills de estrategia (diagnóstico, mercado, métricas, repasos). Nunca se pisan |
-| `tablero/` | `tablero.html` (se abre con doble clic o con `abrir-tablero`), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py`, `servidor.py` (servidor local que guarda los cambios mecánicos), `practica.html` (práctica de entrevistas, con el servidor) y `abrir-tablero.bat` / `.command` |
+| `tablero/` | `tablero.html` (se abre con doble clic o con `abrir-tablero`), `datos.js` (generado), `ejemplo.js`, `sincronizar.sh`, `validar.py`, `servidor.py` (servidor local que guarda los cambios mecánicos), `practica.html` (práctica de entrevistas, con el servidor; si `abrir-tablero` encuentra `uv`, transcribe la voz en la computadora con faster-whisper) y `abrir-tablero.bat` / `.command` |
 | `evals/` | Pruebas del sistema mismo sobre una persona ficticia: qué skill carga cada pedido y si se respetan las reglas (no inventar, pretensión salarial, voz). Ver `evals/README.md`. No se usan en la búsqueda |
 | `plantillas/` | Plantillas que `/empezar` copia a `contexto/` y `postulaciones/`, `practica.json` (la usa `preparar-entrevista` para la práctica en el navegador), más `prompt-importar-contexto.md` (el prompt para traer el contexto de otra IA). No se editan |
 | `.claude/skills/` | Los 18 skills del sistema |

@@ -125,6 +125,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     <ol>
       <li>Claude arma las preguntas con <code>/preparar-entrevista</code> y las guarda en <code>entrevistas/&lt;carpeta&gt;/practica.json</code>.</li>
       <li>Respondé como en la entrevista. <strong>⏱ Empezar</strong> mide cuánto tardás; si prendiste el dictado, también transcribe lo que decís. Podés corregir el texto a mano.</li>
+      <li>Si abriste el tablero con <code>abrir-tablero</code>, la voz se transcribe en tu computadora con Whisper y el audio no se guarda. Si no, se usa el dictado del navegador, que procesa el audio en la nube.</li>
       <li><strong>Guardar práctica</strong> crea un archivo nuevo con tus respuestas (nunca pisa uno anterior) y te da un pedido de una línea para pegar en Claude Code.</li>
       <li>Claude te devuelve el feedback y actualiza los puntajes. Esta página los muestra sola cuando cambian.</li>
       <li>Claude lee el texto, no escucha el audio: evalúa la estructura, el ejemplo y la duración, no el tono.</li>
@@ -159,6 +160,14 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
   var activa = null;        // pregunta con el reloj corriendo
   var inicio = 0, acumulado = 0, reloj = null;
   var rec = null;
+  // Motor de transcripción: "local" (faster-whisper en el servidor), "navegador" (Web Speech) o null.
+  var local = { estado: "apagada" };
+  var grabador = null, pista = null;
+  var transcribiendo = 0;
+  function motor() {
+    if (local.estado === "lista" || local.estado === "cargando") return "local";
+    return SR ? "navegador" : null;
+  }
 
   // ---------- utilidades ----------
   function esc(s) {
@@ -206,8 +215,17 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
       return;
     }
     if (!carpeta) { cargarLista(); return; }
+    consultarTranscripcion();
     cargarPractica(true);
     setInterval(function () { cargarPractica(false); }, 15000);
+  }
+  function consultarTranscripcion() {
+    api("/api/transcripcion").then(function (res) {
+      var antes = local.estado;
+      local = res.j || { estado: "apagada" };
+      if (local.estado === "cargando") setTimeout(consultarTranscripcion, 4000);
+      if (antes !== local.estado && info && !activa) render();
+    }, function () {});
   }
   function cargarLista() {
     api("/api/practicas").then(function (res) {
@@ -260,11 +278,20 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
       areas + "</div></section>";
   }
   function htmlDictado() {
+    if (motor() === "local") {
+      var nota = local.estado === "cargando"
+        ? "Preparando la transcripción. La primera vez baja el modelo de voz (unos 480 MB con el modelo small); después anda sin internet. Mientras tanto podés escribir."
+        : "La voz se transcribe en esta computadora con Whisper (modelo " + esc(local.modelo || "") + "). El audio no sale de tu compu ni se guarda: queda solo el texto, en tu carpeta. El texto aparece unos segundos después de tocar Terminar.";
+      return '<section class="caja"><div class="dictado"><label><input type="checkbox" id="dictado"' + (dictadoOn ? " checked" : "") + '> 🎙 Transcribir lo que digo mientras respondo</label>' +
+        (local.estado === "cargando" ? '<span class="tag">preparando…</span>' : '<span class="tag">en tu computadora</span>') + "</div>" +
+        '<div class="aviso">' + nota + "</div></section>";
+    }
     if (!SR) {
       return '<section class="caja dictado"><span>🎙 Dictado</span><span class="muted">Este navegador no transcribe la voz. Funciona en Chrome y Edge. También podés dictar con el sistema (Win + H en Windows) dentro del cuadro de respuesta.</span></section>';
     }
     return '<section class="caja"><div class="dictado"><label><input type="checkbox" id="dictado"' + (dictadoOn ? " checked" : "") + '> 🎙 Transcribir lo que digo mientras respondo</label></div>' +
-      '<div class="aviso">El dictado usa el reconocimiento de voz del navegador: el audio se procesa en los servidores de Google (Chrome) o Microsoft (Edge), no en tu computadora. Lo que queda guardado es solo el texto, en tu carpeta. Si preferís que nada salga, dejalo apagado y escribí, o usá el dictado de tu sistema.</div></section>';
+      '<div class="aviso">' + (local.estado === "error" ? "La transcripción local no pudo arrancar (" + esc(local.error || "") + "). " : "") +
+      'El dictado usa el reconocimiento de voz del navegador: el audio se procesa en los servidores de Google (Chrome) o Microsoft (Edge), no en tu computadora. Lo que queda guardado es solo el texto, en tu carpeta. Si preferís que nada salga, dejalo apagado y escribí, o usá el dictado de tu sistema.</div></section>';
   }
   function htmlPregunta(q, i) {
     var b = borrador[q.id] || {};
@@ -293,7 +320,7 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
       '<div class="controles">' +
         (activa === q.id
           ? '<button class="btn btn-grabando" data-parar="' + esc(q.id) + '">■ Terminar</button>'
-          : '<button class="btn" data-empezar="' + esc(q.id) + '">⏱ ' + (dur ? "Seguir" : "Empezar") + (dictadoOn && SR ? " y dictar" : "") + "</button>") +
+          : '<button class="btn" data-empezar="' + esc(q.id) + '">⏱ ' + (dur ? "Seguir" : "Empezar") + (dictadoOn && motor() ? " y dictar" : "") + "</button>") +
         '<span class="medidas" id="med-' + esc(q.id) + '">' + medidas(dur, obj, pal, ppm) + "</span>" +
         (dur || b.texto ? '<button class="btn btn-ghost btn-sm" data-borrar="' + esc(q.id) + '">Borrar</button>' : "") +
       "</div></article>";
@@ -324,8 +351,8 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
   function respondidas() { return preguntas().filter(function (q) { return borrador[q.id] && (borrador[q.id].texto || "").trim(); }); }
   function estadoPie() {
     var n = respondidas().length, t = preguntas().length;
-    document.getElementById("pie-estado").textContent = n ? "Respondiste " + n + " de " + t : "Respondé las que quieras practicar hoy";
-    document.getElementById("guardar").disabled = !n;
+    document.getElementById("pie-estado").textContent = transcribiendo ? "Transcribiendo…" : n ? "Respondiste " + n + " de " + t : "Respondé las que quieras practicar hoy";
+    document.getElementById("guardar").disabled = !n || transcribiendo > 0;
   }
 
   // ---------- reloj y dictado ----------
@@ -344,7 +371,8 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     acumulado = b.duracionSeg || 0; inicio = Date.now();
     render();
     reloj = setInterval(tick, 500);
-    if (dictadoOn && SR) iniciarDictado(pid);
+    if (dictadoOn && motor() === "local") iniciarGrabacion(pid);
+    else if (dictadoOn && SR) iniciarDictado(pid);
     var ta = document.getElementById("r-" + pid); if (ta) ta.focus();
   }
   function parar() {
@@ -354,8 +382,64 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
     borrador[pid].duracionSeg = Math.round(acumulado + (Date.now() - inicio) / 1000);
     activa = null;
     pararDictado();
+    pararGrabacion();
     guardar(CLAVE, borrador);
     render();
+  }
+
+  // ---------- grabación para la transcripción local ----------
+  function iniciarGrabacion(pid) {
+    if (!navigator.mediaDevices || !window.MediaRecorder) { toast("Este navegador no puede grabar audio. Podés escribir la respuesta."); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      if (activa !== pid) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      var partes = [];
+      pista = stream;
+      grabador = new MediaRecorder(stream);
+      grabador.ondataavailable = function (ev) { if (ev.data && ev.data.size) partes.push(ev.data); };
+      grabador.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        var blob = new Blob(partes, { type: grabador && grabador.mimeType || partes[0] && partes[0].type || "audio/webm" });
+        enviarAudio(pid, blob);
+      };
+      grabador.start();
+      var el = document.getElementById("prov-" + pid); if (el) el.textContent = "🔴 Grabando…";
+    }, function (err) {
+      toast(err && err.name === "NotAllowedError" ? "El navegador no dio permiso al micrófono. Podés escribir la respuesta." : "No pude usar el micrófono (" + (err && err.name || "error") + ").");
+    });
+  }
+  function pararGrabacion() {
+    if (!grabador) return;
+    var g = grabador; grabador = null;
+    try { if (g.state !== "inactive") g.stop(); } catch (e) {}
+  }
+  function enviarAudio(pid, blob) {
+    if (!blob.size) return;
+    transcribiendo++; estadoPie();
+    var el = document.getElementById("prov-" + pid); if (el) el.textContent = "Transcribiendo…";
+    var idioma = (info.practica.entrevista && info.practica.entrevista.idioma) || "es-AR";
+    fetch("/api/transcribir?idioma=" + encodeURIComponent(idioma), {
+      method: "POST", headers: { "Content-Type": (blob.type || "audio/webm").split(";")[0] }, body: blob
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
+      transcribiendo--;
+      var prov = document.getElementById("prov-" + pid); if (prov) prov.textContent = "";
+      if (!res.ok) { toast(res.j.error || "No pude transcribir. Podés escribir la respuesta."); estadoPie(); return; }
+      var t = (res.j.texto || "").trim();
+      if (!t) { toast("No se escuchó nada en la grabación."); estadoPie(); return; }
+      var b = borrador[pid] = borrador[pid] || {};
+      var ta = document.getElementById("r-" + pid);
+      var actual = ta ? ta.value : (b.texto || "");
+      b.texto = (actual && !/\s$/.test(actual) ? actual + " " : actual) + t;
+      b.fuente = "dictado";
+      if (ta) ta.value = b.texto;
+      guardar(CLAVE, borrador); estadoPie();
+      var q = preguntas().filter(function (x) { return x.id === pid; })[0];
+      var med = document.getElementById("med-" + pid);
+      if (med) med.innerHTML = medidas(b.duracionSeg, q && q.tiempoSeg, palabras(b.texto), b.duracionSeg > 5 ? Math.round(palabras(b.texto) / (b.duracionSeg / 60)) : null);
+      toast("Transcripto en " + res.j.segundos + " s.");
+    }, function () {
+      transcribiendo--; estadoPie();
+      toast("Se cortó el servidor mientras transcribía.");
+    });
   }
   function iniciarDictado(pid) {
     try {
@@ -378,10 +462,11 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
         var el = document.getElementById("prov-" + pid); if (el) el.textContent = prov;
       };
       rec.onerror = function (ev) {
-        if (ev.error === "not-allowed" || ev.error === "service-not-allowed") {
-          toast("El navegador no dio permiso al micrófono. Podés escribir la respuesta.");
-          rec = null;
-        }
+        if (ev.error === "no-speech" || ev.error === "aborted") return;
+        var motivos = { "not-allowed": "el navegador no dio permiso al micrófono", "service-not-allowed": "el navegador no permite el dictado en esta página",
+          "audio-capture": "no encuentro un micrófono", "network": "el dictado del navegador necesita internet y no pudo conectarse", "language-not-supported": "el idioma no está disponible" };
+        toast("No pude dictar: " + (motivos[ev.error] || ev.error) + ". Podés escribir la respuesta.");
+        if (ev.error !== "network") rec = null;
       };
       // Chrome corta el dictado después de un silencio: si el reloj sigue, se vuelve a prender.
       rec.onend = function () { if (rec && activa === pid) { try { rec.start(); } catch (e) {} } };
@@ -453,7 +538,10 @@ textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 
   document.addEventListener("change", function (e) {
     if (e.target.id !== "dictado") return;
     dictadoOn = e.target.checked; guardar(CLAVE_DICTADO, dictadoOn);
-    if (activa) { if (dictadoOn) iniciarDictado(activa); else pararDictado(); }
+    if (activa) {
+      if (dictadoOn) { if (motor() === "local") iniciarGrabacion(activa); else if (SR) iniciarDictado(activa); }
+      else { pararDictado(); pararGrabacion(); }
+    }
     render();
   });
   window.addEventListener("beforeunload", function () { if (activa) parar(); });

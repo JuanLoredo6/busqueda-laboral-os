@@ -148,7 +148,7 @@ Se activa con el pedido que copia la página: `/preparar-entrevista feedback <ca
    - **Concreto:** la acción es suya, el resultado no está inflado y cierra con un aprendizaje o una postura.
    - **Duración:** 20 si está dentro del objetivo o hasta un 30 % arriba; menos cuanto más se aleja. Si no hay duración medida, juzgala por el largo del texto y decilo.
    Cada punto que se descuenta tiene un motivo que se puede señalar en la respuesta. No se suman puntos por cosas que no dijo.
-3. **Transcripción:** si la respuesta es `dictado`, puede tener palabras mal reconocidas. No las cuentes como error: marcá ❓ la frase dudosa y seguí. La transcripción no muestra el tono ni las pausas: no los evalúes.
+3. **Transcripción:** si la respuesta es `dictado` (Whisper en la computadora o el dictado del navegador), puede tener palabras mal reconocidas. No las cuentes como error: marcá ❓ la frase dudosa y seguí. La transcripción no muestra el tono ni las pausas: no los evalúes.
 4. **Lo nuevo que no está en el perfil:** si en la respuesta aparece un logro, un número o una decisión que `perfil.md` no tiene, no lo des por cierto ni lo uses en la devolución como dato. Preguntá si es real y si lo sumás. (límite L1)
 5. **En el chat**, por respuesta: el puntaje, qué se lleva el entrevistador en una frase y **una** mejora concreta. Al final: la más fuerte, la más floja y qué practicar antes de la entrevista.
 6. **En `practica.json`**, para que la página lo muestre (el pedido de la persona es la confirmación para actualizar este archivo; el de respuestas no se toca nunca):

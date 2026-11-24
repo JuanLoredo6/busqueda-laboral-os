@@ -31,7 +31,7 @@ import urllib.parse
 import tempfile
 import threading
 import webbrowser
-from http.server import HTTPServer, SimpleHTTPRequestHandler
+from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 
 AQUI = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, AQUI)
@@ -336,6 +336,71 @@ def guardar_sesion(raiz, pedido):
     return 409, {"error": "Hay demasiadas prácticas guardadas hoy."}
 
 
+# ---------- transcripción local (opcional) ----------
+# Si está instalado faster-whisper (MIT), la práctica transcribe la voz en esta
+# computadora: el audio no sale a ningún servicio ni se guarda. El modelo se baja
+# de Hugging Face la primera vez y queda en el caché local.
+# Con abrir-tablero se instala solo vía uv (Python 3.13). Sin él, la página usa el
+# dictado del navegador.
+MAX_AUDIO = 40 * 1024 * 1024
+IDIOMAS = {"es": "es", "en": "en", "pt": "pt"}
+
+
+class Transcriptor:
+    def __init__(self, modelo):
+        self.nombre = modelo
+        self.modelo = None
+        self.estado = "apagada"   # apagada | sin-libreria | cargando | lista | error
+        self.error = None
+        self.candado = threading.Lock()
+        self.carga = threading.Lock()
+        if not modelo:
+            return
+        try:
+            import faster_whisper  # noqa: F401
+        except ImportError:
+            self.estado = "sin-libreria"
+            return
+        self.estado = "cargando"
+        threading.Thread(target=self.cargar, daemon=True).start()
+
+    def cargar(self):
+        with self.carga:
+            if self.modelo is not None:
+                return
+            try:
+                from faster_whisper import WhisperModel
+                print(f"Transcripción: cargando el modelo «{self.nombre}» (la primera vez lo baja, puede tardar unos minutos)…")
+                self.modelo = WhisperModel(self.nombre, device="cpu", compute_type="int8")
+                self.estado = "lista"
+                print("Transcripción: lista. El audio se transcribe en esta computadora.")
+            except Exception as e:  # sin internet la primera vez, disco lleno, etc.
+                self.estado = "error"
+                self.error = str(e)[:300]
+                print(f"Transcripción: no pude cargar el modelo ({self.error}). La práctica usa el dictado del navegador.")
+
+    def info(self):
+        return {"estado": self.estado, "modelo": self.nombre, "error": self.error}
+
+    def transcribir(self, audio, idioma):
+        if self.estado != "lista":
+            return 503, {"error": "La transcripción local todavía no está lista.", **self.info()}
+        lengua = IDIOMAS.get(str(idioma or "es")[:2].lower(), "es")
+        inicio = datetime.datetime.now()
+        try:
+            with self.candado:
+                segmentos, _ = self.modelo.transcribe(io.BytesIO(audio), language=lengua, beam_size=5,
+                                                      vad_filter=True, condition_on_previous_text=False)
+                texto = " ".join(s.text.strip() for s in segmentos).strip()
+        except Exception as e:
+            return 422, {"error": "No pude leer el audio: " + str(e)[:200]}
+        segundos = (datetime.datetime.now() - inicio).total_seconds()
+        return 200, {"texto": texto, "segundos": round(segundos, 1)}
+
+
+transcriptor = Transcriptor(None)
+
+
 class Manejador(SimpleHTTPRequestHandler):
     raiz = None
     puerto = None
@@ -375,6 +440,9 @@ class Manejador(SimpleHTTPRequestHandler):
         if ruta == "/api/estado":
             self.responder(200, {"servidor": True, "version": VERSION})
             return
+        if ruta == "/api/transcripcion":
+            self.responder(200, transcriptor.info())
+            return
         if ruta == "/api/practicas":
             self.responder(*listar_practicas(self.raiz))
             return
@@ -411,6 +479,10 @@ class Manejador(SimpleHTTPRequestHandler):
         if not self.host_valido() or not self.origen_valido():
             self.send_error(403)
             return
+        ruta, _, consulta = self.path.partition("?")
+        if ruta == "/api/transcribir":
+            self.recibir_audio(consulta)
+            return
         if self.path not in ("/api/cambios", "/api/practica/respuestas"):
             self.send_error(404)
             return
@@ -444,24 +516,48 @@ class Manejador(SimpleHTTPRequestHandler):
         codigo, cuerpo = guardar_cambios(self.raiz, cambios)
         self.responder(codigo, cuerpo)
 
+    def recibir_audio(self, consulta):
+        if not (self.headers.get("Content-Type") or "").startswith("audio/"):
+            self.send_error(415)
+            return
+        try:
+            largo = int(self.headers.get("Content-Length") or 0)
+        except ValueError:
+            largo = 0
+        if largo <= 0 or largo > MAX_AUDIO:
+            self.send_error(413)
+            return
+        audio = self.rfile.read(largo)  # queda en memoria: no se escribe a disco
+        idioma = (urllib.parse.parse_qs(consulta).get("idioma") or ["es"])[0]
+        self.responder(*transcriptor.transcribir(audio, idioma))
+
 
 def main():
     ap = argparse.ArgumentParser(description="Servidor local del tablero de búsqueda.")
     ap.add_argument("--puerto", type=int, default=8765)
     ap.add_argument("--raiz", default=os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(AQUI))
     ap.add_argument("--no-abrir", action="store_true")
+    ap.add_argument("--modelo", default=os.environ.get("TRANSCRIPCION_MODELO", "small"),
+                    help="modelo de faster-whisper para la práctica (small, base, medium…)")
+    ap.add_argument("--sin-transcripcion", action="store_true")
     args = ap.parse_args()
 
     Manejador.raiz = os.path.abspath(args.raiz)
     Manejador.puerto = args.puerto
     try:
-        servidor = HTTPServer(("127.0.0.1", args.puerto), Manejador)
+        servidor = ThreadingHTTPServer(("127.0.0.1", args.puerto), Manejador)
     except OSError:
         url = f"http://127.0.0.1:{args.puerto}/tablero.html"
         print(f"El puerto {args.puerto} está ocupado. Si el tablero ya está abierto, entrá a {url}")
         if not args.no_abrir:
             webbrowser.open(url)
         return 1
+    global transcriptor
+    with contextlib.suppress(Exception):  # tildes bien escritas también si la salida va a un archivo
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+    transcriptor =Transcriptor(None if args.sin_transcripcion else args.modelo)
+    if transcriptor.estado == "sin-libreria":
+        print("Transcripción local: no está instalada (se abre con abrir-tablero, que usa uv). La práctica usa el dictado del navegador.")
     url = f"http://127.0.0.1:{args.puerto}/tablero.html"
     print(f"Tablero en {url}")
     print("Dejá esta ventana abierta mientras lo uses. Para cerrarlo: Ctrl+C.")
