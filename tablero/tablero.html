@@ -196,6 +196,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     <div class="top-right">
       <div class="top-fila">
         <span class="mono muted" id="conteo"></span>
+        <a class="btn" id="link-practica" href="practica.html" hidden style="text-decoration:none;color:inherit" title="Practicar las entrevistas que preparó Claude">🎯 Práctica</a>
         <button class="btn" id="btn-sync" title="Copia el pedido para que Claude revise Gmail y Google Calendar">🔄 SYNC</button>
       </div>
       <span class="faint" style="font-size:12px" id="sync-estado"></span>
@@ -214,7 +215,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         <li>Dejá esta pestaña abierta: se actualiza sola cada 10 segundos.</li>
         <li>Si abriste el tablero con <code>abrir-tablero</code> (el servidor local), lo que marques acá (una acción hecha, una tarjeta movida, una nota, una acción nueva, la fecha de envío corregida con ✏️) <strong>se guarda solo</strong> en el archivo. Al pasar una tarjeta a «Esperando respuesta», la fecha de envío es la de hoy. Cerrar una postulación sigue pasando por Claude, porque necesita el resultado.</li>
         <li>Si lo abriste con doble clic, lo que marques queda como <strong>cambio pendiente</strong> en este navegador. Tocá <strong>Copiar pedido para Claude</strong>, pegalo en Claude Code y Claude lo pasa al archivo. Cuando el archivo ya lo refleja, el cambio pendiente desaparece solo.</li>
-        <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea.</li>
+        <li>El botón <strong>⚡</strong> de cada acción copia un pedido listo para que Claude te ayude con esa tarea. Con el servidor, las acciones de preparar una entrevista que ya tiene práctica llevan <strong>🎯 Practicar</strong>, que abre la práctica; si todavía no la tiene, el ⚡ le pide a Claude que la arme.</li>
         <li>Para mover una tarjeta, arrastrala a otra columna o abrí su detalle y elegí la columna.</li>
         <li><strong>🔄 SYNC</strong> copia el pedido para que Claude revise Gmail y Google Calendar y traiga las novedades de tus postulaciones. Si activaste la sincronización automática (<code>/sincronizar-correo configurar</code>), corre sola cada 2 horas de 8 a 22 mientras la app de Claude esté abierta. Lo dudoso aparece en «Para revisar».</li>
       </ol>
@@ -332,6 +333,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     if (!/^https?:$/.test(location.protocol) || !window.fetch) return;
     fetch("/api/estado", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
       servidor = !!(j && j.servidor);
+      if (servidor) { document.getElementById("link-practica").hidden = false; cargarPracticas(); }
       if (guardaSolo()) {
         var sinMotivo = cambios.filter(function (c) { return !c.motivo; });
         if (sinMotivo.length) enviarCambios(sinMotivo); else render();
@@ -472,8 +474,40 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
     var ctx = "\n\nTarea del tablero: «" + a.texto + "» (id " + a.id + ")" +
       (a.fecha ? ", para el " + a.fecha : "") + (a.condicion ? ", " + a.condicion : "") + "." +
       (p ? "\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." : "") +
+      (servidor && esEntrevista(a) ? "\nArmá también la práctica en el navegador (entrevistas/<empresa>/practica.json), así la practico desde 🎯 Práctica." : "") +
       "\nCuando terminemos, marcala como hecha en el tablero.";
     return base + ctx;
+  }
+
+  // ---------- acciones de entrevista: se practican en 🎯 Práctica ----------
+  var practicas = {};   // id de postulación → carpeta de entrevistas/ con practica.json
+  var firmaPracticas = "";
+  function cargarPracticas() {
+    if (!servidor) return;
+    fetch("/api/practicas", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      var mapa = {};
+      ((j && j.practicas) || []).forEach(function (p) { if (p.postulacion && !p.error) mapa[p.postulacion] = p.carpeta; });
+      var f = JSON.stringify(mapa);
+      if (f !== firmaPracticas) { firmaPracticas = f; practicas = mapa; if (datos) render(); }
+    }, function () {});
+  }
+  function esEntrevista(a) {
+    return /^\/preparar-entrevista\b/.test((a.pedido || "").trim()) || /^prepar\w*\s+(la\s+)?(entrevista|charla)/i.test(a.texto || "");
+  }
+  function practicaDe(a) { return servidor && esEntrevista(a) && a.postulacion ? practicas[a.postulacion] || null : null; }
+  // El botón de una acción: 🎯 si ya tiene práctica; si no, el ⚡ de siempre.
+  function botonAccion(a, estilo, texto) {
+    var c = practicaDe(a);
+    if (c) {
+      return '<a class="btn ' + (estilo === "chico" ? "btn-ghost btn-sm" : estilo === "principal" ? "btn-primary" : "") +
+        '" style="text-decoration:none' + (estilo === "principal" ? "" : ";color:inherit") + '" href="practica.html?e=' + encodeURIComponent(c) +
+        '" title="Practicar esta entrevista">' + (estilo === "chico" ? "🎯" : "🎯 Practicar") + "</a>";
+    }
+    if (servidor && esEntrevista(a)) {
+      texto = estilo === "chico" ? "⚡" : "⚡ Armar la práctica con Claude";
+    }
+    return '<button class="btn' + (estilo === "chico" ? " btn-ghost btn-sm" : estilo === "principal" ? " btn-primary" : "") + '" data-pedido="' + esc(a.id) +
+      '" title="Copiar un pedido para que Claude te ayude con esta tarea">' + texto + "</button>";
   }
 
   function htmlAccion(a, conFecha) {
@@ -491,7 +525,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         (local ? '<span class="tag tag-local">Hecha · falta pasarla a Claude</span>' : "") +
       "</div></div>" +
       '<div class="ctrl">' +
-        '<button class="btn btn-ghost btn-sm" data-pedido="' + esc(a.id) + '" title="Copiar un pedido para que Claude te ayude con esta tarea">⚡</button>' +
+        botonAccion(a, "chico", "⚡") +
         (local ? "" : '<button class="check" data-hecha="' + esc(a.id) + '" title="Marcar como hecha" aria-label="Marcar como hecha: ' + esc(a.texto) + '">✓</button>') +
       "</div></div>";
   }
@@ -508,7 +542,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
         (venc ? ' <span class="tag tag-vencida" style="font-size:13px;vertical-align:middle">' + venc + (venc === 1 ? " vencida" : " vencidas") + "</span>" : "") + "</h2>";
       h += '<div class="accion-principal"><div><div class="accion-texto">' + esc(a.texto) + '</div><div class="accion-meta">' +
         esc([nombreEmpresa(a.postulacion), a.fecha < hoy ? "venció el " + fechaCorta(a.fecha) : "para hoy", a.condicion].filter(Boolean).join(" · ")) +
-        '</div></div><div class="botones"><button class="btn btn-primary" data-pedido="' + esc(a.id) + '">⚡ Preparar con Claude</button>' +
+        '</div></div><div class="botones">' + botonAccion(a, "principal", "⚡ Preparar con Claude") +
         '<button class="btn" data-hecha="' + esc(a.id) + '">✓ Hecha</button></div></div>';
     } else if (pend.length) {
       var prox = pend[0];
@@ -516,7 +550,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
       h += '<div class="accion-principal"><div class="accion-meta">Lo próximo: ' +
         (prox.fecha ? '<span class="mono">' + esc(fechaCorta(prox.fecha)) + "</span> · " : "sin fecha · ") + esc(prox.texto) +
         (nombreEmpresa(prox.postulacion) ? " (" + esc(nombreEmpresa(prox.postulacion)) + ")" : "") +
-        '</div><div class="botones"><button class="btn" data-pedido="' + esc(prox.id) + '">⚡ Adelantarla con Claude</button></div></div>';
+        '</div><div class="botones">' + botonAccion(prox, "normal", "⚡ Adelantarla con Claude") + "</div></div>";
     } else {
       h += '<h2 id="hoy-titulo">No tenés acciones pendientes</h2><div class="accion-meta">Sumá una abajo, o pedile a Claude <span class="mono">/repaso-semanal</span> para planear la semana.</div>';
     }
@@ -903,7 +937,7 @@ dialog textarea { width: 100%; min-height: 220px; font-family: var(--mono); font
   render();
   cargar();
   detectarServidor();
-  setInterval(cargar, 10000);
+  setInterval(function () { cargar(); cargarPracticas(); }, 10000);
 })();
 </script>
 </body>

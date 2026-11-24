@@ -115,8 +115,10 @@ Comprobación: ninguna. Decí que la etapa es opcional y seguí.
 
 ### Etapa 7 · Ver el tablero
 
-1. Pedile que abra `tablero/tablero.html` con doble clic (dale la ruta completa) y toque **Ver el tablero con datos de ejemplo**.
-2. Explicá en dos líneas qué muestra: qué hacer hoy, las postulaciones por estado y los números de la búsqueda.
+1. Pedile que abra `tablero/abrir-tablero.bat` (Windows) o `tablero/abrir-tablero.command` (Mac) con doble clic (dale la ruta completa). Se abre una ventana que tiene que quedar abierta y el tablero aparece en el navegador. Que toque **Ver el tablero con datos de ejemplo**.
+   - Si la ventana dice que no encuentra Python, que abra `tablero/tablero.html` con doble clic: el tablero funciona igual, solo que lo que marque se le pasa a Claude copiando un pedido.
+   - Si tiene [uv](https://docs.astral.sh/uv/), el lanzador suma la transcripción local de la voz para practicar entrevistas. La primera vez baja unos 24 paquetes y, al primer uso, el modelo de voz (unos 480 MB). Es opcional: sin uv, la práctica usa el dictado del navegador.
+2. Explicá en dos líneas qué muestra: qué hacer hoy, las postulaciones por estado y los números de la búsqueda. Con el servidor, lo que marque se guarda solo y **🎯 Práctica** abre la práctica de entrevistas.
 
 Comprobación: la persona confirma que ve el tablero con datos de ejemplo.
 

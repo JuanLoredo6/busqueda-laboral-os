@@ -1,0 +1,625 @@
+<!doctype html>
+<!-- SPDX-License-Identifier: MIT · Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE y CREDITOS.md en la raíz del repo. -->
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Práctica de entrevistas</title>
+<style>
+:root {
+  --bg: #f6f5f2; --surface: #ffffff; --surface-2: #efede8; --border: #dedad2;
+  --text: #1d1c1a; --text-2: #5d5a54; --text-3: #8a867e;
+  --accent: #0f6b5c; --accent-ink: #ffffff; --accent-soft: #e2f1ed;
+  --danger: #b3261e; --danger-soft: #fbe9e7; --warn: #8a5a00; --ok: #2f855a;
+  --shadow: 0 1px 2px rgba(0,0,0,.05), 0 2px 8px rgba(0,0,0,.04);
+  --radius: 10px;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #161614; --surface: #1f1f1c; --surface-2: #2a2a26; --border: #3a3934;
+    --text: #edebe6; --text-2: #b4b0a7; --text-3: #8a867e;
+    --accent: #4fc3a8; --accent-ink: #0d1f1b; --accent-soft: #19332d;
+    --danger: #f2877e; --danger-soft: #3a1f1c; --warn: #e3b65c; --ok: #6fcf97; --shadow: none;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #161614; --surface: #1f1f1c; --surface-2: #2a2a26; --border: #3a3934;
+  --text: #edebe6; --text-2: #b4b0a7; --text-3: #8a867e;
+  --accent: #4fc3a8; --accent-ink: #0d1f1b; --accent-soft: #19332d;
+  --danger: #f2877e; --danger-soft: #3a1f1c; --warn: #e3b65c; --ok: #6fcf97; --shadow: none;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body { background: var(--bg); color: var(--text); font: 15px/1.5 var(--sans); }
+.wrap { max-width: 860px; margin: 0 auto; padding: 24px 16px 200px; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+a { color: var(--accent); }
+.mono { font-family: var(--mono); font-size: 13px; }
+.muted { color: var(--text-2); }
+.faint { color: var(--text-3); }
+.btn { border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 12px; font-size: 14px; }
+.btn:hover { background: var(--surface-2); }
+.btn-primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn-primary:hover { background: var(--accent); filter: brightness(1.08); }
+.btn-ghost { border-color: transparent; background: transparent; color: var(--text-2); }
+.btn-sm { padding: 3px 8px; font-size: 13px; }
+.btn-grabando { background: var(--danger); border-color: var(--danger); color: #fff; font-weight: 600; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.tag { display: inline-block; font-size: 11px; padding: 1px 6px; border-radius: 999px; background: var(--surface-2); color: var(--text-2); border: 1px solid var(--border); }
+
+header.top { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: flex-end; justify-content: space-between; margin-bottom: 16px; }
+.eyebrow { font-size: 13px; color: var(--text-2); margin: 0 0 2px; }
+h1 { font-size: 26px; line-height: 1.15; margin: 0; letter-spacing: -.01em; }
+.caja { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; box-shadow: var(--shadow); margin-bottom: 16px; }
+
+/* Preparación */
+.prep { display: grid; grid-template-columns: 120px minmax(0, 1fr); gap: 16px; align-items: center; }
+.prep .valor { font-size: 40px; font-weight: 650; line-height: 1; font-variant-numeric: tabular-nums; }
+.prep .valor small { font-size: 15px; color: var(--text-3); font-weight: 400; }
+.prep .etiqueta { font-size: 13px; color: var(--text-2); margin-top: 4px; }
+.area { display: grid; grid-template-columns: minmax(0, 180px) minmax(0, 1fr) 40px; gap: 8px; align-items: center; font-size: 13px; margin: 4px 0; }
+.barra { height: 8px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+.barra > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.area .num { font-family: var(--mono); text-align: right; color: var(--text-2); }
+
+/* Dictado */
+.dictado { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; font-size: 14px; }
+.aviso { font-size: 13px; color: var(--text-2); background: var(--surface-2); border-radius: 8px; padding: 8px 10px; margin-top: 8px; }
+
+/* Preguntas */
+.pregunta { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; box-shadow: var(--shadow); }
+.pregunta.activa { border-color: var(--accent); }
+.pregunta .cabeza { display: flex; gap: 8px; align-items: baseline; justify-content: space-between; flex-wrap: wrap; }
+.pregunta h3 { font-size: 16px; margin: 0; flex: 1 1 400px; }
+.pregunta .n { font-family: var(--mono); color: var(--text-3); font-weight: 400; margin-right: 6px; }
+.pregunta .meta { font-size: 12px; color: var(--text-3); display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.puntaje { font-family: var(--mono); font-size: 13px; padding: 1px 8px; border-radius: 999px; border: 1px solid var(--border); }
+.puntaje.alto { color: var(--ok); border-color: var(--ok); }
+.puntaje.medio { color: var(--warn); border-color: var(--warn); }
+.puntaje.bajo { color: var(--danger); border-color: var(--danger); }
+details { margin-top: 8px; }
+details > summary { cursor: pointer; font-size: 13px; color: var(--text-2); }
+.pista { font-size: 13px; color: var(--text-2); margin-top: 6px; }
+.pista dt { font-weight: 600; color: var(--text); margin-top: 6px; }
+.pista dd { margin: 0; }
+textarea.respuesta { width: 100%; min-height: 110px; margin-top: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); resize: vertical; }
+.provisorio { font-size: 13px; color: var(--text-3); font-style: italic; min-height: 1em; }
+.controles { display: flex; flex-wrap: wrap; gap: 8px 12px; align-items: center; margin-top: 6px; }
+.medidas { font-family: var(--mono); font-size: 12px; color: var(--text-2); }
+.medidas .pasado { color: var(--warn); font-weight: 600; }
+
+/* Pie fijo */
+.pie { position: fixed; left: 0; right: 0; bottom: 0; background: var(--surface); border-top: 1px solid var(--border); padding: 10px 16px; }
+.pie .dentro { max-width: 860px; margin: 0 auto; display: flex; gap: 8px 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; }
+.pedido { margin-top: 8px; }
+.pedido pre { white-space: pre-wrap; font-family: var(--mono); font-size: 13px; background: var(--surface-2); border-radius: 8px; padding: 8px 10px; margin: 6px 0; }
+
+.lista a { display: block; text-decoration: none; color: inherit; }
+.lista .fila { display: flex; gap: 12px; justify-content: space-between; align-items: baseline; flex-wrap: wrap; }
+.vacio { text-align: center; padding: 32px 24px; }
+.vacio code, .como code { font-family: var(--mono); background: var(--surface-2); padding: 1px 6px; border-radius: 4px; }
+.como { font-size: 14px; color: var(--text-2); }
+.toast { position: fixed; left: 50%; bottom: 72px; transform: translateX(-50%); background: var(--text); color: var(--bg); padding: 8px 14px; border-radius: 8px; font-size: 14px; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 10; max-width: calc(100% - 32px); }
+.toast.visible { opacity: 1; }
+@media (max-width: 640px) {
+  .prep { grid-template-columns: minmax(0, 1fr); }
+  .area { grid-template-columns: minmax(0, 1fr) 80px 36px; }
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div>
+      <p class="eyebrow" id="eyebrow">Práctica de entrevistas</p>
+      <h1 id="titulo">Práctica de entrevistas</h1>
+    </div>
+    <div><a href="tablero.html">← Tablero</a></div>
+  </header>
+  <div id="contenido"><p class="muted">Cargando…</p></div>
+  <details class="como">
+    <summary>Cómo funciona esta práctica</summary>
+    <ol>
+      <li>Claude arma las preguntas con <code>/preparar-entrevista</code> y las guarda en <code>entrevistas/&lt;carpeta&gt;/practica.json</code>.</li>
+      <li>Respondé como en la entrevista. <strong>⏱ Empezar</strong> mide cuánto tardás; si prendiste el dictado, también transcribe lo que decís. Podés corregir el texto a mano.</li>
+      <li>Si abriste el tablero con <code>abrir-tablero</code>, la voz se transcribe en tu computadora con Whisper y el audio no se guarda. Si no, se usa el dictado del navegador, que procesa el audio en la nube.</li>
+      <li><strong>Guardar práctica</strong> crea un archivo nuevo con tus respuestas (nunca pisa uno anterior) y te da un pedido de una línea para pegar en Claude Code.</li>
+      <li>Claude te devuelve el feedback y actualiza los puntajes. Esta página los muestra sola cuando cambian.</li>
+      <li>Claude lee el texto, no escucha el audio: evalúa la estructura, el ejemplo y la duración, no el tono.</li>
+    </ol>
+  </details>
+</div>
+<div class="pie" id="pie" hidden>
+  <div class="dentro">
+    <span class="muted" id="pie-estado"></span>
+    <span><button class="btn btn-primary" id="guardar">Guardar práctica</button></span>
+  </div>
+  <div class="dentro pedido" id="pedido" hidden></div>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  var params = new URLSearchParams(location.search);
+  var carpeta = params.get("e");
+  var CLAVE = "practica-borrador-" + carpeta;
+  var CLAVE_DICTADO = "practica-dictado";
+  var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  var DIAS_LARGOS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  var MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+  var info = null;          // { carpeta, practica, archivos }
+  var firma = "";
+  var borrador = leer(CLAVE, {});  // { pid: { texto, duracionSeg, fuente } }
+  var dictadoOn = leer(CLAVE_DICTADO, false) === true;
+  var activa = null;        // pregunta con el reloj corriendo
+  var inicio = 0, acumulado = 0, reloj = null;
+  var rec = null;
+  // Motor de transcripción: "local" (faster-whisper en el servidor), "navegador" (Web Speech) o null.
+  var local = { estado: "apagada" };
+  var grabador = null, pista = null;
+  var transcribiendo = 0;
+  function motor() {
+    if (local.estado === "lista" || local.estado === "cargando") return "local";
+    return SR ? "navegador" : null;
+  }
+
+  // ---------- utilidades ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function leer(clave, def) {
+    try { var v = localStorage.getItem(clave); return v == null ? def : JSON.parse(v); } catch (e) { return def; }
+  }
+  function guardar(clave, valor) { try { localStorage.setItem(clave, JSON.stringify(valor)); } catch (e) {} }
+  function toast(msg) {
+    var t = document.getElementById("toast");
+    t.textContent = msg; t.classList.add("visible");
+    clearTimeout(toast._t); toast._t = setTimeout(function () { t.classList.remove("visible"); }, 2800);
+  }
+  function copiar(texto, msg) {
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(texto).then(function () { toast(msg); }, function () { toast("Seleccioná el texto y copialo con Ctrl+C."); });
+    } else toast("Seleccioná el texto y copialo con Ctrl+C.");
+  }
+  function mmss(seg) {
+    seg = Math.max(0, Math.round(seg || 0));
+    return Math.floor(seg / 60) + ":" + String(seg % 60).padStart(2, "0");
+  }
+  function aFecha(iso) {
+    if (!iso || !/^\d{4}-\d{2}-\d{2}/.test(iso)) return null;
+    var p = iso.slice(0, 10).split("-");
+    return new Date(+p[0], +p[1] - 1, +p[2]);
+  }
+  function claseP(n) { return n == null ? "" : n >= 75 ? "alto" : n >= 50 ? "medio" : "bajo"; }
+  // Acepta los dos formatos de pregunta: el de la plantilla (texto, tipo, evalua…) y el de las
+  // prácticas armadas antes como artefacto (pregunta, familia, evaluan, objetivo, previas, ejemplo…).
+  function normPregunta(q) {
+    return {
+      id: q.id, grupo: q.grupo,
+      texto: q.texto || q.pregunta || q.corta || "",
+      tipo: q.tipo || q.familia,
+      antesDeResponder: q.antesDeResponder || q.previas,
+      estructura: q.estructura,
+      historia: q.historia || q.ejemplo,
+      evalua: q.evalua || q.evaluan,
+      modelo: q.modelo, avisos: q.avisos,
+      tiempoSeg: q.tiempoSeg || q.objetivo,
+      puntaje: q.puntaje, criterios: q.criterios, devolucion: q.devolucion, mejora: q.mejora,
+      practicas: q.practicas, ultimaPractica: q.ultimaPractica
+    };
+  }
+  function preguntas() { return ((info && info.practica && info.practica.preguntas) || []).filter(function (q) { return q && q.id; }).map(normPregunta); }
+  // Texto de un campo que puede ser texto, lista u objeto ({texto, fuente}).
+  function txt(v) {
+    if (v == null || v === "") return "";
+    if (Array.isArray(v)) return v.map(txt).filter(Boolean).join("<br>");
+    if (typeof v === "object") {
+      if (v.texto || v.pregunta) return esc(v.texto || v.pregunta) + (v.fuente ? ' <span class="faint">' + esc(v.fuente) + "</span>" : "") + (v.por ? ' <span class="faint">· ' + esc(v.por) + "</span>" : "");
+      return Object.keys(v).map(function (k) { return esc(k) + ": " + txt(v[k]); }).join("<br>");
+    }
+    return esc(v);
+  }
+  function idiomaDictado(e) {
+    var i = String((e && e.idioma) || "es").toLowerCase();
+    if (i.indexOf("-") > 0) return i;
+    return { es: "es-AR", en: "en-US", pt: "pt-BR" }[i.slice(0, 2)] || "es-AR";
+  }
+  function palabras(t) { var m = String(t || "").trim().match(/\S+/g); return m ? m.length : 0; }
+
+  // ---------- carga ----------
+  function api(url, opciones) {
+    return fetch(url, opciones).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    });
+  }
+  function iniciar() {
+    if (!/^https?:$/.test(location.protocol)) {
+      document.getElementById("contenido").innerHTML = '<div class="caja vacio"><h2>Abrí la práctica con el servidor del tablero</h2>' +
+        '<p class="muted">Esta página lee y guarda archivos de tu carpeta, así que necesita el servidor local.<br>Abrí <code>tablero/abrir-tablero.bat</code> (Windows) o <code>abrir-tablero.command</code> (Mac) y entrá a «🎯 Práctica».</p></div>';
+      return;
+    }
+    if (!carpeta) { cargarLista(); return; }
+    consultarTranscripcion();
+    cargarPractica(true);
+    setInterval(function () { cargarPractica(false); }, 15000);
+  }
+  function consultarTranscripcion() {
+    api("/api/transcripcion").then(function (res) {
+      var antes = local.estado;
+      local = res.j || { estado: "apagada" };
+      if (local.estado === "cargando") setTimeout(consultarTranscripcion, 4000);
+      if (antes !== local.estado && info && !activa) render();
+    }, function () {});
+  }
+  function cargarLista() {
+    api("/api/practicas").then(function (res) {
+      var lista = (res.j && res.j.practicas) || [];
+      var c = document.getElementById("contenido");
+      if (!lista.length) {
+        c.innerHTML = '<div class="caja vacio"><h2>Todavía no hay prácticas armadas</h2><p class="muted">Pedile a Claude <code>/preparar-entrevista</code> para una entrevista y decile que te arme la práctica.</p></div>';
+        return;
+      }
+      c.innerHTML = '<div class="lista">' + lista.map(function (p) {
+        return '<a class="caja" href="practica.html?e=' + encodeURIComponent(p.carpeta) + '"><div class="fila"><strong>' + esc(p.empresa || p.carpeta) + "</strong>" +
+          (p.puntaje != null ? '<span class="puntaje ' + claseP(p.puntaje) + '">' + esc(p.puntaje) + "/100</span>" : '<span class="faint">sin puntaje todavía</span>') + "</div>" +
+          '<div class="muted">' + esc([p.rol, p.tipo, p.fecha ? "entrevista el " + p.fecha : "", p.preguntas ? p.preguntas + " preguntas" : ""].filter(Boolean).join(" · ")) +
+          (p.error ? ' · <span style="color:var(--danger)">practica.json está roto</span>' : "") + "</div></a>";
+      }).join("") + "</div>";
+    }, function () { toast("No pude hablar con el servidor."); });
+  }
+  function cargarPractica(primera) {
+    api("/api/practica?e=" + encodeURIComponent(carpeta)).then(function (res) {
+      if (!res.ok) {
+        if (primera) document.getElementById("contenido").innerHTML = '<div class="caja vacio"><h2>No pude abrir esta práctica</h2><p class="muted">' + esc(res.j.error || "") + '</p><p><a href="practica.html">Ver todas las prácticas</a></p></div>';
+        return;
+      }
+      var nueva = JSON.stringify(res.j);
+      if (nueva === firma) return;
+      // No se redibuja mientras escribís o grabás: se espera al próximo intento.
+      var foco = document.activeElement;
+      if (!primera && (activa || (foco && foco.tagName === "TEXTAREA"))) return;
+      var habia = !!info;
+      firma = nueva; info = res.j;
+      render();
+      if (habia) toast("Claude actualizó los puntajes.");
+    }, function () { if (primera) toast("No pude hablar con el servidor."); });
+  }
+
+  // ---------- render ----------
+  function htmlPreparacion() {
+    var p = info.practica;
+    var prep = p.preparacion || {};
+    var qs = preguntas();
+    var practicadas = qs.filter(function (q) { return q.puntaje != null; }).length;
+    var areas = (prep.areas || []).map(function (a) {
+      var n = a.puntaje == null ? null : Math.max(0, Math.min(100, +a.puntaje));
+      return '<div class="area"><span>' + esc(a.nombre) + (a.nota ? ' <span class="faint">· ' + esc(a.nota) + "</span>" : "") + "</span>" +
+        '<span class="barra"><span style="width:' + (n || 0) + '%"></span></span><span class="num">' + (n == null ? "—" : n) + "</span></div>";
+    }).join("");
+    return '<section class="caja prep" aria-label="Preparación"><div><div class="valor">' + (prep.puntaje == null ? "—" : esc(prep.puntaje)) + "<small>/100</small></div>" +
+      '<div class="etiqueta">preparación · ' + practicadas + " de " + qs.length + " preguntas practicadas</div></div>" +
+      "<div>" + (prep.resumen ? '<p style="margin:0 0 8px">' + esc(prep.resumen) + "</p>" : '<p class="muted" style="margin:0 0 8px">Todavía no hay puntaje: guardá una práctica y pedile la devolución a Claude.</p>') +
+      areas + "</div></section>";
+  }
+  function htmlDictado() {
+    if (motor() === "local") {
+      var nota = local.estado === "cargando"
+        ? "Preparando la transcripción. La primera vez baja el modelo de voz (unos 480 MB con el modelo small); después anda sin internet. Mientras tanto podés escribir."
+        : "La voz se transcribe en esta computadora con Whisper (modelo " + esc(local.modelo || "") + "). El audio no sale de tu compu ni se guarda: queda solo el texto, en tu carpeta. El texto aparece unos segundos después de tocar Terminar.";
+      return '<section class="caja"><div class="dictado"><label><input type="checkbox" id="dictado"' + (dictadoOn ? " checked" : "") + '> 🎙 Transcribir lo que digo mientras respondo</label>' +
+        (local.estado === "cargando" ? '<span class="tag">preparando…</span>' : '<span class="tag">en tu computadora</span>') + "</div>" +
+        '<div class="aviso">' + nota + "</div></section>";
+    }
+    if (!SR) {
+      return '<section class="caja dictado"><span>🎙 Dictado</span><span class="muted">Este navegador no transcribe la voz. Funciona en Chrome y Edge. También podés dictar con el sistema (Win + H en Windows) dentro del cuadro de respuesta.</span></section>';
+    }
+    return '<section class="caja"><div class="dictado"><label><input type="checkbox" id="dictado"' + (dictadoOn ? " checked" : "") + '> 🎙 Transcribir lo que digo mientras respondo</label></div>' +
+      '<div class="aviso">' + (local.estado === "error" ? "La transcripción local no pudo arrancar (" + esc(local.error || "") + "). " : "") +
+      'El dictado usa el reconocimiento de voz del navegador: el audio se procesa en los servidores de Google (Chrome) o Microsoft (Edge), no en tu computadora. Lo que queda guardado es solo el texto, en tu carpeta. Si preferís que nada salga, dejalo apagado y escribí, o usá el dictado de tu sistema.</div></section>';
+  }
+  function htmlPregunta(q, i) {
+    var b = borrador[q.id] || {};
+    var dur = b.duracionSeg || 0;
+    var obj = q.tiempoSeg || 0;
+    var pal = palabras(b.texto);
+    var ppm = dur > 5 ? Math.round(pal / (dur / 60)) : null;
+    var pista = [["Antes de responder", q.antesDeResponder], ["Estructura", q.estructura], ["Historia que la sostiene", q.historia], ["Qué evalúan", q.evalua],
+      ["Respuesta modelo", q.modelo], ["Cuidado", q.avisos]]
+      .filter(function (x) { return txt(x[1]); }).map(function (x) { return "<dt>" + esc(x[0]) + "</dt><dd>" + txt(x[1]) + "</dd>"; }).join("");
+    var dev = q.devolucion || q.mejora || q.criterios;
+    var criterios = q.criterios && typeof q.criterios === "object"
+      ? "<dd>" + Object.keys(q.criterios).map(function (k) { return esc(k) + ": " + esc(q.criterios[k]); }).join(" · ") + "</dd>" : "";
+    return '<article class="pregunta' + (activa === q.id ? " activa" : "") + '" data-id="' + esc(q.id) + '">' +
+      '<div class="cabeza"><h3><span class="n">' + (i + 1) + "</span>" + esc(q.texto) + "</h3>" +
+      '<div class="meta">' + (q.tipo ? '<span class="tag">' + esc(q.tipo) + "</span>" : "") +
+        (obj ? "<span>objetivo " + mmss(obj) + "</span>" : "") +
+        (q.puntaje != null ? '<span class="puntaje ' + claseP(q.puntaje) + '" title="Puntaje de la última devolución">' + esc(q.puntaje) + "</span>" : "") + "</div></div>" +
+      (pista ? '<details><summary>Pista (abrila después de responder)</summary><dl class="pista">' + pista + "</dl></details>" : "") +
+      (dev ? '<details><summary>Última devolución' + (q.ultimaPractica ? " · " + esc(q.ultimaPractica) : "") + (q.practicas ? " · " + esc(q.practicas) + (q.practicas === 1 ? " práctica" : " prácticas") : "") + '</summary><dl class="pista">' +
+        (q.devolucion ? "<dt>Qué se llevó el entrevistador</dt><dd>" + esc(q.devolucion) + "</dd>" : "") +
+        (q.mejora ? "<dt>Una mejora</dt><dd>" + esc(q.mejora) + "</dd>" : "") +
+        (criterios ? "<dt>Criterios</dt>" + criterios : "") + "</dl></details>" : "") +
+      '<label class="sr" for="r-' + esc(q.id) + '" style="position:absolute;width:1px;height:1px;overflow:hidden">Tu respuesta</label>' +
+      '<textarea class="respuesta" id="r-' + esc(q.id) + '" data-r="' + esc(q.id) + '" placeholder="Tu respuesta, como la dirías en la entrevista">' + esc(b.texto || "") + "</textarea>" +
+      '<div class="provisorio" id="prov-' + esc(q.id) + '"></div>' +
+      '<div class="controles">' +
+        (activa === q.id
+          ? '<button class="btn btn-grabando" data-parar="' + esc(q.id) + '">■ Terminar</button>'
+          : '<button class="btn" data-empezar="' + esc(q.id) + '">⏱ ' + (dur ? "Seguir" : "Empezar") + (dictadoOn && motor() ? " y dictar" : "") + "</button>") +
+        '<span class="medidas" id="med-' + esc(q.id) + '">' + medidas(dur, obj, pal, ppm) + "</span>" +
+        (dur || b.texto ? '<button class="btn btn-ghost btn-sm" data-borrar="' + esc(q.id) + '">Borrar</button>' : "") +
+      "</div></article>";
+  }
+  function medidas(dur, obj, pal, ppm) {
+    if (!dur && !pal) return "";
+    var pasado = obj && dur > obj * 1.3;
+    return '<span class="' + (pasado ? "pasado" : "") + '">' + mmss(dur) + (obj ? " de " + mmss(obj) : "") + "</span>" +
+      (pal ? " · " + pal + " palabras" : "") + (ppm ? " · " + ppm + " por minuto" : "");
+  }
+  // Las preguntas, agrupadas si la práctica trae «grupos».
+  function htmlPreguntas(p) {
+    var qs = preguntas(), grupos = p.grupos || [];
+    if (!grupos.length) return qs.map(htmlPregunta).join("");
+    var usadas = {}, h = "", n = 0;
+    grupos.forEach(function (g) {
+      var delGrupo = qs.filter(function (q) { return q.grupo === g.id; });
+      if (!delGrupo.length) return;
+      h += '<h2 style="font-size:17px;margin:22px 0 4px">' + esc(g.titulo || g.id) + "</h2>" + (g.intro ? '<p class="muted" style="margin:0 0 10px;font-size:14px">' + esc(g.intro) + "</p>" : "");
+      delGrupo.forEach(function (q) { usadas[q.id] = true; h += htmlPregunta(q, n++); });
+    });
+    var resto = qs.filter(function (q) { return !usadas[q.id]; });
+    if (resto.length) h += '<h2 style="font-size:17px;margin:22px 0 8px">Otras preguntas</h2>' + resto.map(function (q) { return htmlPregunta(q, n++); }).join("");
+    return h;
+  }
+  // Lo que no se responde pero conviene tener a mano: preguntas para la empresa, repaso y lo que falta.
+  var ETIQUETAS_REPASO = { empresa: "La empresa", idea: "La idea", sacar: "Qué sacar", antes: "Antes de entrar", cifras: "Cifras", noDecir: "Qué no decir" };
+  function htmlExtras(p) {
+    var h = "";
+    if ((p.paraLaEmpresa || []).length) {
+      h += '<section class="caja"><h2 style="font-size:17px;margin:0 0 6px">Preguntas para hacerles</h2>' +
+        (p.paraLaEmpresaIntro ? '<p class="muted" style="margin:0 0 8px;font-size:14px">' + esc(p.paraLaEmpresaIntro) + "</p>" : "") +
+        "<ol>" + p.paraLaEmpresa.map(function (x) { return "<li>" + txt(x) + "</li>"; }).join("") + "</ol>" +
+        (p.paraLaEmpresaExtra ? '<p class="muted" style="margin:0;font-size:14px">' + esc(p.paraLaEmpresaExtra) + "</p>" : "") + "</section>";
+    }
+    if (p.repaso && typeof p.repaso === "object") {
+      h += '<details class="caja"><summary style="font-size:15px;font-weight:600;color:var(--text)">Repaso antes de entrar</summary><dl class="pista">' +
+        Object.keys(p.repaso).map(function (k) { return "<dt>" + esc(ETIQUETAS_REPASO[k] || k) + "</dt><dd>" + txt(p.repaso[k]) + "</dd>"; }).join("") + "</dl></details>";
+    }
+    if ((p.faltan || []).length) {
+      h += '<section class="caja"><h2 style="font-size:15px;margin:0 0 6px">❓ Lo que todavía falta saber</h2><ul style="margin:0;padding-left:18px;font-size:14px">' +
+        p.faltan.map(function (f) {
+          return "<li>" + esc(f.dato || txt(f)) + (f.donde ? ' <span class="faint">· ' + esc(f.donde) + "</span>" : "") + (f.quien ? ' <span class="faint">· lo cierra ' + esc(f.quien) + "</span>" : "") + "</li>";
+        }).join("") + "</ul></section>";
+    }
+    return h;
+  }
+  function render() {
+    var p = info.practica, e = p.entrevista || {};
+    var empresa = e.empresa || p.empresa, rol = e.rol || p.rol;
+    document.title = "Práctica · " + (empresa || carpeta);
+    document.getElementById("titulo").textContent = empresa ? empresa + (rol ? " · " + rol : "") : carpeta;
+    var f = aFecha(e.fecha), falta = "";
+    if (f) {
+      var hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+      var d = Math.round((f - hoy) / 86400000);
+      falta = d > 1 ? "faltan " + d + " días" : d === 1 ? "es mañana" : d === 0 ? "es hoy" : "ya pasó";
+      falta = DIAS_LARGOS[f.getDay()] + " " + f.getDate() + " de " + MESES[f.getMonth()] + " (" + falta + ")";
+    } else if (e.cuando) falta = e.cuando;
+    document.getElementById("eyebrow").textContent = ["Práctica", e.tipo, falta, e.entrevistador || e.con, e.formato].filter(Boolean).join(" · ");
+    document.getElementById("contenido").innerHTML = (p.lead ? '<p class="muted" style="margin:0 0 16px">' + esc(p.lead) + "</p>" : "") +
+      htmlPreparacion() + htmlDictado() + htmlPreguntas(p) + htmlExtras(p) +
+      (info.archivos && info.archivos.length ? '<p class="faint" style="font-size:13px">Prácticas guardadas: ' + info.archivos.map(esc).join(", ") + "</p>" : "");
+    document.getElementById("pie").hidden = false;
+    estadoPie();
+  }
+  function respondidas() { return preguntas().filter(function (q) { return borrador[q.id] && (borrador[q.id].texto || "").trim(); }); }
+  function estadoPie() {
+    var n = respondidas().length, t = preguntas().length;
+    document.getElementById("pie-estado").textContent = transcribiendo ? "Transcribiendo…" : n ? "Respondiste " + n + " de " + t : "Respondé las que quieras practicar hoy";
+    document.getElementById("guardar").disabled = !n || transcribiendo > 0;
+  }
+
+  // ---------- reloj y dictado ----------
+  function tick() {
+    if (!activa) return;
+    var q = preguntas().filter(function (x) { return x.id === activa; })[0];
+    var dur = acumulado + (Date.now() - inicio) / 1000;
+    var b = borrador[activa] || {};
+    var el = document.getElementById("med-" + activa);
+    if (el) el.innerHTML = medidas(dur, q && q.tiempoSeg, palabras(b.texto), null);
+  }
+  function empezar(pid) {
+    if (activa) parar();
+    activa = pid;
+    var b = borrador[pid] = borrador[pid] || {};
+    acumulado = b.duracionSeg || 0; inicio = Date.now();
+    render();
+    reloj = setInterval(tick, 500);
+    if (dictadoOn && motor() === "local") iniciarGrabacion(pid);
+    else if (dictadoOn && SR) iniciarDictado(pid);
+    var ta = document.getElementById("r-" + pid); if (ta) ta.focus();
+  }
+  function parar() {
+    if (!activa) return;
+    var pid = activa;
+    clearInterval(reloj); reloj = null;
+    borrador[pid].duracionSeg = Math.round(acumulado + (Date.now() - inicio) / 1000);
+    activa = null;
+    pararDictado();
+    pararGrabacion();
+    guardar(CLAVE, borrador);
+    render();
+  }
+
+  // ---------- grabación para la transcripción local ----------
+  function iniciarGrabacion(pid) {
+    if (!navigator.mediaDevices || !window.MediaRecorder) { toast("Este navegador no puede grabar audio. Podés escribir la respuesta."); return; }
+    navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+      if (activa !== pid) { stream.getTracks().forEach(function (t) { t.stop(); }); return; }
+      var partes = [];
+      pista = stream;
+      grabador = new MediaRecorder(stream);
+      grabador.ondataavailable = function (ev) { if (ev.data && ev.data.size) partes.push(ev.data); };
+      grabador.onstop = function () {
+        stream.getTracks().forEach(function (t) { t.stop(); });
+        var blob = new Blob(partes, { type: grabador && grabador.mimeType || partes[0] && partes[0].type || "audio/webm" });
+        enviarAudio(pid, blob);
+      };
+      grabador.start();
+      var el = document.getElementById("prov-" + pid); if (el) el.textContent = "🔴 Grabando…";
+    }, function (err) {
+      toast(err && err.name === "NotAllowedError" ? "El navegador no dio permiso al micrófono. Podés escribir la respuesta." : "No pude usar el micrófono (" + (err && err.name || "error") + ").");
+    });
+  }
+  function pararGrabacion() {
+    if (!grabador) return;
+    var g = grabador; grabador = null;
+    try { if (g.state !== "inactive") g.stop(); } catch (e) {}
+  }
+  function enviarAudio(pid, blob) {
+    if (!blob.size) return;
+    transcribiendo++; estadoPie();
+    var el = document.getElementById("prov-" + pid); if (el) el.textContent = "Transcribiendo…";
+    var idioma = idiomaDictado(info.practica.entrevista);
+    fetch("/api/transcribir?idioma=" + encodeURIComponent(idioma), {
+      method: "POST", headers: { "Content-Type": (blob.type || "audio/webm").split(";")[0] }, body: blob
+    }).then(function (r) { return r.json().then(function (j) { return { ok: r.ok, j: j }; }); }).then(function (res) {
+      transcribiendo--;
+      var prov = document.getElementById("prov-" + pid); if (prov) prov.textContent = "";
+      if (!res.ok) { toast(res.j.error || "No pude transcribir. Podés escribir la respuesta."); estadoPie(); return; }
+      var t = (res.j.texto || "").trim();
+      if (!t) { toast("No se escuchó nada en la grabación."); estadoPie(); return; }
+      var b = borrador[pid] = borrador[pid] || {};
+      var ta = document.getElementById("r-" + pid);
+      var actual = ta ? ta.value : (b.texto || "");
+      b.texto = (actual && !/\s$/.test(actual) ? actual + " " : actual) + t;
+      b.fuente = "dictado";
+      if (ta) ta.value = b.texto;
+      guardar(CLAVE, borrador); estadoPie();
+      var q = preguntas().filter(function (x) { return x.id === pid; })[0];
+      var med = document.getElementById("med-" + pid);
+      if (med) med.innerHTML = medidas(b.duracionSeg, q && q.tiempoSeg, palabras(b.texto), b.duracionSeg > 5 ? Math.round(palabras(b.texto) / (b.duracionSeg / 60)) : null);
+      toast("Transcripto en " + res.j.segundos + " s.");
+    }, function () {
+      transcribiendo--; estadoPie();
+      toast("Se cortó el servidor mientras transcribía.");
+    });
+  }
+  function iniciarDictado(pid) {
+    try {
+      rec = new SR();
+      rec.lang = idiomaDictado(info.practica.entrevista);
+      rec.continuous = true; rec.interimResults = true;
+      rec.onresult = function (ev) {
+        var prov = "";
+        for (var i = ev.resultIndex; i < ev.results.length; i++) {
+          var t = ev.results[i][0].transcript;
+          if (ev.results[i].isFinal) {
+            var ta = document.getElementById("r-" + pid);
+            var actual = ta ? ta.value : (borrador[pid].texto || "");
+            var nuevo = (actual && !/\s$/.test(actual) ? actual + " " : actual) + t.trim();
+            if (ta) ta.value = nuevo;
+            borrador[pid].texto = nuevo; borrador[pid].fuente = "dictado";
+            guardar(CLAVE, borrador); estadoPie();
+          } else prov += t;
+        }
+        var el = document.getElementById("prov-" + pid); if (el) el.textContent = prov;
+      };
+      rec.onerror = function (ev) {
+        if (ev.error === "no-speech" || ev.error === "aborted") return;
+        var motivos = { "not-allowed": "el navegador no dio permiso al micrófono", "service-not-allowed": "el navegador no permite el dictado en esta página",
+          "audio-capture": "no encuentro un micrófono", "network": "el dictado del navegador necesita internet y no pudo conectarse", "language-not-supported": "el idioma no está disponible" };
+        toast("No pude dictar: " + (motivos[ev.error] || ev.error) + ". Podés escribir la respuesta.");
+        if (ev.error !== "network") rec = null;
+      };
+      // Chrome corta el dictado después de un silencio: si el reloj sigue, se vuelve a prender.
+      rec.onend = function () { if (rec && activa === pid) { try { rec.start(); } catch (e) {} } };
+      rec.start();
+    } catch (e) { toast("No pude prender el dictado. Podés escribir la respuesta."); rec = null; }
+  }
+  function pararDictado() {
+    if (!rec) return;
+    var r = rec; rec = null;
+    try { r.stop(); } catch (e) {}
+  }
+
+  // ---------- guardar ----------
+  function guardarPractica() {
+    if (activa) parar();
+    var lista = respondidas().map(function (q) {
+      var b = borrador[q.id];
+      return { pregunta: q.id, texto: b.texto, fuente: b.fuente || "escrita", duracionSeg: b.duracionSeg || null };
+    });
+    if (!lista.length) return;
+    var boton = document.getElementById("guardar"); boton.disabled = true;
+    api("/api/practica/respuestas", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ carpeta: carpeta, respuestas: lista }) })
+      .then(function (res) {
+        if (!res.ok) { boton.disabled = false; mostrarPedido(pedidoCompleto(lista), "No pude guardar el archivo (" + (res.j.error || "error") + "). Copiá este pedido con tus respuestas:"); return; }
+        borrador = {}; guardar(CLAVE, borrador);
+        mostrarPedido("/preparar-entrevista feedback " + carpeta + " " + res.j.archivo,
+          "Guardé tus respuestas en entrevistas/" + carpeta + "/" + res.j.archivo + ". Pegá esto en Claude Code para la devolución:");
+        firma = ""; cargarPractica(true);
+      }, function () { boton.disabled = false; mostrarPedido(pedidoCompleto(lista), "Se cortó el servidor. Copiá este pedido con tus respuestas:"); });
+  }
+  function pedidoCompleto(lista) {
+    var qs = {}; preguntas().forEach(function (q) { qs[q.id] = q; });
+    return "/preparar-entrevista feedback " + carpeta + "\n\nRespuestas de mi práctica (" + new Date().toISOString().slice(0, 10) + "):\n\n" +
+      lista.map(function (r) {
+        return "Pregunta " + r.pregunta + ": " + (qs[r.pregunta] ? qs[r.pregunta].texto : "") + "\n" +
+          (r.duracionSeg ? "Duración: " + mmss(r.duracionSeg) + " · " : "") + (r.fuente === "dictado" ? "dictada" : "escrita") + "\n" + r.texto;
+      }).join("\n\n");
+  }
+  function mostrarPedido(texto, intro) {
+    var c = document.getElementById("pedido");
+    c.hidden = false;
+    c.innerHTML = '<div style="flex:1 1 100%"><div class="muted" style="font-size:13px">' + esc(intro) + "</div><pre>" + esc(texto) + "</pre>" +
+      '<button class="btn btn-primary btn-sm" id="copiar-pedido">Copiar pedido</button> <button class="btn btn-ghost btn-sm" id="cerrar-pedido">Cerrar</button></div>';
+    c._texto = texto;
+    copiar(texto, "Pedido copiado. Pegalo en Claude Code.");
+  }
+
+  // ---------- eventos ----------
+  document.addEventListener("click", function (e) {
+    var b = e.target.closest("button"); if (!b) return;
+    if (b.hasAttribute("data-empezar")) { empezar(b.getAttribute("data-empezar")); return; }
+    if (b.hasAttribute("data-parar")) { parar(); return; }
+    if (b.hasAttribute("data-borrar")) {
+      var id = b.getAttribute("data-borrar");
+      if (activa === id) parar();
+      delete borrador[id]; guardar(CLAVE, borrador); render(); return;
+    }
+    if (b.id === "guardar") { guardarPractica(); return; }
+    if (b.id === "copiar-pedido") { copiar(document.getElementById("pedido")._texto, "Pedido copiado. Pegalo en Claude Code."); return; }
+    if (b.id === "cerrar-pedido") { document.getElementById("pedido").hidden = true; }
+  });
+  document.addEventListener("input", function (e) {
+    var id = e.target.getAttribute && e.target.getAttribute("data-r");
+    if (!id) return;
+    var b = borrador[id] = borrador[id] || {};
+    b.texto = e.target.value;
+    guardar(CLAVE, borrador); estadoPie();
+  });
+  document.addEventListener("change", function (e) {
+    if (e.target.id !== "dictado") return;
+    dictadoOn = e.target.checked; guardar(CLAVE_DICTADO, dictadoOn);
+    if (activa) {
+      if (dictadoOn) { if (motor() === "local") iniciarGrabacion(activa); else if (SR) iniciarDictado(activa); }
+      else { pararDictado(); pararGrabacion(); }
+    }
+    render();
+  });
+  window.addEventListener("beforeunload", function () { if (activa) parar(); });
+
+  iniciar();
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "entrevista": {
+    "postulacion": null,
+    "empresa": "",
+    "rol": "",
+    "tipo": "",
+    "fecha": null,
+    "idioma": "es-AR",
+    "entrevistador": ""
+  },
+  "actualizado": "",
+  "lead": "",
+  "preparacion": {
+    "puntaje": null,
+    "resumen": "",
+    "areas": []
+  },
+  "grupos": [],
+  "preguntas": [
+    {
+      "id": "p1",
+      "grupo": null,
+      "texto": "",
+      "tipo": "comportamiento",
+      "antesDeResponder": "",
+      "estructura": "",
+      "historia": "",
+      "evalua": "",
+      "tiempoSeg": 90,
+      "modelo": "",
+      "avisos": "",
+      "puntaje": null,
+      "criterios": null,
+      "devolucion": null,
+      "mejora": null,
+      "practicas": 0,
+      "ultimaPractica": null
+    }
+  ],
+  "paraLaEmpresa": [],
+  "repaso": {},
+  "faltan": [],
+  "sesiones": []
+}

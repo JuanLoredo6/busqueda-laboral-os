@@ -90,6 +90,8 @@ Ele se atualiza sozinho cada vez que o Claude muda algo.
 
 Se você abrir com dois cliques, o que marcar fica pendente: toque em **Copiar pedido para Claude** e cole no Claude Code para que fique salvo. O botão **⚡** de cada ação copia um pedido para o Claude ajudar você com essa tarefa.
 
+Com o servidor, o botão **🎯 Práctica** abre a prática das entrevistas que você preparou com `/preparar-entrevista`. Você responde cada pergunta escrevendo ou em voz alta (o ditado é opcional: se você tiver o [uv](https://docs.astral.sh/uv/) instalado, a voz é transcrita no seu computador com o Whisper e o áudio não sai dele; na primeira vez baixa uns 480 MB. Sem o uv, usa o ditado do navegador, que processa o áudio na nuvem). A página mede quanto tempo você leva, salva suas respostas na pasta da entrevista e dá um pedido de uma linha para o Claude devolver o feedback e atualizar sua pontuação de preparação.
+
 Para ver o painel com dados de exemplo antes de carregar os seus, abra o painel e toque em **Ver el tablero con datos de ejemplo**.
 
 ### Novidades do Gmail e do Google Calendar (opcional)

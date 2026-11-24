@@ -25,6 +25,7 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 | Traer al tablero las novedades que llegaron por Gmail o Google Calendar (botón 🔄 SYNC, o sola cada 2 horas) | `sincronizar-correo` |
 | Escribir un mensaje a un recruiter, un follow-up o un agradecimiento con tu voz | `redactar-mensaje` |
 | Preparar una entrevista (RR. HH., técnica, de caso o con hiring manager) y hacer un simulacro | `preparar-entrevista` |
+| Practicar una entrevista en el navegador (🎯 Práctica, con voz y tiempos) y recibir la devolución con puntaje | `preparar-entrevista` (su Modo 3; el pedido empieza con `/preparar-entrevista feedback`) |
 | Practicar o responder casos de Producto, Negocio o Liderazgo, o preguntas técnicas y de diseño de sistemas | `preparar-entrevista` (sus criterios de producto y técnico) |
 | Repasar la semana: qué venció, qué sigue, cómo van los números | `repaso-semanal` |
 

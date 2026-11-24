@@ -12,10 +12,22 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.11.0 — 2026-11-24 · Tablero local y práctica de entrevistas
+
 ### Nuevo
 
 - Servidor local del tablero (`tablero/servidor.py`, solo biblioteca estándar, escucha en 127.0.0.1) y lanzadores `abrir-tablero.bat` y `abrir-tablero.command`. Abierto así, el tablero guarda solo en `postulaciones.json` las acciones hechas, las tarjetas movidas entre columnas abiertas, las notas y las acciones nuevas, validando con `validar.py` antes de escribir. Cerrar o reabrir una postulación sigue pasando por Claude. Con doble clic, el tablero funciona como antes.
 - Tablero: al mover una tarjeta de «Por enviar» a «Esperando respuesta», la fecha de envío es la de hoy. El botón ✏️ de cada tarjeta enviada la corrige. Con el servidor se guarda sola; con doble clic entra al pedido para Claude.
+- **Práctica de entrevistas en el navegador** (`tablero/practica.html`, botón 🎯 Práctica del tablero con el servidor local). `preparar-entrevista` escribe `entrevistas/<empresa>/practica.json` (plantilla en `plantillas/practica.json`) con las preguntas, las pistas y los puntajes. La página mide cuánto tarda cada respuesta y, si la persona lo prende, la transcribe con el dictado del navegador (apagado por defecto, con aviso de que el audio se procesa en la nube de Google o Microsoft). Guarda cada práctica en un archivo nuevo, `practica-<fecha>.json`, que nunca se pisa, y copia un pedido de una línea.
+- `preparar-entrevista`, Modo 3: devolución de una práctica guardada, con un puntaje de 0 a 100 por respuesta (cinco criterios de 0 a 20), el puntaje de preparación y el de cada área en `practica.json`. Lo nuevo que aparece en una respuesta y no está en el perfil se pregunta antes de usarlo (límite L1). Eval de disparo `d-devolucion-practica`.
+- **Transcripción local de la voz** con faster-whisper (MIT): si `uv` está instalado, `abrir-tablero` levanta el servidor con Python 3.13 y faster-whisper, y la práctica graba cada respuesta y la transcribe en la computadora (modelo `small` por defecto, `--modelo` para cambiarlo; se baja una vez de Hugging Face). El audio no sale de la computadora ni se guarda. Sin `uv`, se usa el dictado del navegador, que ahora muestra cualquier error en vez de fallar en silencio.
+- `practica.json` suma campos opcionales que la página muestra: `lead`, `grupos`, `modelo` y `avisos` por pregunta, `paraLaEmpresa`, `repaso` y `faltan`. La página y el servidor también abren las prácticas armadas antes como artefacto, con sus nombres de campo (`pregunta`, `familia`, `evaluan`, `objetivo`, `previas`, `ejemplo`).
+
+### Cambios
+
+- Tablero: con el servidor, las acciones de preparar una entrevista llevan **🎯 Practicar** (abre su práctica) en vez de «⚡ Preparar con Claude». Si la entrevista todavía no tiene práctica, el botón dice «⚡ Armar la práctica con Claude» y el pedido le pide a Claude que la arme.
+- `actualizar` reconoce lo que guardó el servidor («desde el tablero») para no duplicarlo y corrige la fecha de envío si fue otro día. `empezar` e `INSTALACION.md` abren el tablero con `abrir-tablero`, con el doble clic como respaldo. `mapa-de-skills` suma la práctica en el navegador. `CLAUDE.md` fija el formato de las carpetas de `entrevistas/`.
+- Límites: L8 suma la excepción del dictado del navegador (apagado, con aviso, solo si la persona lo prende) y L9 la de los puntajes de `practica.json`, que el pedido de devolución autoriza a actualizar.
 
 ## 0.10.0 — 2026-11-20 · Portugués y STAR-L
 
