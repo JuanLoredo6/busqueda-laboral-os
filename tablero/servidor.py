@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
-"""Servidor local del tablero: sirve tablero.html y guarda en postulaciones.json
+"""Servidor local del tablero: sirve tablero.html (kanban) o tablero-retro.html (el pueblo en
+pixel art) y guarda en postulaciones.json
 los cambios mecánicos que la persona marca (acción hecha, tarjeta movida, nota,
 acción nueva), sin pasar por Claude. También sirve practica.html: lee la práctica
 de cada entrevista (entrevistas/<carpeta>/practica.json) y guarda las respuestas
@@ -12,9 +13,10 @@ computadora (límite L8). Lo que necesita criterio (cerrar una postulación, cam
 el estado o el próximo paso) no se aplica acá: queda como pedido para Claude.
 
 Uso:
-  python tablero/servidor.py              abre el tablero en el navegador
-  python tablero/servidor.py --no-abrir   solo levanta el servidor
-  python tablero/servidor.py --puerto 8766
+  python tablero/servidor.py                 abre el tablero kanban en el navegador (puerto 8765)
+  python tablero/servidor.py --pagina retro  abre el tablero retro (puerto 8766)
+  python tablero/servidor.py --no-abrir      solo levanta el servidor
+  python tablero/servidor.py --puerto 8770
   python tablero/servidor.py --raiz <carpeta del proyecto>
 
 Sin el servidor, tablero.html sigue funcionando con doble clic como siempre.
@@ -474,6 +476,7 @@ transcriptor = Transcriptor(None)
 class Manejador(SimpleHTTPRequestHandler):
     raiz = None
     puerto = None
+    pagina = "kanban"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=AQUI, **kwargs)
@@ -531,7 +534,7 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         if self.path in ("/", ""):
             self.send_response(302)
-            self.send_header("Location", "/tablero.html")
+            self.send_header("Location", "/" + PAGINAS[self.pagina])
             self.end_headers()
             return
         nombre = self.path.split("?")[0].lstrip("/")
@@ -645,9 +648,17 @@ def raiz_en_puerto(puerto):
         return None
 
 
+# Las dos formas de ver el tablero. Cada una tiene su lanzador y su puerto por defecto, así pueden
+# estar abiertas a la vez: abrir-tablero (kanban, 8765) y abrir-tablero-retro (pueblo en pixel art, 8766).
+PAGINAS = {"kanban": "tablero.html", "retro": "tablero-retro.html"}
+PUERTOS = {"kanban": 8765, "retro": 8766}
+
+
 def main():
     ap = argparse.ArgumentParser(description="Servidor local del tablero de búsqueda.")
-    ap.add_argument("--puerto", type=int, default=8765)
+    ap.add_argument("--pagina", choices=sorted(PAGINAS), default="kanban",
+                    help="qué tablero abrir: kanban (el de siempre) o retro (el pueblo en pixel art)")
+    ap.add_argument("--puerto", type=int, default=None)
     ap.add_argument("--raiz", default=os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(AQUI))
     ap.add_argument("--no-abrir", action="store_true")
     ap.add_argument("--modelo", default=os.environ.get("TRANSCRIPCION_MODELO", "small"),
@@ -659,6 +670,9 @@ def main():
     with contextlib.suppress(Exception):  # tildes bien escritas también si la salida va a un archivo
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     Manejador.raiz = os.path.abspath(args.raiz)
+    Manejador.pagina = args.pagina
+    if args.puerto is None:
+        args.puerto = PUERTOS[args.pagina]
     # Si el puerto lo usa otro tablero (otra carpeta de datos), no se abre ese: se busca el siguiente libre.
     # Si lo usa este mismo tablero, se abre el que ya está andando.
     servidor = None
@@ -669,7 +683,7 @@ def main():
         except OSError:
             otra = raiz_en_puerto(puerto)
             if otra is not None and otra == os.path.normcase(Manejador.raiz):
-                url = f"http://127.0.0.1:{puerto}/tablero.html"
+                url = f"http://127.0.0.1:{puerto}/{PAGINAS[args.pagina]}"
                 print(f"Este tablero ya está abierto en {url}")
                 if not args.no_abrir:
                     webbrowser.open(url)
@@ -683,8 +697,8 @@ def main():
     transcriptor =Transcriptor(None if args.sin_transcripcion else args.modelo)
     if transcriptor.estado == "sin-libreria":
         print("Transcripción local: no está instalada (se abre con abrir-tablero, que usa uv). La práctica usa el dictado del navegador.")
-    url = f"http://127.0.0.1:{args.puerto}/tablero.html"
-    print(f"Tablero en {url}")
+    url = f"http://127.0.0.1:{args.puerto}/{PAGINAS[args.pagina]}"
+    print(("Tablero retro" if args.pagina == "retro" else "Tablero") + f" en {url}")
     print("Dejá esta ventana abierta mientras lo uses. Para cerrarlo: Ctrl+C.")
     if not args.no_abrir:
         webbrowser.open(url)

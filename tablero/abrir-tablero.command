@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # SPDX-License-Identifier: MIT
-# Abre el tablero con el servidor local: lo que marques se guarda solo.
+# Abre el tablero kanban (el de siempre) con el servidor local: lo que marques se guarda solo.
+# Para el pueblo en pixel art, usá abrir-tablero-retro.
 # Si está uv instalado, suma la transcripción local de voz (faster-whisper, Python 3.13).
 # En Mac se abre con doble clic. Dejá esta ventana abierta mientras uses el tablero.
 cd "$(dirname "$0")" || exit 1

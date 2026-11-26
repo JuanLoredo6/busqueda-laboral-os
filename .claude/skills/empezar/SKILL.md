@@ -105,7 +105,7 @@ Con el método de `.claude/skills/poner-a-prueba/SKILL.md#método` (rondas numer
    - "Buscar 5 avisos que me interesen y analizarlos" (pedido: `/analizar-oferta`).
 4. Escribí en `.version-datos`, en la raíz, la versión del sistema: el primer título con número de `CHANGELOG.md` (por ejemplo `0.12.0`). Así, la próxima actualización sabe que tus datos ya nacieron con esta versión.
 5. Comprobá que existe `tablero/datos.js` (lo genera solo un hook al editar el JSON). Si no, corré `bash tablero/sincronizar.sh`.
-6. Decile que abra el tablero con `tablero/abrir-tablero.bat` (Windows) o `tablero/abrir-tablero.command` (Mac) y lo deje abierto: lo que marque se guarda solo y se actualiza cada vez que Claude cambia algo. Si no tiene Python, que abra `tablero/tablero.html` con doble clic: funciona igual, pero lo que marque se le pasa a Claude con «Copiar pedido para Claude».
+6. Decile que abra el tablero con `tablero/abrir-tablero.bat` (Windows) o `tablero/abrir-tablero.command` (Mac) y lo deje abierto (si prefiere verlo como un pueblo en pixel art, el lanzador es `abrir-tablero-retro`): lo que marque se guarda solo y se actualiza cada vez que Claude cambia algo. Si no tiene Python, que abra `tablero/tablero.html` con doble clic: funciona igual, pero lo que marque se le pasa a Claude con «Copiar pedido para Claude».
 
 ## Paso 6 bis: sincronización con Gmail y Calendar (opcional)
 

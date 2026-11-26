@@ -119,6 +119,7 @@ Comprobación: ninguna. Decí que la etapa es opcional y seguí.
    - Si la ventana dice que no encuentra Python, que abra `tablero/tablero.html` con doble clic: el tablero funciona igual, solo que lo que marque se le pasa a Claude copiando un pedido.
    - Si tiene [uv](https://docs.astral.sh/uv/), el lanzador suma la transcripción local de la voz para practicar entrevistas. La primera vez baja unos 24 paquetes y, al primer uso, el modelo de voz (unos 480 MB). Es opcional: sin uv, la práctica usa el dictado del navegador.
 2. Explicá en dos líneas qué muestra: qué hacer hoy, las postulaciones por estado y los números de la búsqueda. Con el servidor, lo que marque se guarda solo y **🎯 Práctica** abre la práctica de entrevistas.
+3. Contale en una línea que hay otra forma de verlo, el **tablero retro** (`tablero/abrir-tablero-retro.bat` o `.command`): el mismo tablero como un pueblo en pixel art que se recorre con el teclado. Es opcional y usa los mismos datos.
 
 Comprobación: la persona confirma que ve el tablero con datos de ejemplo.
 

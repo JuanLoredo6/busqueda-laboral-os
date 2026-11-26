@@ -12,9 +12,20 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.13.0 — 2026-11-26 · Tablero retro
+
+### Nuevo
+
+- **Tablero retro** (`tablero/tablero-retro.html`): el mismo tablero como un pueblo en pixel art que se recorre con el teclado. Cada columna es un barrio (las casas van por orden alfabético) y cada postulación una casa, con un «!» del color de la prioridad cuando tiene acciones pendientes. Adentro de cada casa: la empresa, el rol, el encaje, el historial y un escritorio con las tareas y la preparación de la entrevista. Las cerradas tienen la puerta tapiada, se entra con A y su escritorio muestra los aprendizajes registrados.
+- Teclas del tablero retro: A mira y entra, S copia el pedido para Claude, D da por hecha una tarea (con confirmación), Enter lista las prioridades y el personaje camina solo hasta la elegida, M abre el minimapa. Sin nada para hacer, suena un aviso.
+- En el centro del pueblo: la plaza con el tablón (tareas sueltas), el buzón (un sobre gris, amarillo o rojo según las horas sin sincronizar; copia `/sincronizar-correo`), el calendario (acciones con fecha; corre hasta cada una) y las mudanzas (mueve la tarjeta de barrio; cerrar copia el pedido para Claude). También la Universidad (`/mejorar-perfil` con los rechazos, prácticas y charlas recientes), el faro (`/repaso-semanal`, prendido los viernes) y tu casa de dos pisos: abajo, la configuración en objetos (día y noche, a pie o en bici, música generada, sonidos y minimapa, guardada en el navegador); arriba, los trofeos (logros de `contexto/perfil.md`), el espejo (`contexto/posicionamiento.md`), la TV con los números de la búsqueda y un escritorio para abrir cualquier práctica.
+- Lanzadores `tablero/abrir-tablero-retro.bat` y `.command`: abren el tablero retro con su propio servidor en el puerto 8766, así se puede tener abierto a la vez que el kanban (8765).
+- Servidor del tablero: `--pagina kanban|retro` elige qué tablero abre y su puerto por defecto. Suma `/api/postulacion` (lee `rol.md`, `empresa.md`, los documentos y los aprendizajes de una postulación) y `/api/perfil` (lee `contexto/perfil.md` y `posicionamiento.md`). Las dos son de solo lectura.
+
 ### Cambios
 
-- README (español, inglés y portugués): sección «Si cambiás de computadora», con dos pedidos para Claude. Se pasa la carpeta entera en un ZIP, porque los datos de la persona no están en GitHub.
+- `abrir-tablero` abre el tablero kanban, como siempre, y lo dice en su encabezado.
+- README (español, inglés y portugués): sección «Si cambiás de computadora», con dos pedidos para Claude. Se pasa la carpeta entera en un ZIP, porque los datos de la persona no están en GitHub. También explican el tablero retro.
 
 ## 0.12.0 — 2026-11-24 · Actualización asistida
 

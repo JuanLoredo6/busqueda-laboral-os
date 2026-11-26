@@ -90,6 +90,8 @@ Si lo abrís con doble clic, lo que marcás queda pendiente: tocá **Copiar pedi
 
 Con el servidor, el botón **🎯 Práctica** abre la práctica de las entrevistas que preparaste con `/preparar-entrevista`. Respondés cada pregunta escribiendo o en voz alta (el dictado es opcional: si tenés [uv](https://docs.astral.sh/uv/) instalado, la voz se transcribe en tu computadora con Whisper y el audio no sale de ahí; la primera vez baja unos 480 MB. Sin uv, usa el dictado del navegador, que procesa el audio en la nube). La página mide cuánto tardás, guarda tus respuestas en la carpeta de la entrevista y te da un pedido de una línea para que Claude te devuelva el feedback y actualice tu puntaje de preparación.
 
+**Tablero retro.** Si preferís algo con más juego, abrí `tablero/abrir-tablero-retro.bat` en Windows o `tablero/abrir-tablero-retro.command` en Mac: tus postulaciones se ven como un pueblo en pixel art que recorrés con el teclado. Cada estado es un barrio y cada postulación una casa, con un «!» cuando tiene algo pendiente; adentro de cada casa están la empresa, el rol, tu encaje, el historial y un escritorio con sus tareas. **A** mira y entra, **S** copia el pedido para Claude, **D** da por hecha una tarea, **Enter** muestra las prioridades y el personaje camina solo hasta la que elijas, y **M** abre el minimapa. En la plaza están el tablón, el buzón de la sincronización, el calendario y las mudanzas; en la Universidad, el faro y tu casa, mejorar el perfil, el repaso semanal y la configuración (día o noche, a pie o en bici, música y sonidos). Usa los mismos datos y el mismo servidor local que el kanban, en otro puerto (8766), así podés tener los dos abiertos: lo que marcás se guarda igual.
+
 Para verlo con datos de ejemplo antes de cargar los tuyos, abrí el tablero y tocá **Ver el tablero con datos de ejemplo**.
 
 ### Novedades desde Gmail y Google Calendar (opcional)
@@ -116,7 +118,7 @@ busqueda-laboral-os/
 ├── postulaciones/     postulaciones.json (datos del tablero) + una carpeta por postulación
 ├── entrevistas/       Una carpeta por empresa con la preparación
 ├── investigacion/     Informes fechados: diagnóstico, mercado, métricas, repasos
-├── tablero/           tablero.html (abrilo con doble clic)
+├── tablero/           tablero.html (abrilo con doble clic) · abrir-tablero y abrir-tablero-retro
 ├── plantillas/        Lo que /empezar copia la primera vez
 └── .claude/skills/    Los 19 skills
 ```

@@ -214,8 +214,8 @@
   function fallar() {
     var e = document.getElementById("error");
     e.style.display = "block";
-    e.innerHTML = "No encontré los datos del tablero. Abrí esta página con <b>abrir-tablero</b> (el servidor local) " +
-      "y entrá a <b>/tablero-retro.html</b>. Para ver un pueblo de prueba, agregá <b>?ejemplo</b> a la dirección.";
+    e.innerHTML = "No encontré los datos del tablero. Abrí el tablero retro con <b>tablero/abrir-tablero-retro</b> (.bat en Windows, .command en Mac): " +
+      "levanta el servidor local y abre esta página. Para ver un pueblo de prueba, agregá <b>?ejemplo</b> a la dirección.";
     document.getElementById("hud").style.display = "none";
   }
   var practicas = [];

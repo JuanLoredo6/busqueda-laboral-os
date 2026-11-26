@@ -1,6 +1,7 @@
 @echo off
 rem SPDX-License-Identifier: MIT
-rem Abre el tablero con el servidor local: lo que marques se guarda solo.
+rem Abre el tablero kanban (el de siempre) con el servidor local: lo que marques se guarda solo.
+rem Para el pueblo en pixel art, usa abrir-tablero-retro.
 rem Si esta uv instalado, suma la transcripcion local de voz (faster-whisper, Python 3.13).
 rem Deja esta ventana abierta mientras uses el tablero.
 cd /d "%~dp0"
