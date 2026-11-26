@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero retro · búsqueda laboral</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1d3524; overflow: hidden; }
+  canvas#pantalla { display: block; image-rendering: pixelated; }
+  .caja {
+    position: fixed; font: bold 15px/1.45 "Courier New", ui-monospace, monospace; color: #20203a;
+    background: #fbfaf2; border: 4px solid #2a2a4a; border-radius: 6px;
+    box-shadow: inset 0 0 0 3px #fbfaf2, inset 0 0 0 5px #7a86b8, 0 4px 0 rgba(0,0,0,.35);
+  }
+  #hud { bottom: 12px; left: 12px; padding: 8px 12px; font-size: 13px; }
+  #hud b { color: #b0302a; }
+  #ayuda { bottom: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  #dialogo {
+    left: 50%; bottom: 16px; transform: translateX(-50%); width: min(760px, calc(100vw - 48px));
+    padding: 14px 18px 18px; display: none; max-height: 45vh; overflow: auto;
+  }
+  #dialogo.abierto { display: block; }
+  #dialogo h2 { margin: 0 0 6px; font-size: 17px; }
+  #dialogo p { margin: 4px 0; }
+  #dialogo ul { margin: 6px 0 0; padding-left: 0; list-style: none; }
+  #dialogo li { margin: 3px 0; }
+  #dialogo .sigue { position: absolute; right: 14px; bottom: 6px; animation: parpadeo 1s steps(2) infinite; }
+  .p-alta { color: #c0302a; } .p-media { color: #b87a00; } .p-baja { color: #4a6a9a; }
+  .tenue { color: #6a6a80; font-weight: normal; }
+  @keyframes parpadeo { 50% { opacity: 0; } }
+  #error { top: 40%; left: 50%; transform: translateX(-50%); padding: 16px 20px; display: none; max-width: 520px; }
+</style>
+</head>
+<body>
+<canvas id="pantalla"></canvas>
+<div id="hud" class="caja">Cargando el pueblo…</div>
+<div id="ayuda" class="caja">← ↑ → ↓ caminar · A mirar · Esc cerrar</div>
+<div id="dialogo" class="caja" role="dialog" aria-live="polite"></div>
+<div id="error" class="caja"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Vista de solo lectura: un pueblo en pixel art armado con postulaciones.json.
+  // Cada columna del tablero es un barrio y cada postulación es una casa. Un «!» marca acciones pendientes.
+
+  var T = 16;            // lado de una baldosa, en píxeles del mundo
+  var ANCHO = 48;        // ancho del mapa, en baldosas
+  var PASO = 0.14;       // segundos por baldosa al caminar
+
+  var ZONAS = {
+    "por-enviar":   { nombre: "Por enviar",          techo: ["#e0a83a", "#b07a1e"] },
+    "conversacion": { nombre: "En conversación",     techo: ["#d8503a", "#9a2e22"] },
+    "esperando":    { nombre: "Esperando respuesta", techo: ["#4a7ad0", "#2e4f94"] },
+    "cerrada":      { nombre: "Cerradas",            techo: ["#9a9aa8", "#6a6a78"] }
+  };
+  var RESULTADOS = { "descartada": "Descartada", "descartada-por-mi": "Descartada por mí", "retirada": "Me retiré",
+    "sin-respuesta": "Sin respuesta", "oferta-aceptada": "Oferta aceptada", "oferta-rechazada": "Oferta rechazada" };
+  var PRIORIDAD = { alta: 0, media: 1, baja: 2 };
+  var COLOR_PRIORIDAD = { alta: "#d8302a", media: "#e0a000", baja: "#5a7ab0" };
+
+  var C = {
+    pasto: "#8fd07c", pasto2: "#7cc06c", mata: "#4f9a4a", pastoGris: "#9fb894", pastoGris2: "#8aa680",
+    camino: "#ead69c", camino2: "#d2bb7a", piedra: "#cfcfd8", piedra2: "#a8a8b8",
+    arbol1: "#2c6638", arbol2: "#3f8f4a", arbol3: "#66b65c", tronco: "#7a4b2a",
+    agua: "#5aa8e8", agua2: "#a8dcff", madera: "#a8743c", madera2: "#7a5028",
+    pared: "#f4eadc", borde: "#4a3a32", puerta: "#8a5a32", vidrio: "#9fd4f4"
+  };
+
+  // ---------- utilidades ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function hoyISO() {
+    var d = new Date();
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
+  function azar(semilla) { // mulberry32: el pueblo se ve igual cada vez que se abre
+    return function () {
+      semilla |= 0; semilla = semilla + 0x6D2B79F5 | 0;
+      var t = Math.imul(semilla ^ semilla >>> 15, 1 | semilla);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+
+  // ---------- datos ----------
+  function cargarDatos(listo) {
+    var ejemplo = /[?&]ejemplo\b/.test(location.search);
+    var s = document.createElement("script");
+    s.src = (ejemplo ? "ejemplo.js" : "datos.js") + "?t=" + Date.now();
+    s.onload = function () {
+      var d = ejemplo ? (typeof window.DATOS_EJEMPLO === "function" ? window.DATOS_EJEMPLO() : window.DATOS_EJEMPLO) : window.DATOS_TABLERO;
+      if (!d) return fallar();
+      listo(d);
+    };
+    s.onerror = fallar;
+    document.head.appendChild(s);
+  }
+  function fallar() {
+    var e = document.getElementById("error");
+    e.style.display = "block";
+    e.innerHTML = "No encontré los datos del tablero. Abrí esta página con <b>abrir-tablero</b> (el servidor local) " +
+      "y entrá a <b>/tablero-retro.html</b>. Para ver un pueblo de prueba, agregá <b>?ejemplo</b> a la dirección.";
+    document.getElementById("hud").style.display = "none";
+  }
+
+  // ---------- mapa ----------
+  var mapa = null;   // { ancho, alto, suelo[][], solido[][], cosa[][], casas[], zonas[], plaza }
+
+  function porFila(ancho) { return Math.max(1, Math.floor((ancho - 1) / 4)); }
+
+  function armarMapa(datos) {
+    var grupos = { "por-enviar": [], "conversacion": [], "esperando": [], "cerrada": [] };
+    (datos.postulaciones || []).forEach(function (p) { (grupos[p.columna] || grupos.esperando).push(p); });
+
+    var pendientes = {};
+    var generales = [];
+    var ids = {};
+    (datos.postulaciones || []).forEach(function (p) { ids[p.id] = true; });
+    (datos.acciones || []).forEach(function (a) {
+      if (a.hecha) return;
+      if (a.postulacion && ids[a.postulacion]) (pendientes[a.postulacion] = pendientes[a.postulacion] || []).push(a);
+      else generales.push(a);
+    });
+    function ordenar(lista) {
+      return lista.sort(function (a, b) {
+        return (PRIORIDAD[a.prioridad] || 1) - (PRIORIDAD[b.prioridad] || 1) || String(a.fecha || "").localeCompare(String(b.fecha || ""));
+      });
+    }
+    Object.keys(pendientes).forEach(function (k) { ordenar(pendientes[k]); });
+    ordenar(generales);
+
+    function alturaZona(n, ancho, extra) { return 2 + Math.max(1, Math.ceil(n / porFila(ancho))) * 4 + (extra || 0); }
+
+    var zonas = [];
+    var y = 1;
+    var zEnv = { id: "por-enviar", x: 1, w: 19 };
+    var zConv = { id: "conversacion", x: 22, w: ANCHO - 23 };
+    zEnv.h = alturaZona(grupos["por-enviar"].length, zEnv.w);
+    zConv.h = alturaZona(grupos.conversacion.length, zConv.w, 5);
+    var alto1 = Math.max(zEnv.h, zConv.h);
+    zEnv.y = y; zConv.y = y; zEnv.h = alto1; zConv.h = alto1;
+    y += alto1 + 2;
+    var zEsp = { id: "esperando", x: 1, w: ANCHO - 2, y: y };
+    zEsp.h = alturaZona(grupos.esperando.length, zEsp.w);
+    y += zEsp.h + 2;
+    var zCer = { id: "cerrada", x: 1, w: ANCHO - 2, y: y };
+    zCer.h = alturaZona(grupos.cerrada.length, zCer.w);
+    y += zCer.h;
+    var alto = y + 1;
+    zonas.push(zEnv, zConv, zEsp, zCer);
+
+    var suelo = [], solido = [], cosa = [];
+    for (var j = 0; j < alto; j++) {
+      suelo.push([]); solido.push([]); cosa.push([]);
+      for (var i = 0; i < ANCHO; i++) { suelo[j].push("pasto"); solido[j].push(false); cosa[j].push(null); }
+    }
+    function poner(i, j, tipo, ent) { if (j >= 0 && j < alto && i >= 0 && i < ANCHO) { cosa[j][i] = { tipo: tipo, ent: ent }; solido[j][i] = true; } }
+
+    // calles entre barrios y la calle que baja entre los dos barrios de arriba
+    [zEnv.y + alto1, zEsp.y + zEsp.h].forEach(function (fy) {
+      for (var i = 1; i < ANCHO - 1; i++) { suelo[fy][i] = "camino"; suelo[fy + 1][i] = "camino"; }
+    });
+    for (var j2 = 1; j2 < zEnv.y + alto1; j2++) { suelo[j2][20] = "camino"; suelo[j2][21] = "camino"; }
+
+    var casas = [];
+    zonas.forEach(function (z) {
+      var lista = grupos[z.id];
+      z.cantidad = lista.length;
+      var n = porFila(z.w);
+      var margen = Math.floor((z.w - n * 4) / 2) + 1;
+      if (z.id === "cerrada") for (var i = z.x; i < z.x + z.w; i++) {
+        if (Math.abs(i - (z.x + Math.floor(z.w / 2))) > 1) { suelo[z.y][i] = "pastoGris"; poner(i, z.y, "cerca"); }
+      }
+      if (z.id === "cerrada") for (var jj = z.y + 1; jj < z.y + z.h; jj++) for (var ii = z.x; ii < z.x + z.w; ii++) suelo[jj][ii] = "pastoGris";
+      poner(z.x + margen - 1, z.y + 1, "cartel", z);
+      var filas = Math.max(1, Math.ceil(lista.length / n));
+      for (var f = 0; f < filas; f++) {
+        var fy = z.y + 2 + f * 4 + 2;
+        for (var k = z.x; k < z.x + z.w; k++) suelo[fy][k] = "camino";
+      }
+      lista.forEach(function (p, idx) {
+        var hx = z.x + margen + (idx % n) * 4, hy = z.y + 2 + Math.floor(idx / n) * 4;
+        var casa = { p: p, zona: z.id, x: hx, y: hy, pendientes: pendientes[p.id] || [] };
+        casas.push(casa);
+        for (var a = 0; a < 3; a++) for (var b = 0; b < 2; b++) poner(hx + a, hy + b, "casa", casa);
+      });
+    });
+
+    // plaza de «En conversación»: fuente y tablón con las tareas que no son de ninguna postulación
+    var filasConv = Math.max(1, Math.ceil(grupos.conversacion.length / porFila(zConv.w)));
+    var py = zConv.y + 2 + filasConv * 4;
+    var pcx = zConv.x + Math.floor(zConv.w / 2);
+    for (var pj = py; pj < py + 4 && pj < zConv.y + alto1; pj++) for (var pi = pcx - 5; pi <= pcx + 5; pi++) suelo[pj][pi] = "piedra";
+    var plaza = { fuente: { x: pcx - 1, y: py + 1 }, tablon: { x: pcx - 5, y: py + 1, generales: generales } };
+    for (var fa = 0; fa < 3; fa++) for (var fb = 0; fb < 2; fb++) poner(pcx - 1 + fa, py + 1 + fb, "fuente");
+    poner(pcx - 4, py + 1, "tablon", plaza.tablon); poner(pcx - 3, py + 1, "tablon", plaza.tablon);
+
+    // árboles en todo el borde
+    for (var bi = 0; bi < ANCHO; bi++) { poner(bi, 0, "arbol"); poner(bi, alto - 1, "arbol"); }
+    for (var bj = 0; bj < alto; bj++) { poner(0, bj, "arbol"); poner(ANCHO - 1, bj, "arbol"); }
+
+    mapa = { ancho: ANCHO, alto: alto, suelo: suelo, solido: solido, cosa: cosa, casas: casas, zonas: zonas, plaza: plaza,
+      inicio: { x: 20, y: 2 } };
+  }
+
+  // ---------- dibujo del mapa fijo ----------
+  function rect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
+
+  function dibujarPasto(g, x, y, r, gris) {
+    rect(g, x, y, T, T, gris ? C.pastoGris : C.pasto);
+    var oscuro = gris ? C.pastoGris2 : C.mata;
+    for (var k = 0; k < 2; k++) {
+      if (r() < 0.55) {
+        var ox = x + 2 + Math.floor(r() * 11), oy = y + 3 + Math.floor(r() * 10);
+        rect(g, ox, oy, 1, 2, oscuro); rect(g, ox + 2, oy, 1, 2, oscuro); rect(g, ox + 1, oy + 1, 1, 2, oscuro);
+      }
+    }
+    if (!gris && r() < 0.06) { // flores
+      var fx = x + 4 + Math.floor(r() * 8), fy = y + 4 + Math.floor(r() * 8), col = r() < 0.5 ? "#f8f0f0" : "#f07888";
+      rect(g, fx - 1, fy, 3, 1, col); rect(g, fx, fy - 1, 1, 3, col); rect(g, fx, fy, 1, 1, "#f8d040");
+    }
+  }
+  function dibujarCamino(g, x, y, r, i, j) {
+    rect(g, x, y, T, T, C.camino);
+    for (var k = 0; k < 3; k++) if (r() < 0.5) rect(g, x + Math.floor(r() * 15), y + Math.floor(r() * 15), 1, 1, C.camino2);
+    var s = mapa.suelo;
+    if (j > 0 && s[j - 1][i] !== "camino") rect(g, x, y, T, 1, C.camino2);
+    if (j < mapa.alto - 1 && s[j + 1][i] !== "camino") rect(g, x, y + T - 1, T, 1, C.camino2);
+  }
+  function dibujarPiedra(g, x, y) {
+    rect(g, x, y, T, T, C.piedra);
+    rect(g, x, y + 7, T, 1, C.piedra2); rect(g, x, y + 15, T, 1, C.piedra2);
+    rect(g, x + 7, y, 1, 7, C.piedra2); rect(g, x + 15, y + 8, 1, 7, C.piedra2);
+  }
+  function dibujarArbol(g, x, y) {
+    rect(g, x + 6, y + 11, 4, 5, C.tronco);
+    rect(g, x + 2, y + 2, 12, 10, C.arbol1);
+    rect(g, x + 1, y + 4, 14, 6, C.arbol1);
+    rect(g, x + 4, y, 8, 2, C.arbol1);
+    rect(g, x + 3, y + 2, 9, 7, C.arbol2);
+    rect(g, x + 5, y + 1, 5, 2, C.arbol2);
+    rect(g, x + 4, y + 3, 3, 2, C.arbol3); rect(g, x + 8, y + 2, 2, 1, C.arbol3);
+  }
+  function dibujarCerca(g, x, y) {
+    rect(g, x, y + 6, T, 2, C.madera); rect(g, x, y + 11, T, 2, C.madera);
+    rect(g, x + 2, y + 3, 3, 12, C.madera2); rect(g, x + 11, y + 3, 3, 12, C.madera2);
+    rect(g, x + 2, y + 3, 3, 1, C.madera);  rect(g, x + 11, y + 3, 3, 1, C.madera);
+  }
+  function dibujarCartel(g, x, y) {
+    rect(g, x + 7, y + 9, 2, 7, C.madera2);
+    rect(g, x + 1, y + 2, 14, 8, C.borde);
+    rect(g, x + 2, y + 3, 12, 6, C.madera);
+    rect(g, x + 4, y + 5, 8, 1, C.madera2); rect(g, x + 4, y + 7, 6, 1, C.madera2);
+  }
+  function dibujarTablon(g, x, y) {
+    rect(g, x + 3, y + 10, 2, 6, C.madera2); rect(g, x + 27, y + 10, 2, 6, C.madera2);
+    rect(g, x + 1, y + 1, 30, 11, C.borde);
+    rect(g, x + 2, y + 2, 28, 9, C.madera);
+    [[4, 3, "#fbfaf2"], [11, 4, "#f8e08a"], [18, 3, "#fbfaf2"], [24, 4, "#c8e4fa"]].forEach(function (h) {
+      rect(g, x + h[0], y + h[1], 5, 6, h[2]); rect(g, x + h[0] + 2, y + h[1], 1, 1, "#c0302a");
+    });
+  }
+  function dibujarFuente(g, x, y) {
+    rect(g, x + 2, y + 6, 44, 24, C.piedra2);
+    rect(g, x + 4, y + 4, 40, 24, C.piedra2);
+    rect(g, x + 5, y + 7, 38, 19, C.agua);
+    rect(g, x + 8, y + 10, 6, 1, C.agua2); rect(g, x + 30, y + 20, 7, 1, C.agua2);
+    rect(g, x + 20, y + 2, 8, 16, C.piedra2);
+    rect(g, x + 21, y + 3, 6, 14, C.piedra);
+    rect(g, x + 22, y, 4, 4, C.agua2);
+  }
+  function dibujarCasa(g, casa) {
+    var x = casa.x * T, y = casa.y * T, z = casa.zona, p = casa.p;
+    var techo = ZONAS[z].techo;
+    if (z === "cerrada" && /^oferta/.test(p.resultado || "")) techo = ["#e8c440", "#b08a18"];
+    // pared
+    rect(g, x + 3, y + 14, 42, 18, C.borde);
+    rect(g, x + 4, y + 15, 40, 16, z === "cerrada" ? "#ddd8cc" : C.pared);
+    rect(g, x + 4, y + 29, 40, 2, "#c8bca8");
+    // ventanas
+    [8, 32].forEach(function (vx) {
+      rect(g, x + vx - 1, y + 17, 10, 8, C.borde);
+      rect(g, x + vx, y + 18, 8, 6, z === "cerrada" ? "#8a8a96" : C.vidrio);
+      rect(g, x + vx + 1, y + 19, 2, 2, z === "cerrada" ? "#8a8a96" : "#ffffff");
+      if (z === "cerrada") { rect(g, x + vx - 1, y + 19, 10, 2, C.madera); }
+    });
+    // puerta
+    rect(g, x + 18, y + 18, 12, 14, C.borde);
+    rect(g, x + 19, y + 19, 10, 13, C.puerta);
+    rect(g, x + 26, y + 25, 2, 2, "#f0d060");
+    if (z === "cerrada") { rect(g, x + 17, y + 22, 14, 2, C.madera); rect(g, x + 17, y + 27, 14, 2, C.madera); }
+    // techo
+    rect(g, x + 1, y + 2, 46, 14, C.borde);
+    rect(g, x + 2, y + 3, 44, 12, techo[0]);
+    for (var k = 0; k < 4; k++) rect(g, x + 2, y + 5 + k * 3, 44, 1, techo[1]);
+    rect(g, x, y + 14, 48, 3, C.borde);
+    rect(g, x + 1, y + 15, 46, 1, techo[1]);
+    // chimenea
+    rect(g, x + 35, y - 2, 6, 6, C.borde); rect(g, x + 36, y - 1, 4, 5, "#b85a3a");
+    // la puerta pisa el camino de adelante
+    rect(g, x + 19, y + 31, 10, 1, C.camino2);
+  }
+
+  var capaFija = null;
+  function dibujarMapaFijo() {
+    capaFija = document.createElement("canvas");
+    capaFija.width = mapa.ancho * T; capaFija.height = mapa.alto * T;
+    var g = capaFija.getContext("2d");
+    var r = azar(1987);
+    for (var j = 0; j < mapa.alto; j++) for (var i = 0; i < mapa.ancho; i++) {
+      var x = i * T, y = j * T, s = mapa.suelo[j][i];
+      if (s === "camino") dibujarCamino(g, x, y, r, i, j);
+      else if (s === "piedra") dibujarPiedra(g, x, y);
+      else dibujarPasto(g, x, y, r, s === "pastoGris");
+    }
+    for (var j2 = 0; j2 < mapa.alto; j2++) for (var i2 = 0; i2 < mapa.ancho; i2++) {
+      var c = mapa.cosa[j2][i2];
+      if (!c) continue;
+      var x2 = i2 * T, y2 = j2 * T;
+      if (c.tipo === "arbol") dibujarArbol(g, x2, y2);
+      else if (c.tipo === "cerca") dibujarCerca(g, x2, y2);
+      else if (c.tipo === "cartel") dibujarCartel(g, x2, y2);
+    }
+    var pl = mapa.plaza;
+    dibujarFuente(g, pl.fuente.x * T, pl.fuente.y * T);
+    dibujarTablon(g, (pl.tablon.x + 1) * T, pl.tablon.y * T);
+    mapa.casas.forEach(function (c2) { dibujarCasa(g, c2); });
+  }
+
+  // ---------- personaje ----------
+  var PALETA_PJ = { H: "#4a2f22", S: "#f2c79a", K: "#222034", W: "#ffffff", M: "#c8786a", J: "#3e8f6e", Y: "#f2d35a", P: "#3a4a7a" };
+  var FIGURAS = {
+    abajo: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHSSSSSSHH...",
+      "...HSSSSSSSSH...", "...SKKKSSKKKS...", "...SKWKKKKWKS...", "....SSSSSSSS....",
+      ".....SSMMSS.....", "....JJJJJJJJ....", "..SJJJJYYJJJJS..", "..SJJJJYYJJJJS..",
+      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
+    arriba: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...",
+      "...HHHHHHHHHH...", "...SHHHHHHHHS...", "...SHHHHHHHHS...", "....SSSSSSSS....",
+      ".....SSSSSS.....", "....JJJJJJJJ....", "..SJJJJJJJJJJS..", "..SJJJJJJJJJJS..",
+      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
+    derecha: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHSSSSH...",
+      "...HHHHSSSSSS...", "...HHHSSKKKKS...", "...HHHSSKWKKK...", "....HSSSSSSSS...",
+      ".....SSSSSMM....", ".....JJJJJJ.....", "....JJJJJJJS....", "....JJJJJJJS....",
+      "....JJJJJJJ.....", "....PPPPPPP.....", "....PPP..PPP....", "....KKK...KKK..."]
+  };
+  var PIERNAS_PASO = ["....PPP.PPPP....", "....KK...KKK...."];
+  var figuras = {};
+  function prepararFiguras() {
+    ["abajo", "arriba", "derecha"].forEach(function (nombre) {
+      [0, 1].forEach(function (paso) {
+        var filas = FIGURAS[nombre].slice();
+        if (paso) { filas[14] = PIERNAS_PASO[0]; filas[15] = PIERNAS_PASO[1]; }
+        var cv = document.createElement("canvas"); cv.width = 16; cv.height = 16;
+        var g = cv.getContext("2d");
+        filas.forEach(function (fila, y) {
+          fila = (fila + "................").slice(0, 16);
+          for (var x = 0; x < 16; x++) { var ch = fila[x]; if (PALETA_PJ[ch]) rect(g, x, y, 1, 1, PALETA_PJ[ch]); }
+        });
+        figuras[nombre + paso] = cv;
+      });
+    });
+  }
+
+  var pj = { tx: 0, ty: 0, nx: 0, ny: 0, x: 0, y: 0, mira: "abajo", mueve: false, avance: 0, paso: 0 };
+  var DIRS = { ArrowUp: [0, -1, "arriba"], ArrowDown: [0, 1, "abajo"], ArrowLeft: [-1, 0, "izquierda"], ArrowRight: [1, 0, "derecha"] };
+  var apretadas = [];
+  var toque = null; // una flecha apretada y soltada entre dos cuadros igual da un paso
+
+  function libre(i, j) { return i >= 0 && j >= 0 && i < mapa.ancho && j < mapa.alto && !mapa.solido[j][i]; }
+
+  function actualizar(dt) {
+    if (dialogoAbierto) return;
+    if (pj.mueve) {
+      pj.avance += dt / PASO;
+      if (pj.avance >= 1) { pj.tx = pj.nx; pj.ty = pj.ny; pj.mueve = false; pj.avance = 0; pj.paso ^= 1; }
+    }
+    var tecla = apretadas.length ? apretadas[apretadas.length - 1] : toque;
+    if (!pj.mueve && tecla) {
+      toque = null;
+      var d = DIRS[tecla];
+      pj.mira = d[2];
+      if (libre(pj.tx + d[0], pj.ty + d[1])) { pj.nx = pj.tx + d[0]; pj.ny = pj.ty + d[1]; pj.mueve = true; pj.avance = 0; }
+    }
+    var a = pj.mueve ? pj.avance : 0;
+    pj.x = (pj.tx + (pj.nx - pj.tx) * a) * T;
+    pj.y = (pj.ty + (pj.ny - pj.ty) * a) * T;
+  }
+
+  // ---------- pantalla ----------
+  var pantalla = document.getElementById("pantalla");
+  var gp = pantalla.getContext("2d");
+  var base = document.createElement("canvas");
+  var gb = base.getContext("2d");
+  var escala = 3, vistaW = 0, vistaH = 0, dpr = 1, camX = 0, camY = 0;
+
+  function ajustar() {
+    dpr = window.devicePixelRatio || 1;
+    escala = Math.max(2, Math.min(5, Math.floor(Math.min(innerWidth / (20 * T), innerHeight / (13 * T)))));
+    vistaW = Math.ceil(innerWidth / escala); vistaH = Math.ceil(innerHeight / escala);
+    base.width = vistaW; base.height = vistaH;
+    pantalla.width = Math.round(vistaW * escala * dpr); pantalla.height = Math.round(vistaH * escala * dpr);
+    pantalla.style.width = vistaW * escala + "px"; pantalla.style.height = vistaH * escala + "px";
+  }
+
+  function camara() {
+    var mw = mapa.ancho * T, mh = mapa.alto * T;
+    camX = mw <= vistaW ? (mw - vistaW) / 2 : Math.max(0, Math.min(mw - vistaW, pj.x + 8 - vistaW / 2));
+    camY = mh <= vistaH ? (mh - vistaH) / 2 : Math.max(0, Math.min(mh - vistaH, pj.y + 8 - vistaH / 2));
+    camX = Math.round(camX); camY = Math.round(camY);
+  }
+
+  function dibujarAviso(g, x, y, color, tenue) {
+    g.globalAlpha = tenue ? 0.55 : 1;
+    rect(g, x, y, 9, 11, C.borde);
+    rect(g, x + 1, y + 1, 7, 9, "#ffffff");
+    rect(g, x + 3, y + 11, 3, 1, C.borde); rect(g, x + 4, y + 12, 1, 1, C.borde);
+    rect(g, x + 3, y + 2, 3, 4, color); rect(g, x + 3, y + 7, 3, 2, color);
+    g.globalAlpha = 1;
+  }
+
+  function dibujar(t) {
+    if (vistaW !== Math.ceil(innerWidth / escala) || vistaH !== Math.ceil(innerHeight / escala)) ajustar();
+    if (!vistaW || !vistaH) return; // pestaña sin tamaño todavía
+    camara();
+    gb.fillStyle = "#1d3524"; gb.fillRect(0, 0, vistaW, vistaH);
+    gb.drawImage(capaFija, -camX, -camY);
+
+    // brillo de la fuente
+    var f = mapa.plaza.fuente;
+    if (Math.floor(t / 400) % 2) { rect(gb, f.x * T + 12 - camX, f.y * T + 14 - camY, 2, 1, "#ffffff"); rect(gb, f.x * T + 33 - camX, f.y * T + 11 - camY, 2, 1, "#ffffff"); }
+    else { rect(gb, f.x * T + 16 - camX, f.y * T + 22 - camY, 2, 1, "#ffffff"); rect(gb, f.x * T + 27 - camX, f.y * T + 16 - camY, 2, 1, "#ffffff"); }
+
+    // personaje
+    var nombre = pj.mira === "izquierda" ? "derecha" : pj.mira;
+    var paso = pj.mueve && pj.avance < 0.5 ? 1 : 0;
+    var fig = figuras[nombre + (paso && pj.paso ? 1 : 0)];
+    if (paso && !pj.paso) fig = figuras[nombre + 1];
+    var px = Math.round(pj.x - camX), py = Math.round(pj.y - camY) - (paso ? 1 : 0) - 2;
+    gb.fillStyle = "rgba(0,0,0,.22)"; gb.fillRect(px + 3, Math.round(pj.y - camY) + 13, 10, 3);
+    if (pj.mira === "izquierda") { gb.save(); gb.translate(px + 16, py); gb.scale(-1, 1); gb.drawImage(fig, 0, 0); gb.restore(); }
+    else gb.drawImage(fig, px, py);
+
+    // avisos de acciones pendientes, por encima de todo
+    var hoy = hoyISO(), salto = Math.round(Math.sin(t / 220) * 1.5);
+    mapa.casas.forEach(function (c) {
+      if (!c.pendientes.length) return;
+      var a = c.pendientes[0];
+      var futura = c.pendientes.every(function (x) { return x.fecha && x.fecha > hoy; });
+      dibujarAviso(gb, c.x * T + 20 - camX, c.y * T - 12 + salto - camY, COLOR_PRIORIDAD[a.prioridad] || COLOR_PRIORIDAD.media, futura);
+    });
+    var tb = mapa.plaza.tablon;
+    if (tb.generales.length) dibujarAviso(gb, (tb.x + 1) * T + 11 - camX, tb.y * T - 12 + salto - camY, COLOR_PRIORIDAD[tb.generales[0].prioridad] || COLOR_PRIORIDAD.media, false);
+
+    // a la pantalla, sin suavizar
+    gp.setTransform(1, 0, 0, 1, 0, 0);
+    gp.imageSmoothingEnabled = false;
+    gp.drawImage(base, 0, 0, pantalla.width, pantalla.height);
+    gp.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dibujarTextos();
+  }
+
+  function texto(s, x, y, tam, color, contorno, alinear) {
+    gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
+    gp.textAlign = alinear || "center"; gp.textBaseline = "middle";
+    gp.lineJoin = "round"; gp.lineWidth = Math.max(3, tam / 3.5); gp.strokeStyle = contorno;
+    gp.strokeText(s, x, y); gp.fillStyle = color; gp.fillText(s, x, y);
+  }
+  function recortar(s, max) {
+    if (gp.measureText(s).width <= max) return s;
+    while (s.length > 1 && gp.measureText(s + "…").width > max) s = s.slice(0, -1);
+    return s + "…";
+  }
+
+  function dibujarTextos() {
+    var e = escala;
+    mapa.zonas.forEach(function (z) {
+      var x = (z.x * T + z.w * T / 2 - camX) * e, y = (z.y * T + 9 - camY) * e;
+      if (y < -40 || y > innerHeight + 40) return;
+      texto(ZONAS[z.id].nombre.toUpperCase() + "  ·  " + z.cantidad, x, y, Math.round(6 * e), "#fffbe8", "#2a2a4a");
+    });
+    var tam = Math.max(10, Math.round(3.8 * e));
+    gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
+    mapa.casas.forEach(function (c) {
+      var cx = (c.x * T + 24 - camX) * e, cy = (c.y * T + 40 - camY) * e;
+      if (cx < -100 || cx > innerWidth + 100 || cy < -40 || cy > innerHeight + 40) return;
+      gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
+      var s = recortar(c.p.empresa || c.p.id, 60 * e);
+      var w = gp.measureText(s).width + tam;
+      gp.fillStyle = "rgba(32,32,58,.62)";
+      gp.fillRect(cx - w / 2, cy - tam * 0.75, w, tam * 1.5);
+      texto(s, cx, cy + 1, tam, "#ffffff", "rgba(0,0,0,0)");
+    });
+  }
+
+  // ---------- mirar (A) ----------
+  var dialogo = document.getElementById("dialogo");
+  var dialogoAbierto = false;
+
+  function lineaAccion(a) {
+    var cuando = [a.fecha, a.condicion].filter(Boolean).join(", ");
+    return '<li><span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + esc(a.texto) +
+      (cuando ? ' <span class="tenue">(' + esc(cuando) + ")</span>" : "") + "</li>";
+  }
+
+  function mirar() {
+    var d = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] }[pj.mira];
+    var i = pj.tx + d[0], j = pj.ty + d[1];
+    var c = mapa.cosa[j] && mapa.cosa[j][i];
+    if (!c) return;
+    var html = "";
+    if (c.tipo === "casa") {
+      var p = c.ent.p;
+      html = "<h2>" + esc(p.empresa) + "</h2><p>" + esc(p.rol || "") + "</p>" +
+        (p.resultado ? "<p><b>Resultado:</b> " + esc(RESULTADOS[p.resultado] || p.resultado) + "</p>" : "") +
+        (p.estado ? "<p><b>Estado:</b> " + esc(p.estado) + "</p>" : "") +
+        (p.proximo ? "<p><b>Próximo paso:</b> " + esc(p.proximo) + "</p>" : "") +
+        (c.ent.pendientes.length ? "<p><b>Pendiente:</b></p><ul>" + c.ent.pendientes.map(lineaAccion).join("") + "</ul>"
+          : '<p class="tenue">Nada pendiente acá.</p>');
+    } else if (c.tipo === "cartel") {
+      html = "<h2>" + esc(ZONAS[c.ent.id].nombre) + "</h2><p>" +
+        (c.ent.cantidad === 1 ? "1 postulación vive en este barrio." : c.ent.cantidad + " postulaciones viven en este barrio.") + "</p>";
+    } else if (c.tipo === "tablon") {
+      var gen = c.ent.generales;
+      html = "<h2>Tablón del pueblo</h2>" + (gen.length ? "<p>Tareas que no son de ninguna postulación:</p><ul>" + gen.map(lineaAccion).join("") + "</ul>"
+        : '<p class="tenue">No hay tareas sueltas.</p>');
+    } else if (c.tipo === "fuente") {
+      html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
+    } else if (c.tipo === "cerca") {
+      html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
+    } else return;
+    dialogo.innerHTML = html + '<span class="sigue">▼</span>';
+    dialogo.classList.add("abierto");
+    dialogo.scrollTop = 0;
+    dialogoAbierto = true;
+  }
+  function cerrar() { dialogo.classList.remove("abierto"); dialogoAbierto = false; }
+
+  addEventListener("keydown", function (ev) {
+    if (DIRS[ev.key]) {
+      ev.preventDefault();
+      if (dialogoAbierto) return;
+      if (apretadas.indexOf(ev.key) < 0) apretadas.push(ev.key);
+      if (!ev.repeat) toque = ev.key;
+      return;
+    }
+    var k = ev.key.toLowerCase();
+    if (k === "a" || k === "enter" || k === " ") {
+      ev.preventDefault();
+      if (ev.repeat) return;
+      if (dialogoAbierto) cerrar(); else if (!pj.mueve) mirar();
+    } else if (k === "escape") cerrar();
+  });
+  addEventListener("keyup", function (ev) {
+    var i = apretadas.indexOf(ev.key);
+    if (i >= 0) apretadas.splice(i, 1);
+  });
+  addEventListener("blur", function () { apretadas = []; });
+  addEventListener("resize", ajustar);
+
+  // ---------- arranque ----------
+  cargarDatos(function (datos) {
+    armarMapa(datos);
+    dibujarMapaFijo();
+    prepararFiguras();
+    pj.tx = pj.nx = mapa.inicio.x; pj.ty = pj.ny = mapa.inicio.y;
+    var pend = (datos.acciones || []).filter(function (a) { return !a.hecha; }).length;
+    var activas = (datos.postulaciones || []).filter(function (p) { return p.columna !== "cerrada"; }).length;
+    document.getElementById("hud").innerHTML = "Pueblo de " + esc(datos.persona || "la búsqueda") +
+      " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes";
+    ajustar();
+    var antes = performance.now();
+    (function cuadro(ahora) {
+      actualizar(Math.min(0.05, (ahora - antes) / 1000));
+      antes = ahora;
+      dibujar(ahora);
+      requestAnimationFrame(cuadro);
+    })(antes);
+  });
+})();
+</script>
+</body>
+</html>

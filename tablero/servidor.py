@@ -489,7 +489,7 @@ class Manejador(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(cuerpo)
             return
-        if nombre not in {"tablero.html", "practica.html", "ejemplo.js"}:
+        if nombre not in {"tablero.html", "tablero-retro.html", "practica.html", "ejemplo.js"}:
             self.send_error(404)
             return
         super().do_GET()
