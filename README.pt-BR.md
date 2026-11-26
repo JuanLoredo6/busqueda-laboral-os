@@ -179,6 +179,28 @@ O Claude primeiro faz um backup dos seus dados, traz o código novo (com Git ou 
 
 O que mudou em cada versão: [CHANGELOG.md](CHANGELOG.md) (em espanhol).
 
+## Se você trocar de computador
+
+Seus dados não estão no GitHub (o `.gitignore` os deixa de fora), então não basta baixar o sistema de novo: você leva **a pasta inteira em um ZIP**, com as pastas ocultas (`.git`, `.claude`). Assim vão juntos seus dados, a versão dos seus dados e a conexão para receber atualizações.
+
+1. **No computador atual**, abra o Claude Code na pasta do sistema e cole:
+
+   ```text
+   Vou passar este sistema para outro computador. Confirme que você está na pasta do sistema e me diga quais dados meus estão aqui. Crie um ZIP da pasta inteira, com as pastas e arquivos ocultos (.git, .claude, .version-datos), na minha Área de Trabalho, com o nome mi-busqueda-traspaso e a data de hoje. Confira que o ZIP tem esses itens, me diga quanto pesa e se eu tenho uma tarefa agendada de sincronização. Não envie o ZIP para lugar nenhum nem apague nada desta pasta.
+   ```
+
+2. **Leve o ZIP** num pendrive ou na sua própria nuvem (Drive, OneDrive, iCloud), sem compartilhar o link: seu CV está dentro. Quando terminar, apague de lá.
+3. **No computador novo**, instale o app do Claude, entre com a mesma conta, aba **Code**, ambiente **Local**, abra a pasta **Documentos** e cole (com o local do ZIP):
+
+   ```text
+   Trouxe meu sistema de busca de emprego de outro computador num ZIP que está em [onde ficou]. Descompacte em Documentos como mi-busqueda (se já existir, não sobrescreva e me pergunte). Confira que estão CLAUDE.md, .claude/skills/empezar/SKILL.md e meus dados em postulaciones e contexto. Me diga o caminho completo e como abrir uma sessão nova nessa pasta.
+   ```
+
+4. Na sessão nova, escreva **continue a instalação**: o Claude vê que o sistema já está lá e retoma a partir dos conectores do Gmail e do Calendar e do painel.
+5. Se você usava a sincronização automática, crie de novo com `/sincronizar-correo configurar`: tarefas agendadas não passam de um computador para outro. As conversas antigas também não, mas tudo o que importa está nos arquivos.
+
+A cópia é uma foto do momento: a partir daí, trabalhe no computador novo. Se continuar anotando nos dois, eles se desencontram. A pasta antiga fica como backup.
+
 ---
 
 ## Instruções de instalação para o Claude Code
