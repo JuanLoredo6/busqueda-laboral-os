@@ -1552,7 +1552,8 @@
     if (clave === "empresa") {
       r.titulo = p.empresa;
       var emp = det.empresa ? md(det.empresa) : partes.empresa.length ? md(mdSecciones(partes.empresa)) : "";
-      r.html = emp || '<p class="tenue">❓ La carpeta no tiene datos de la empresa todavía.</p>';
+      r.html = emp || '<p class="tenue">❓ La carpeta todavía no tiene la ficha de la empresa (<code>empresa.md</code>).</p>';
+      if (!det.empresa) r.items = [{ tipo: "ficha", etiqueta: "Pedirle a Claude que arme la ficha de la empresa" }];
     } else if (clave === "rol") {
       r.titulo = p.rol || "El rol";
       r.html = (p.link ? '<p><a href="' + esc(p.link) + '" target="_blank" rel="noopener">Ver el aviso original ↗</a></p>' : "") +
@@ -1988,6 +1989,8 @@
       if (it.tipo === "sync") return copiar("/sincronizar-correo");
       if (it.tipo === "repaso") return copiar("/repaso-semanal");
       if (it.tipo === "aprender") return copiar(pedidoAprender(casaActual.p));
+      if (it.tipo === "ficha") return copiar("Armá la ficha de la empresa de la postulación " + casaActual.p.empresa + " (postulaciones/" + casaActual.p.id +
+        "/empresa.md), como dice «La ficha de la empresa» en .claude/skills/analizar-oferta/SKILL.md, con plantillas/empresa.md.");
       if (it.tipo === "nuevaPractica") return copiar("/preparar-entrevista Quiero practicar una entrevista. Preguntame para qué empresa y qué instancia es, y armá la práctica en el navegador (entrevistas/<empresa>/practica.json) para practicarla desde el tablero.");
       if (it.tipo === "posicionamiento") return copiar("/posicionamiento");
       return nada();

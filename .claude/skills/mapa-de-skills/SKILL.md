@@ -19,8 +19,8 @@ Una fila por necesidad. La columna Skill dice cuál cargar; todos viven en `.cla
 | Tener el CV en inglés (o en español, si el base está en inglés) sin que suene traducido | `mejorar-perfil` (su parte `cv-en-ingles.md`) |
 | Tener el CV en portugués de Brasil sin portuñol, o usar el sistema en portugués | `mejorar-perfil` (su parte `cv-en-portugues.md`); el idioma de la conversación se elige en `contexto/busqueda.md` |
 | Comprobar que el CV lo lea bien un sistema de selección (ATS) y que tenga las palabras clave de un aviso | `mejorar-perfil` (su parte `ats.md`); para un aviso puntual, `nueva-postulacion` |
-| Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena | `analizar-oferta` |
-| Registrar una postulación nueva: carpeta, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |
+| Analizar un aviso: encaje con tu perfil, requisitos excluyentes, si vale la pena, y la ficha de la empresa (`empresa.md`) | `analizar-oferta` |
+| Registrar una postulación nueva: carpeta con la ficha de la empresa, CV adaptado, respuestas y tarjeta en el tablero | `nueva-postulacion` |
 | Contar una novedad ("me respondieron de X", "tengo entrevista el jueves") y actualizar el tablero | `actualizar` |
 | Traer al tablero las novedades que llegaron por Gmail o Google Calendar (botón 🔄 SYNC, o sola cada 2 horas) | `sincronizar-correo` |
 | Escribir un mensaje a un recruiter, un follow-up o un agradecimiento con tu voz | `redactar-mensaje` |

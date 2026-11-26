@@ -133,8 +133,8 @@ busqueda-laboral-os/
 |---|---|
 | `empezar` | Primeiros passos: traz o que você já tem (currículo, LinkedIn, notas, o contexto de outra IA), carrega seu perfil, o que você busca e sua voz, e deixa o painel pronto |
 | `mejorar-perfil` | Lê seu PDF do LinkedIn, seu currículo ou os dois, compara o que cada um tem, entrevista você e entrega textos prontos para copiar e colar, mais o currículo. Também em português do Brasil, sem portunhol, e em inglês |
-| `analizar-oferta` | Aderência de uma vaga ao seu perfil (0 a 100), requisito por requisito, e se vale a pena |
-| `nueva-postulacion` | Pasta, currículo adaptado, respostas do formulário e cartão no painel |
+| `analizar-oferta` | Aderência de uma vaga ao seu perfil (0 a 100), requisito por requisito, se vale a pena e a ficha da empresa |
+| `nueva-postulacion` | Pasta com a ficha da empresa, currículo adaptado, respostas do formulário e cartão no painel |
 | `actualizar` | Leva cada novidade ao painel e cria as próximas ações |
 | `sincronizar-correo` | Traz as novidades do Gmail e do Google Calendar ao painel, sob demanda (🔄 SYNC) ou a cada 2 horas das 8 às 22 |
 | `redactar-mensaje` | Mensagens para recrutadores, indicações, follow-ups e agradecimentos com a sua voz |

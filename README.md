@@ -131,8 +131,8 @@ busqueda-laboral-os/
 |---|---|
 | `empezar` | Puesta en marcha: trae lo que ya tenés (CV, LinkedIn, notas, el contexto de otra IA), carga tu perfil, qué buscás y tu voz, y deja el tablero listo |
 | `mejorar-perfil` | Lee tu PDF de LinkedIn, tu CV o los dos, compara qué tiene cada uno, te entrevista y te da textos listos para copiar y pegar, más el CV. También en inglés o en portugués de Brasil, como los escribiría alguien nativo |
-| `analizar-oferta` | Encaje de un aviso con tu perfil (0 a 100), requisitos uno por uno, si vale la pena |
-| `nueva-postulacion` | Carpeta, CV adaptado, respuestas del formulario y tarjeta en el tablero |
+| `analizar-oferta` | Encaje de un aviso con tu perfil (0 a 100), requisitos uno por uno, si vale la pena, y la ficha de la empresa |
+| `nueva-postulacion` | Carpeta con la ficha de la empresa, CV adaptado, respuestas del formulario y tarjeta en el tablero |
 | `actualizar` | Lleva cada novedad al tablero y crea las acciones que siguen |
 | `sincronizar-correo` | Trae las novedades de Gmail y Google Calendar al tablero, a demanda (🔄 SYNC) o cada 2 horas de 8 a 22 |
 | `redactar-mensaje` | Mensajes a recruiters, referidos, follow-ups y agradecimientos con tu voz |

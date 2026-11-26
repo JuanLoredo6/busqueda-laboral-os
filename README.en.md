@@ -133,8 +133,8 @@ busqueda-laboral-os/
 |---|---|
 | `empezar` | Setup: brings in what you already have (CV, LinkedIn, notes, the context from another AI), loads your profile, what you're looking for and your voice, and gets the dashboard ready |
 | `mejorar-perfil` | Reads your LinkedIn PDF, your CV or both, compares what each one has, interviews you and gives you ready-to-paste texts, plus the CV. Also in English or Brazilian Portuguese, written the way a native speaker would |
-| `analizar-oferta` | How well a job post fits your profile (0 to 100), requirement by requirement, and whether it's worth it |
-| `nueva-postulacion` | Folder, tailored CV, form answers and a card on the dashboard |
+| `analizar-oferta` | How well a job post fits your profile (0 to 100), requirement by requirement, whether it's worth it, and a profile of the company |
+| `nueva-postulacion` | Folder with the company profile, tailored CV, form answers and a card on the dashboard |
 | `actualizar` | Takes every update to the dashboard and creates the next actions |
 | `sincronizar-correo` | Brings updates from Gmail and Google Calendar to the dashboard, on demand (🔄 SYNC) or every 2 hours from 8 am to 10 pm |
 | `redactar-mensaje` | Messages to recruiters, referrals, follow-ups and thank-you notes in your voice |
