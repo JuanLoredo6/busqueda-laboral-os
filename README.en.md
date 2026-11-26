@@ -178,6 +178,28 @@ Claude first backs up your data, brings the new code (with Git or the ZIP, depen
 
 What changed in each version: [CHANGELOG.md](CHANGELOG.md).
 
+## If you switch computers
+
+Your data is not on GitHub (the `.gitignore` keeps it out), so downloading the system again is not enough: you move **the whole folder in a ZIP**, with its hidden folders (`.git`, `.claude`). That way your data, the version of your data and the link to receive updates all travel together.
+
+1. **On your current computer**, open Claude Code in the system folder and paste:
+
+   ```text
+   I'm moving this system to another computer. Confirm you are in the system folder and tell me what data of mine is here. Make a ZIP of the whole folder, including hidden folders and files (.git, .claude, .version-datos), on my Desktop named mi-busqueda-traspaso plus today's date. Check that the ZIP has them, tell me its size and whether I have a scheduled sync task. Don't upload the ZIP anywhere and don't delete anything from this folder.
+   ```
+
+2. **Carry the ZIP** on a USB drive or in your own cloud (Drive, OneDrive, iCloud), without sharing the link: your CV is inside. Delete it from there when you are done.
+3. **On the new computer**, install the Claude app, sign in with the same account, **Code** tab, **Local** environment, open the **Documents** folder and paste (with the ZIP's location):
+
+   ```text
+   I brought my job search system from another computer in a ZIP located at [where it is]. Unzip it into Documents as mi-busqueda (if it already exists, don't overwrite it and ask me). Check that CLAUDE.md, .claude/skills/empezar/SKILL.md and my data in postulaciones and contexto are there. Tell me the full path and how to open a new session in that folder.
+   ```
+
+4. In the new session, type **seguí con la instalación**: Claude sees the system is already there and picks up from the Gmail and Calendar connectors and the board.
+5. If you used automatic sync, create it again with `/sincronizar-correo configurar`: scheduled tasks don't move between computers. Old chats don't either, but everything important is in the files.
+
+The copy is a snapshot: from then on, work on the new computer. If you keep adding things on both, they drift apart. The old folder stays as a backup.
+
 ---
 
 ## Installation instructions for Claude Code

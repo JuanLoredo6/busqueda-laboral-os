@@ -12,6 +12,10 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Cambios
+
+- README (español, inglés y portugués): sección «Si cambiás de computadora», con dos pedidos para Claude. Se pasa la carpeta entera en un ZIP, porque los datos de la persona no están en GitHub.
+
 ## 0.12.0 — 2026-11-24 · Actualización asistida
 
 ### Nuevo

@@ -176,6 +176,28 @@ Claude hace primero un respaldo de tus datos, trae el código nuevo (con Git o c
 
 Qué cambió en cada versión: [CHANGELOG.md](CHANGELOG.md).
 
+## Si cambiás de computadora
+
+Tus datos no están en GitHub (el `.gitignore` los deja afuera), así que no alcanza con volver a descargar el sistema: se pasa **la carpeta entera en un ZIP**, con sus carpetas ocultas (`.git`, `.claude`). Así viajan tus datos, la versión de tus datos y la conexión para recibir actualizaciones.
+
+1. **En la computadora actual**, abrí Claude Code en la carpeta del sistema y pegá:
+
+   ```text
+   Voy a pasar este sistema a otra computadora. Confirmá que estás en la carpeta del sistema y contame qué datos míos hay. Armá un ZIP de la carpeta entera, con las carpetas y archivos ocultos (.git, .claude, .version-datos), en mi Escritorio con el nombre mi-busqueda-traspaso y la fecha de hoy. Comprobá que el ZIP los tiene, decime cuánto pesa y si tengo una tarea programada de sincronización. No subas el ZIP a ningún lado ni borres nada de esta carpeta.
+   ```
+
+2. **Llevá el ZIP** en un pendrive o en tu propia nube (Drive, OneDrive, iCloud), sin compartir el link: adentro está tu CV. Cuando termines, borralo de ahí.
+3. **En la computadora nueva**, instalá la app de Claude, entrá con la misma cuenta, pestaña **Code**, entorno **Local**, abrí la carpeta **Documentos** y pegá (con la ubicación del ZIP):
+
+   ```text
+   Traje mi sistema de búsqueda laboral de otra computadora en un ZIP que está en [dónde quedó]. Descomprimilo en Documentos como mi-busqueda (si ya existe, no la pises y preguntame). Comprobá que estén CLAUDE.md, .claude/skills/empezar/SKILL.md y mis datos en postulaciones y contexto. Decime la ruta completa y cómo abrir una sesión nueva en esa carpeta.
+   ```
+
+4. En la sesión nueva, escribí **seguí con la instalación**: Claude ve que el sistema ya está y retoma desde los conectores de Gmail y Calendar y el tablero.
+5. Si usabas la sincronización automática, volvé a crearla con `/sincronizar-correo configurar`: las tareas programadas no pasan de una computadora a otra. Los chats viejos tampoco, pero todo lo importante está en los archivos.
+
+La copia es una foto del momento: desde ahí, trabajá en la computadora nueva. Si seguís anotando en las dos, se desincronizan. La carpeta vieja queda como respaldo.
+
 ---
 
 ## Instrucciones de instalación para Claude Code
