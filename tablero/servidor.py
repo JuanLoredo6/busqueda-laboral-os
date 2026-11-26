@@ -271,6 +271,26 @@ def leer_practica(raiz, carpeta):
     return 200, {"carpeta": carpeta, "practica": datos, "archivos": sesiones}
 
 
+MAX_DETALLE = 200 * 1024
+
+
+def leer_postulacion(raiz, carpeta):
+    """Lo que el tablero retro muestra dentro de una casa: rol.md, empresa.md y los nombres de los documentos."""
+    if not isinstance(carpeta, str) or not CARPETA.match(carpeta):
+        return 400, {"error": "Nombre de carpeta inválido."}
+    base = os.path.join(raiz, "postulaciones", carpeta)
+    if not os.path.isdir(base):
+        return 404, {"error": "Esa postulación todavía no tiene carpeta."}
+    textos = {}
+    for clave, nombre in (("rol", "rol.md"), ("empresa", "empresa.md")):
+        ruta = os.path.join(base, nombre)
+        if os.path.isfile(ruta):
+            with open(ruta, encoding="utf-8", errors="replace") as f:
+                textos[clave] = f.read(MAX_DETALLE)
+    archivos = sorted(n for n in os.listdir(base) if n.lower().endswith(".md"))
+    return 200, {"carpeta": carpeta, "rol": textos.get("rol"), "empresa": textos.get("empresa"), "archivos": archivos}
+
+
 def listar_practicas(raiz):
     base = os.path.join(raiz, "entrevistas")
     lista = []
@@ -451,6 +471,10 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         if ruta == "/api/practicas":
             self.responder(*listar_practicas(self.raiz))
+            return
+        if ruta == "/api/postulacion":
+            carpeta = (urllib.parse.parse_qs(consulta).get("id") or [""])[0]
+            self.responder(*leer_postulacion(self.raiz, carpeta))
             return
         if ruta == "/api/practica":
             carpeta = (urllib.parse.parse_qs(consulta).get("e") or [""])[0]

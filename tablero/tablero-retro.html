@@ -16,54 +16,69 @@
   #hud b { color: #b0302a; }
   #ayuda { bottom: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
   #dialogo {
-    left: 50%; bottom: 16px; transform: translateX(-50%); width: min(760px, calc(100vw - 48px));
-    padding: 14px 18px 18px; display: none; max-height: 45vh; overflow: auto;
+    left: 50%; bottom: 16px; transform: translateX(-50%); width: min(780px, calc(100vw - 48px));
+    padding: 14px 18px 18px; display: none; max-height: 45vh; overflow: auto; box-sizing: border-box;
   }
+  #dialogo.grande { max-height: 62vh; }
   #dialogo.abierto { display: block; }
   #dialogo h2 { margin: 0 0 6px; font-size: 17px; }
+  #dialogo h3 { margin: 12px 0 4px; font-size: 15px; color: #3a4a8a; }
+  #dialogo h4 { margin: 8px 0 2px; font-size: 14px; }
   #dialogo p { margin: 4px 0; }
   #dialogo ul { margin: 6px 0 0; padding-left: 0; list-style: none; }
-  #dialogo li { margin: 3px 0; }
-  #dialogo .sigue { position: absolute; right: 14px; bottom: 6px; animation: parpadeo 1s steps(2) infinite; }
-  .p-alta { color: #c0302a; } .p-media { color: #b87a00; } .p-baja { color: #4a6a9a; }
-  .tenue { color: #6a6a80; font-weight: normal; }
-  @keyframes parpadeo { 50% { opacity: 0; } }
-  #dialogo li { padding-left: 18px; position: relative; }
+  #dialogo li { margin: 3px 0; padding-left: 18px; position: relative; }
+  #dialogo .md li::before { content: "▸"; position: absolute; left: 2px; color: #7a86b8; }
+  #dialogo .md p, #dialogo .md li { font-weight: normal; }
+  #dialogo .md b { font-weight: bold; }
+  #dialogo code { background: #eceadc; padding: 0 3px; }
+  #dialogo a { color: #3a4a8a; }
   #dialogo li .cursor { position: absolute; left: 0; }
   #dialogo li.elegida { background: #eef0ff; }
   #dialogo .teclas, #dialogo .pregunta { margin-top: 10px; font-size: 13px; }
   #dialogo .pregunta { color: #b0302a; }
+  #dialogo .sigue { position: sticky; float: right; bottom: 0; animation: parpadeo 1s steps(2) infinite; }
+  .p-alta { color: #c0302a; } .p-media { color: #b87a00; } .p-baja { color: #4a6a9a; }
+  .tenue { color: #6a6a80; font-weight: normal; }
+  .barra { letter-spacing: 1px; color: #3e8f4a; }
+  .barra .vacia { color: #c8c8d4; }
+  @keyframes parpadeo { 50% { opacity: 0; } }
   .tecla { display: inline-block; padding: 0 5px; border: 2px solid #2a2a4a; border-radius: 3px; background: #fff; color: #20203a; }
-  #aviso { top: 14px; left: 50%; transform: translate(-50%, -80px); padding: 8px 14px; transition: transform .2s; }
+  #aviso { top: 14px; left: 50%; transform: translate(-50%, -90px); padding: 8px 14px; transition: transform .2s; z-index: 5; }
   #aviso.visible { transform: translate(-50%, 0); }
   #error { top: 40%; left: 50%; transform: translateX(-50%); padding: 16px 20px; display: none; max-width: 520px; }
+  #fundido { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 4; }
+  #fundido.negro { opacity: 1; }
 </style>
 </head>
 <body>
 <canvas id="pantalla"></canvas>
 <div id="hud" class="caja">Cargando el pueblo…</div>
-<div id="ayuda" class="caja">← ↑ → ↓ caminar · A mirar</div>
+<div id="ayuda" class="caja"></div>
 <div id="dialogo" class="caja" role="dialog" aria-live="polite"></div>
 <div id="error" class="caja"></div>
 <div id="aviso" class="caja"></div>
+<div id="fundido"></div>
 
 <script>
 (function () {
   "use strict";
 
-  // Vista de solo lectura: un pueblo en pixel art armado con postulaciones.json.
-  // Cada columna del tablero es un barrio y cada postulación es una casa. Un «!» marca acciones pendientes.
+  // Un pueblo en pixel art armado con postulaciones.json.
+  // Cada columna del tablero es un barrio y cada postulación es una casa con su interior.
+  // Un «!» marca acciones pendientes. Los cambios pasan por el servidor del tablero, igual que en tablero.html.
 
   var T = 16;            // lado de una baldosa, en píxeles del mundo
-  var ANCHO = 48;        // ancho del mapa, en baldosas
+  var ANCHO = 48;        // ancho del pueblo, en baldosas
   var PASO = 0.14;       // segundos por baldosa al caminar
+  var PASO_SOLO = 0.085; // cuando camina solo hacia una acción
   var modoEjemplo = /[?&]ejemplo\b/.test(location.search);
 
   var ZONAS = {
-    "por-enviar":   { nombre: "Por enviar",          techo: ["#e0a83a", "#b07a1e"] },
-    "conversacion": { nombre: "En conversación",     techo: ["#d8503a", "#9a2e22"] },
-    "esperando":    { nombre: "Esperando respuesta", techo: ["#4a7ad0", "#2e4f94"] },
-    "cerrada":      { nombre: "Cerradas",            techo: ["#9a9aa8", "#6a6a78"] }
+    "centro":       { nombre: "Centro" },
+    "por-enviar":   { nombre: "Por enviar",          techo: ["#e0a83a", "#b07a1e"], papel: ["#f4e2b0", "#ead098"] },
+    "conversacion": { nombre: "En conversación",     techo: ["#d8503a", "#9a2e22"], papel: ["#f4c8b8", "#eab4a0"] },
+    "esperando":    { nombre: "Esperando respuesta", techo: ["#4a7ad0", "#2e4f94"], papel: ["#c4d6f2", "#b0c6ea"] },
+    "cerrada":      { nombre: "Cerradas",            techo: ["#9a9aa8", "#6a6a78"], papel: ["#d4d4da", "#c4c4cc"] }
   };
   var RESULTADOS = { "descartada": "Descartada", "descartada-por-mi": "Descartada por mí", "retirada": "Me retiré",
     "sin-respuesta": "Sin respuesta", "oferta-aceptada": "Oferta aceptada", "oferta-rechazada": "Oferta rechazada" };
@@ -71,11 +86,12 @@
   var COLOR_PRIORIDAD = { alta: "#d8302a", media: "#e0a000", baja: "#5a7ab0" };
 
   var C = {
-    pasto: "#8fd07c", pasto2: "#7cc06c", mata: "#4f9a4a", pastoGris: "#9fb894", pastoGris2: "#8aa680",
+    pasto: "#8fd07c", mata: "#4f9a4a", pastoGris: "#9fb894", pastoGris2: "#8aa680",
     camino: "#ead69c", camino2: "#d2bb7a", piedra: "#cfcfd8", piedra2: "#a8a8b8",
     arbol1: "#2c6638", arbol2: "#3f8f4a", arbol3: "#66b65c", tronco: "#7a4b2a",
     agua: "#5aa8e8", agua2: "#a8dcff", madera: "#a8743c", madera2: "#7a5028",
-    pared: "#f4eadc", borde: "#4a3a32", puerta: "#8a5a32", vidrio: "#9fd4f4"
+    pared: "#f4eadc", borde: "#4a3a32", puerta: "#8a5a32", vidrio: "#9fd4f4",
+    piso: "#c88c50", piso2: "#a8703c", piso3: "#d89c60"
   };
 
   // ---------- utilidades ----------
@@ -88,6 +104,10 @@
     var d = new Date();
     return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   }
+  function haceDias(n) {
+    var d = new Date(); d.setDate(d.getDate() - n);
+    return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  }
   function azar(semilla) { // mulberry32: el pueblo se ve igual cada vez que se abre
     return function () {
       semilla |= 0; semilla = semilla + 0x6D2B79F5 | 0;
@@ -96,14 +116,74 @@
       return ((t ^ t >>> 14) >>> 0) / 4294967296;
     };
   }
+  function ordenarAcciones(lista) {
+    return lista.sort(function (a, b) {
+      var pa = PRIORIDAD[a.prioridad] != null ? PRIORIDAD[a.prioridad] : 1, pb = PRIORIDAD[b.prioridad] != null ? PRIORIDAD[b.prioridad] : 1;
+      return pa - pb || String(a.fecha || "9999").localeCompare(String(b.fecha || "9999"));
+    });
+  }
+
+  // Markdown mínimo para mostrar rol.md y empresa.md dentro de las casas.
+  function md(texto) {
+    var html = "", lista = false;
+    function linea(s) {
+      s = esc(s);
+      return s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    }
+    function cerrarLista() { if (lista) { html += "</ul>"; lista = false; } }
+    String(texto || "").replace(/\r/g, "").split("\n").forEach(function (l) {
+      var m;
+      if (/^\s*\|?\s*:?-{3,}/.test(l)) return; // separador de tabla
+      if ((m = /^###+\s+(.*)/.exec(l))) { cerrarLista(); html += "<h4>" + linea(m[1]) + "</h4>"; return; }
+      if ((m = /^##\s+(.*)/.exec(l))) { cerrarLista(); html += "<h3>" + linea(m[1]) + "</h3>"; return; }
+      if (/^#\s/.test(l)) return;
+      if ((m = /^\s*(?:[-*]|\d+\.)\s+(.*)/.exec(l)) || (m = /^\s*\|(.*)\|\s*$/.exec(l))) {
+        var item = m[1];
+        if (/^\s*\|/.test(l)) item = item.split("|").map(function (x) { return x.trim(); }).filter(Boolean).join(" · ");
+        if (!lista) { html += "<ul>"; lista = true; }
+        html += "<li>" + linea(item) + "</li>"; return;
+      }
+      if (!l.trim()) { cerrarLista(); return; }
+      cerrarLista(); html += "<p>" + linea(l) + "</p>";
+    });
+    cerrarLista();
+    return '<div class="md">' + html + "</div>";
+  }
+  function secciones(texto) {
+    var out = [], act = { titulo: "", lineas: [] };
+    String(texto || "").replace(/\r/g, "").split("\n").forEach(function (l) {
+      var m = /^##\s+(.*)/.exec(l);
+      if (m) { out.push(act); act = { titulo: m[1].trim(), lineas: [] }; }
+      else if (!/^#\s/.test(l)) act.lineas.push(l);
+    });
+    out.push(act);
+    return out.filter(function (s) { return s.lineas.join("").trim(); });
+  }
+  var RE_ENCAJE = /encaje|por qu[eé] entra|relaci[oó]n con (la experiencia|tu|mi)|recomendaci|qu[eé] ajustar|qu[eé] falta|no pude comprobar|se[nñ]ales/i;
+  var RE_EMPRESA = /empresa|^qu[eé] (es|hace)\b(?!\s+(el|la)\s+(rol|[aá]rea|puesto))/i;
+  var RE_FUERA = /respuestas|seguimiento|tema elegido|relaci[oó]n con otras|relaci[oó]n con la tarjeta/i;
+  function partesDeRol(texto) {
+    var r = { rol: [], empresa: [], encaje: [] };
+    secciones(texto).forEach(function (s) {
+      if (RE_FUERA.test(s.titulo)) return;
+      if (RE_ENCAJE.test(s.titulo)) r.encaje.push(s);
+      else if (RE_EMPRESA.test(s.titulo)) r.empresa.push(s);
+      else r.rol.push(s);
+    });
+    return r;
+  }
+  function mdSecciones(lista) {
+    return lista.map(function (s) { return (s.titulo ? "## " + s.titulo + "\n" : "") + s.lineas.join("\n"); }).join("\n\n");
+  }
 
   // ---------- datos ----------
+  var servidor = false;
   function cargarDatos(listo) {
-    var ejemplo = modoEjemplo;
     var s = document.createElement("script");
-    s.src = (ejemplo ? "ejemplo.js" : "datos.js") + "?t=" + Date.now();
+    s.src = (modoEjemplo ? "ejemplo.js" : "datos.js") + "?t=" + Date.now();
     s.onload = function () {
-      var d = ejemplo ? (typeof window.DATOS_EJEMPLO === "function" ? window.DATOS_EJEMPLO() : window.DATOS_EJEMPLO) : window.DATOS_TABLERO;
+      var d = modoEjemplo ? (typeof window.DATOS_EJEMPLO === "function" ? window.DATOS_EJEMPLO() : window.DATOS_EJEMPLO) : window.DATOS_TABLERO;
       if (!d) return fallar();
       listo(d);
     };
@@ -117,76 +197,104 @@
       "y entrá a <b>/tablero-retro.html</b>. Para ver un pueblo de prueba, agregá <b>?ejemplo</b> a la dirección.";
     document.getElementById("hud").style.display = "none";
   }
+  var practicas = [];      // lo que devuelve /api/practicas
+  var practicaDe = {};     // id de postulación → carpeta de entrevistas/
+  function cargarPracticas() {
+    if (modoEjemplo || !window.fetch) return;
+    fetch("/api/practicas", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      servidor = !!j;
+      practicas = ((j && j.practicas) || []).filter(function (p) { return !p.error; });
+      practicaDe = {};
+      practicas.forEach(function (p) { if (p.postulacion) practicaDe[p.postulacion] = p.carpeta; });
+    }, function () {});
+  }
+  var detalles = {};       // id de postulación → { estado: "cargando" | "listo" | "error", ... }
+  function cargarDetalles(id, listo) {
+    if (detalles[id] && detalles[id].estado === "listo") return listo();
+    if (modoEjemplo) { detalles[id] = { estado: "error", error: "En el pueblo de prueba no hay carpetas para leer." }; return listo(); }
+    detalles[id] = { estado: "cargando" };
+    fetch("/api/postulacion?id=" + encodeURIComponent(id), { cache: "no-store" }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    }).then(function (res) {
+      detalles[id] = res.ok ? Object.assign({ estado: "listo" }, res.j) : { estado: "error", error: res.j.error || "No pude leer la carpeta." };
+      listo();
+    }, function () { detalles[id] = { estado: "error", error: "El servidor del tablero no respondió." }; listo(); });
+  }
 
-  // ---------- mapa ----------
-  var mapa = null;   // { ancho, alto, suelo[][], solido[][], cosa[][], casas[], zonas[], plaza }
+  // ---------- el pueblo ----------
+  var mapa = null;      // la escena actual: el pueblo o el interior de una casa
+  var capaFija = null;
+  var pueblo = null;    // { mapa, capa }
+  var escena = "pueblo";
+  var casaActual = null;
 
   function porFila(ancho) { return Math.max(1, Math.floor((ancho - 1) / 4)); }
+  function nuevaGrilla(ancho, alto, suelo) {
+    var g = { suelo: [], solido: [], cosa: [] };
+    for (var j = 0; j < alto; j++) {
+      g.suelo.push([]); g.solido.push([]); g.cosa.push([]);
+      for (var i = 0; i < ancho; i++) { g.suelo[j].push(suelo); g.solido[j].push(false); g.cosa[j].push(null); }
+    }
+    return g;
+  }
 
-  function armarMapa(datos) {
+  function armarPueblo(datos) {
     var grupos = { "por-enviar": [], "conversacion": [], "esperando": [], "cerrada": [] };
     (datos.postulaciones || []).forEach(function (p) { (grupos[p.columna] || grupos.esperando).push(p); });
 
-    var pendientes = {};
-    var generales = [];
-    var ids = {};
+    var pendientes = {}, generales = [], ids = {};
     (datos.postulaciones || []).forEach(function (p) { ids[p.id] = true; });
     (datos.acciones || []).forEach(function (a) {
       if (a.hecha) return;
       if (a.postulacion && ids[a.postulacion]) (pendientes[a.postulacion] = pendientes[a.postulacion] || []).push(a);
       else generales.push(a);
     });
-    function ordenar(lista) {
-      return lista.sort(function (a, b) {
-        return (PRIORIDAD[a.prioridad] || 1) - (PRIORIDAD[b.prioridad] || 1) || String(a.fecha || "").localeCompare(String(b.fecha || ""));
-      });
-    }
-    Object.keys(pendientes).forEach(function (k) { ordenar(pendientes[k]); });
-    ordenar(generales);
+    Object.keys(pendientes).forEach(function (k) { ordenarAcciones(pendientes[k]); });
+    ordenarAcciones(generales);
 
     function alturaZona(n, ancho, extra) { return 2 + Math.max(1, Math.ceil(n / porFila(ancho))) * 4 + (extra || 0); }
 
-    var zonas = [];
-    var y = 1;
-    var zEnv = { id: "por-enviar", x: 1, w: 19 };
-    var zConv = { id: "conversacion", x: 22, w: ANCHO - 23 };
-    zEnv.h = alturaZona(grupos["por-enviar"].length, zEnv.w);
-    zConv.h = alturaZona(grupos.conversacion.length, zConv.w, 5);
-    var alto1 = Math.max(zEnv.h, zConv.h);
-    zEnv.y = y; zConv.y = y; zEnv.h = alto1; zConv.h = alto1;
+    var zCentro = { id: "centro", x: 1, w: ANCHO - 2, y: 1, h: 6 };
+    var y = zCentro.y + zCentro.h;
+    var zEnv = { id: "por-enviar", x: 1, w: 19, y: y };
+    var zConv = { id: "conversacion", x: 22, w: ANCHO - 23, y: y };
+    var alto1 = Math.max(alturaZona(grupos["por-enviar"].length, zEnv.w), alturaZona(grupos.conversacion.length, zConv.w, 5));
+    zEnv.h = alto1; zConv.h = alto1;
     y += alto1 + 2;
     var zEsp = { id: "esperando", x: 1, w: ANCHO - 2, y: y };
     zEsp.h = alturaZona(grupos.esperando.length, zEsp.w);
     y += zEsp.h + 2;
     var zCer = { id: "cerrada", x: 1, w: ANCHO - 2, y: y };
     zCer.h = alturaZona(grupos.cerrada.length, zCer.w);
-    y += zCer.h;
-    var alto = y + 1;
-    zonas.push(zEnv, zConv, zEsp, zCer);
+    var alto = y + zCer.h + 1;
+    var zonas = [zCentro, zEnv, zConv, zEsp, zCer];
 
-    var suelo = [], solido = [], cosa = [];
-    for (var j = 0; j < alto; j++) {
-      suelo.push([]); solido.push([]); cosa.push([]);
-      for (var i = 0; i < ANCHO; i++) { suelo[j].push("pasto"); solido[j].push(false); cosa[j].push(null); }
-    }
+    var g = nuevaGrilla(ANCHO, alto, "pasto");
+    var suelo = g.suelo, solido = g.solido, cosa = g.cosa;
     function poner(i, j, tipo, ent) { if (j >= 0 && j < alto && i >= 0 && i < ANCHO) { cosa[j][i] = { tipo: tipo, ent: ent }; solido[j][i] = true; } }
 
-    // calles entre barrios y la calle que baja entre los dos barrios de arriba
-    [zEnv.y + alto1, zEsp.y + zEsp.h].forEach(function (fy) {
-      for (var i = 1; i < ANCHO - 1; i++) { suelo[fy][i] = "camino"; suelo[fy + 1][i] = "camino"; }
+    // calles: una bajo el centro, una entre cada fila de barrios y la que baja entre los dos de arriba
+    [zCentro.y + 4, zEnv.y + alto1, zEsp.y + zEsp.h].forEach(function (fy, k) {
+      for (var i = 1; i < ANCHO - 1; i++) { suelo[fy][i] = "camino"; if (k) suelo[fy + 1][i] = "camino"; }
     });
-    for (var j2 = 1; j2 < zEnv.y + alto1; j2++) { suelo[j2][20] = "camino"; suelo[j2][21] = "camino"; }
+    for (var j2 = zCentro.y + 4; j2 < zEnv.y + alto1; j2++) { suelo[j2][20] = "camino"; suelo[j2][21] = "camino"; }
+
+    // el estudio de perfil, en el centro
+    var estudio = { x: 19, y: zCentro.y + 1, w: 5, h: 3 };
+    estudio.puerta = { x: estudio.x + 2, y: estudio.y + 2 };
+    for (var ea = 0; ea < estudio.w; ea++) for (var eb = 0; eb < estudio.h; eb++) poner(estudio.x + ea, estudio.y + eb, "estudio", estudio);
 
     var casas = [];
     zonas.forEach(function (z) {
+      if (z.id === "centro") return;
       var lista = grupos[z.id];
       z.cantidad = lista.length;
       var n = porFila(z.w);
       var margen = Math.floor((z.w - n * 4) / 2) + 1;
-      if (z.id === "cerrada") for (var i = z.x; i < z.x + z.w; i++) {
-        if (Math.abs(i - (z.x + Math.floor(z.w / 2))) > 1) { suelo[z.y][i] = "pastoGris"; poner(i, z.y, "cerca"); }
+      if (z.id === "cerrada") {
+        for (var jj = z.y; jj < z.y + z.h; jj++) for (var ii = z.x; ii < z.x + z.w; ii++) suelo[jj][ii] = "pastoGris";
+        for (var i = z.x; i < z.x + z.w; i++) if (Math.abs(i - (z.x + Math.floor(z.w / 2))) > 1) poner(i, z.y, "cerca");
       }
-      if (z.id === "cerrada") for (var jj = z.y + 1; jj < z.y + z.h; jj++) for (var ii = z.x; ii < z.x + z.w; ii++) suelo[jj][ii] = "pastoGris";
       poner(z.x + margen - 1, z.y + 1, "cartel", z);
       var filas = Math.max(1, Math.ceil(lista.length / n));
       for (var f = 0; f < filas; f++) {
@@ -205,20 +313,19 @@
     var filasConv = Math.max(1, Math.ceil(grupos.conversacion.length / porFila(zConv.w)));
     var py = zConv.y + 2 + filasConv * 4;
     var pcx = zConv.x + Math.floor(zConv.w / 2);
-    for (var pj = py; pj < py + 4 && pj < zConv.y + alto1; pj++) for (var pi = pcx - 5; pi <= pcx + 5; pi++) suelo[pj][pi] = "piedra";
-    var plaza = { fuente: { x: pcx - 1, y: py + 1 }, tablon: { x: pcx - 5, y: py + 1, generales: generales } };
+    for (var pj2 = py; pj2 < py + 4 && pj2 < zConv.y + alto1; pj2++) for (var pi = pcx - 5; pi <= pcx + 5; pi++) suelo[pj2][pi] = "piedra";
+    var plaza = { fuente: { x: pcx - 1, y: py + 1 }, tablon: { x: pcx - 4, y: py + 1, generales: generales } };
     for (var fa = 0; fa < 3; fa++) for (var fb = 0; fb < 2; fb++) poner(pcx - 1 + fa, py + 1 + fb, "fuente");
     poner(pcx - 4, py + 1, "tablon", plaza.tablon); poner(pcx - 3, py + 1, "tablon", plaza.tablon);
 
-    // árboles en todo el borde
     for (var bi = 0; bi < ANCHO; bi++) { poner(bi, 0, "arbol"); poner(bi, alto - 1, "arbol"); }
     for (var bj = 0; bj < alto; bj++) { poner(0, bj, "arbol"); poner(ANCHO - 1, bj, "arbol"); }
 
-    mapa = { ancho: ANCHO, alto: alto, suelo: suelo, solido: solido, cosa: cosa, casas: casas, zonas: zonas, plaza: plaza,
-      inicio: { x: 20, y: 2 } };
+    return { tipo: "pueblo", ancho: ANCHO, alto: alto, suelo: suelo, solido: solido, cosa: cosa, casas: casas, zonas: zonas,
+      plaza: plaza, estudio: estudio, inicio: { x: 20, y: zCentro.y + 5 } };
   }
 
-  // ---------- dibujo del mapa fijo ----------
+  // ---------- dibujo ----------
   function rect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
 
   function dibujarPasto(g, x, y, r, gris) {
@@ -230,17 +337,16 @@
         rect(g, ox, oy, 1, 2, oscuro); rect(g, ox + 2, oy, 1, 2, oscuro); rect(g, ox + 1, oy + 1, 1, 2, oscuro);
       }
     }
-    if (!gris && r() < 0.06) { // flores
+    if (!gris && r() < 0.06) {
       var fx = x + 4 + Math.floor(r() * 8), fy = y + 4 + Math.floor(r() * 8), col = r() < 0.5 ? "#f8f0f0" : "#f07888";
       rect(g, fx - 1, fy, 3, 1, col); rect(g, fx, fy - 1, 1, 3, col); rect(g, fx, fy, 1, 1, "#f8d040");
     }
   }
-  function dibujarCamino(g, x, y, r, i, j) {
+  function dibujarCamino(g, x, y, r, i, j, m) {
     rect(g, x, y, T, T, C.camino);
     for (var k = 0; k < 3; k++) if (r() < 0.5) rect(g, x + Math.floor(r() * 15), y + Math.floor(r() * 15), 1, 1, C.camino2);
-    var s = mapa.suelo;
-    if (j > 0 && s[j - 1][i] !== "camino") rect(g, x, y, T, 1, C.camino2);
-    if (j < mapa.alto - 1 && s[j + 1][i] !== "camino") rect(g, x, y + T - 1, T, 1, C.camino2);
+    if (j > 0 && m.suelo[j - 1][i] !== "camino") rect(g, x, y, T, 1, C.camino2);
+    if (j < m.alto - 1 && m.suelo[j + 1][i] !== "camino") rect(g, x, y + T - 1, T, 1, C.camino2);
   }
   function dibujarPiedra(g, x, y) {
     rect(g, x, y, T, T, C.piedra);
@@ -249,100 +355,185 @@
   }
   function dibujarArbol(g, x, y) {
     rect(g, x + 6, y + 11, 4, 5, C.tronco);
-    rect(g, x + 2, y + 2, 12, 10, C.arbol1);
-    rect(g, x + 1, y + 4, 14, 6, C.arbol1);
-    rect(g, x + 4, y, 8, 2, C.arbol1);
-    rect(g, x + 3, y + 2, 9, 7, C.arbol2);
-    rect(g, x + 5, y + 1, 5, 2, C.arbol2);
+    rect(g, x + 2, y + 2, 12, 10, C.arbol1); rect(g, x + 1, y + 4, 14, 6, C.arbol1); rect(g, x + 4, y, 8, 2, C.arbol1);
+    rect(g, x + 3, y + 2, 9, 7, C.arbol2); rect(g, x + 5, y + 1, 5, 2, C.arbol2);
     rect(g, x + 4, y + 3, 3, 2, C.arbol3); rect(g, x + 8, y + 2, 2, 1, C.arbol3);
   }
   function dibujarCerca(g, x, y) {
     rect(g, x, y + 6, T, 2, C.madera); rect(g, x, y + 11, T, 2, C.madera);
     rect(g, x + 2, y + 3, 3, 12, C.madera2); rect(g, x + 11, y + 3, 3, 12, C.madera2);
-    rect(g, x + 2, y + 3, 3, 1, C.madera);  rect(g, x + 11, y + 3, 3, 1, C.madera);
+    rect(g, x + 2, y + 3, 3, 1, C.madera); rect(g, x + 11, y + 3, 3, 1, C.madera);
   }
   function dibujarCartel(g, x, y) {
     rect(g, x + 7, y + 9, 2, 7, C.madera2);
-    rect(g, x + 1, y + 2, 14, 8, C.borde);
-    rect(g, x + 2, y + 3, 12, 6, C.madera);
+    rect(g, x + 1, y + 2, 14, 8, C.borde); rect(g, x + 2, y + 3, 12, 6, C.madera);
     rect(g, x + 4, y + 5, 8, 1, C.madera2); rect(g, x + 4, y + 7, 6, 1, C.madera2);
   }
   function dibujarTablon(g, x, y) {
     rect(g, x + 3, y + 10, 2, 6, C.madera2); rect(g, x + 27, y + 10, 2, 6, C.madera2);
-    rect(g, x + 1, y + 1, 30, 11, C.borde);
-    rect(g, x + 2, y + 2, 28, 9, C.madera);
+    rect(g, x + 1, y + 1, 30, 11, C.borde); rect(g, x + 2, y + 2, 28, 9, C.madera);
     [[4, 3, "#fbfaf2"], [11, 4, "#f8e08a"], [18, 3, "#fbfaf2"], [24, 4, "#c8e4fa"]].forEach(function (h) {
       rect(g, x + h[0], y + h[1], 5, 6, h[2]); rect(g, x + h[0] + 2, y + h[1], 1, 1, "#c0302a");
     });
   }
   function dibujarFuente(g, x, y) {
-    rect(g, x + 2, y + 6, 44, 24, C.piedra2);
-    rect(g, x + 4, y + 4, 40, 24, C.piedra2);
+    rect(g, x + 2, y + 6, 44, 24, C.piedra2); rect(g, x + 4, y + 4, 40, 24, C.piedra2);
     rect(g, x + 5, y + 7, 38, 19, C.agua);
     rect(g, x + 8, y + 10, 6, 1, C.agua2); rect(g, x + 30, y + 20, 7, 1, C.agua2);
-    rect(g, x + 20, y + 2, 8, 16, C.piedra2);
-    rect(g, x + 21, y + 3, 6, 14, C.piedra);
-    rect(g, x + 22, y, 4, 4, C.agua2);
+    rect(g, x + 20, y + 2, 8, 16, C.piedra2); rect(g, x + 21, y + 3, 6, 14, C.piedra); rect(g, x + 22, y, 4, 4, C.agua2);
   }
   function dibujarCasa(g, casa) {
-    var x = casa.x * T, y = casa.y * T, z = casa.zona, p = casa.p;
+    var x = casa.x * T, y = casa.y * T, z = casa.zona, p = casa.p, cerrada = z === "cerrada";
     var techo = ZONAS[z].techo;
-    if (z === "cerrada" && /^oferta/.test(p.resultado || "")) techo = ["#e8c440", "#b08a18"];
-    // pared
+    if (cerrada && /^oferta/.test(p.resultado || "")) techo = ["#e8c440", "#b08a18"];
     rect(g, x + 3, y + 14, 42, 18, C.borde);
-    rect(g, x + 4, y + 15, 40, 16, z === "cerrada" ? "#ddd8cc" : C.pared);
+    rect(g, x + 4, y + 15, 40, 16, cerrada ? "#ddd8cc" : C.pared);
     rect(g, x + 4, y + 29, 40, 2, "#c8bca8");
-    // ventanas
     [8, 32].forEach(function (vx) {
       rect(g, x + vx - 1, y + 17, 10, 8, C.borde);
-      rect(g, x + vx, y + 18, 8, 6, z === "cerrada" ? "#8a8a96" : C.vidrio);
-      rect(g, x + vx + 1, y + 19, 2, 2, z === "cerrada" ? "#8a8a96" : "#ffffff");
-      if (z === "cerrada") { rect(g, x + vx - 1, y + 19, 10, 2, C.madera); }
+      rect(g, x + vx, y + 18, 8, 6, cerrada ? "#8a8a96" : C.vidrio);
+      rect(g, x + vx + 1, y + 19, 2, 2, cerrada ? "#8a8a96" : "#ffffff");
+      if (cerrada) rect(g, x + vx - 1, y + 19, 10, 2, C.madera);
     });
-    // puerta
-    rect(g, x + 18, y + 18, 12, 14, C.borde);
-    rect(g, x + 19, y + 19, 10, 13, C.puerta);
-    rect(g, x + 26, y + 25, 2, 2, "#f0d060");
-    if (z === "cerrada") { rect(g, x + 17, y + 22, 14, 2, C.madera); rect(g, x + 17, y + 27, 14, 2, C.madera); }
-    // techo
-    rect(g, x + 1, y + 2, 46, 14, C.borde);
-    rect(g, x + 2, y + 3, 44, 12, techo[0]);
+    rect(g, x + 18, y + 18, 12, 14, C.borde); rect(g, x + 19, y + 19, 10, 13, C.puerta); rect(g, x + 26, y + 25, 2, 2, "#f0d060");
+    if (cerrada) { rect(g, x + 17, y + 22, 14, 2, C.madera); rect(g, x + 17, y + 27, 14, 2, C.madera); }
+    rect(g, x + 1, y + 2, 46, 14, C.borde); rect(g, x + 2, y + 3, 44, 12, techo[0]);
     for (var k = 0; k < 4; k++) rect(g, x + 2, y + 5 + k * 3, 44, 1, techo[1]);
-    rect(g, x, y + 14, 48, 3, C.borde);
-    rect(g, x + 1, y + 15, 46, 1, techo[1]);
-    // chimenea
+    rect(g, x, y + 14, 48, 3, C.borde); rect(g, x + 1, y + 15, 46, 1, techo[1]);
     rect(g, x + 35, y - 2, 6, 6, C.borde); rect(g, x + 36, y - 1, 4, 5, "#b85a3a");
-    // la puerta pisa el camino de adelante
-    rect(g, x + 19, y + 31, 10, 1, C.camino2);
+  }
+  function dibujarEstudio(g, e) {
+    var x = e.x * T, y = e.y * T, w = e.w * T;
+    rect(g, x + 4, y + 18, w - 8, 30, C.borde);
+    rect(g, x + 5, y + 19, w - 10, 28, "#efe6f6");
+    for (var c = 0; c < 4; c++) rect(g, x + 10 + c * 18, y + 19, 2, 28, "#d8cce6"); // columnas
+    [10, 56].forEach(function (vx) {
+      rect(g, x + vx - 1, y + 24, 16, 12, C.borde); rect(g, x + vx, y + 25, 14, 10, C.vidrio);
+      rect(g, x + vx + 6, y + 25, 2, 10, C.borde); rect(g, x + vx + 2, y + 27, 2, 2, "#fff");
+    });
+    rect(g, x + 32, y + 28, 16, 20, C.borde); rect(g, x + 33, y + 29, 14, 19, "#6a4a9a"); rect(g, x + 39, y + 29, 2, 19, C.borde);
+    rect(g, x, y + 2, w, 18, C.borde); rect(g, x + 1, y + 3, w - 2, 16, "#8a5ad0");
+    for (var k = 0; k < 5; k++) rect(g, x + 1, y + 5 + k * 3, w - 2, 1, "#5e3a9a");
+    // cartel del frente con una estrella
+    rect(g, x + 28, y + 6, 24, 12, C.borde); rect(g, x + 29, y + 7, 22, 10, "#fbfaf2");
+    rect(g, x + 39, y + 8, 2, 8, "#e0a000"); rect(g, x + 36, y + 11, 8, 2, "#e0a000"); rect(g, x + 37, y + 10, 6, 4, "#e0a000");
   }
 
-  var capaFija = null;
-  function dibujarMapaFijo() {
-    capaFija = document.createElement("canvas");
-    capaFija.width = mapa.ancho * T; capaFija.height = mapa.alto * T;
-    var g = capaFija.getContext("2d");
+  function dibujarCapa(m) {
+    var cv = document.createElement("canvas");
+    cv.width = m.ancho * T; cv.height = m.alto * T;
+    var g = cv.getContext("2d");
     var r = azar(1987);
-    for (var j = 0; j < mapa.alto; j++) for (var i = 0; i < mapa.ancho; i++) {
-      var x = i * T, y = j * T, s = mapa.suelo[j][i];
-      if (s === "camino") dibujarCamino(g, x, y, r, i, j);
+    for (var j = 0; j < m.alto; j++) for (var i = 0; i < m.ancho; i++) {
+      var x = i * T, y = j * T, s = m.suelo[j][i];
+      if (s === "camino") dibujarCamino(g, x, y, r, i, j, m);
       else if (s === "piedra") dibujarPiedra(g, x, y);
-      else dibujarPasto(g, x, y, r, s === "pastoGris");
+      else if (s === "pasto" || s === "pastoGris") dibujarPasto(g, x, y, r, s === "pastoGris");
     }
-    for (var j2 = 0; j2 < mapa.alto; j2++) for (var i2 = 0; i2 < mapa.ancho; i2++) {
-      var c = mapa.cosa[j2][i2];
+    if (m.tipo === "casa") { dibujarInterior(g, m); return cv; }
+    for (var j2 = 0; j2 < m.alto; j2++) for (var i2 = 0; i2 < m.ancho; i2++) {
+      var c = m.cosa[j2][i2];
       if (!c) continue;
-      var x2 = i2 * T, y2 = j2 * T;
-      if (c.tipo === "arbol") dibujarArbol(g, x2, y2);
-      else if (c.tipo === "cerca") dibujarCerca(g, x2, y2);
-      else if (c.tipo === "cartel") dibujarCartel(g, x2, y2);
+      if (c.tipo === "arbol") dibujarArbol(g, i2 * T, j2 * T);
+      else if (c.tipo === "cerca") dibujarCerca(g, i2 * T, j2 * T);
+      else if (c.tipo === "cartel") dibujarCartel(g, i2 * T, j2 * T);
     }
-    var pl = mapa.plaza;
-    dibujarFuente(g, pl.fuente.x * T, pl.fuente.y * T);
-    dibujarTablon(g, (pl.tablon.x + 1) * T, pl.tablon.y * T);
-    mapa.casas.forEach(function (c2) { dibujarCasa(g, c2); });
+    dibujarFuente(g, m.plaza.fuente.x * T, m.plaza.fuente.y * T);
+    dibujarTablon(g, m.plaza.tablon.x * T, m.plaza.tablon.y * T);
+    dibujarEstudio(g, m.estudio);
+    m.casas.forEach(function (c2) { dibujarCasa(g, c2); });
+    return cv;
   }
 
-  // ---------- personaje ----------
+  // ---------- el interior de una casa ----------
+  var IN_W = 13, IN_H = 10;
+  function armarInterior(casa) {
+    var g = nuevaGrilla(IN_W, IN_H, "piso");
+    function poner(i, j, tipo, clave) { g.cosa[j][i] = { tipo: tipo, clave: clave, ent: casa }; g.solido[j][i] = true; }
+    for (var i = 0; i < IN_W; i++) for (var j = 0; j < 3; j++) { g.suelo[j][i] = "pared"; g.solido[j][i] = true; }
+    for (var j2 = 0; j2 < IN_H; j2++) { g.solido[j2][0] = true; g.solido[j2][IN_W - 1] = true; g.suelo[j2][0] = g.suelo[j2][IN_W - 1] = "muro"; }
+    for (var i2 = 0; i2 < IN_W; i2++) { g.solido[IN_H - 1][i2] = true; g.suelo[IN_H - 1][i2] = "muro"; }
+    g.solido[IN_H - 1][6] = false; g.suelo[IN_H - 1][6] = "salida"; g.cosa[IN_H - 1][6] = { tipo: "salida" };
+    poner(1, 2, "info", "empresa"); poner(2, 2, "info", "empresa");
+    poner(4, 2, "info", "rol"); poner(5, 2, "info", "rol"); poner(6, 2, "info", "rol");
+    poner(8, 2, "info", "encaje"); poner(9, 2, "info", "encaje");
+    poner(10, 2, "info", "historial"); poner(11, 2, "info", "historial"); poner(10, 3, "info", "historial"); poner(11, 3, "info", "historial");
+    poner(5, 5, "info", "escritorio"); poner(6, 5, "info", "escritorio"); poner(7, 5, "info", "escritorio");
+    poner(1, 8, "planta"); poner(11, 8, "planta");
+    return { tipo: "casa", casa: casa, ancho: IN_W, alto: IN_H, suelo: g.suelo, solido: g.solido, cosa: g.cosa, inicio: { x: 6, y: 8 } };
+  }
+
+  function dibujarInterior(g, m) {
+    var casa = m.casa, papel = ZONAS[casa.zona].papel, p = casa.p;
+    // piso de tablas
+    for (var j = 3; j < IN_H - 1; j++) for (var i = 1; i < IN_W - 1; i++) {
+      var x = i * T, y = j * T;
+      rect(g, x, y, T, T, C.piso);
+      rect(g, x, y + 7, T, 1, C.piso2); rect(g, x, y + 15, T, 1, C.piso2);
+      rect(g, x + ((i + j) % 2 ? 4 : 11), y, 1, 7, C.piso2); rect(g, x + ((i + j) % 2 ? 12 : 2), y + 8, 1, 7, C.piso2);
+      rect(g, x + 2, y + 2, 3, 1, C.piso3);
+    }
+    // alfombra
+    rect(g, 4 * T - 4, 6 * T + 2, 5 * T + 8, 2 * T + 10, "#e0c070");
+    rect(g, 4 * T - 2, 6 * T + 4, 5 * T + 4, 2 * T + 6, "#a8443e");
+    for (var a = 0; a < 10; a++) rect(g, 4 * T + 2 + a * 8, 6 * T + 8, 3, 3, "#e0c070");
+    // paredes
+    rect(g, 0, 0, IN_W * T, T, "#5a4038");
+    rect(g, T, T, (IN_W - 2) * T, 2 * T, papel[0]);
+    for (var s = 0; s < (IN_W - 2) * 4; s++) if (s % 2) rect(g, T + s * 4, T, 2, 2 * T, papel[1]);
+    rect(g, T, 3 * T - 3, (IN_W - 2) * T, 3, C.madera2);
+    rect(g, 0, 0, T, IN_H * T, "#5a4038"); rect(g, (IN_W - 1) * T, 0, T, IN_H * T, "#5a4038");
+    rect(g, 0, (IN_H - 1) * T, IN_W * T, T, "#5a4038");
+    // salida: alfombra de la puerta
+    rect(g, 6 * T, (IN_H - 1) * T, T, T, C.piso2);
+    rect(g, 6 * T + 1, (IN_H - 1) * T + 3, T - 2, 10, "#6a8a4a"); rect(g, 6 * T + 3, (IN_H - 1) * T + 5, T - 6, 1, "#8aaa6a");
+    // cuadro de la empresa: un edificio
+    var cx = T + 2, cy = T + 3;
+    rect(g, cx, cy, 2 * T - 4, 2 * T - 8, C.madera2); rect(g, cx + 2, cy + 2, 2 * T - 8, 2 * T - 12, "#a8dcf4");
+    rect(g, cx + 8, cy + 6, 12, 14, "#7a7a8a"); rect(g, cx + 12, cy + 3, 4, 3, "#7a7a8a");
+    for (var v = 0; v < 3; v++) { rect(g, cx + 10, cy + 8 + v * 4, 2, 2, "#f8e08a"); rect(g, cx + 16, cy + 8 + v * 4, 2, 2, "#f8e08a"); }
+    rect(g, cx + 2, cy + 18, 2 * T - 8, 2, "#7ac06a");
+    // cartelera del rol
+    var rx = 4 * T + 2, ry = T + 2;
+    rect(g, rx, ry, 3 * T - 4, 2 * T - 6, C.madera2); rect(g, rx + 2, ry + 2, 3 * T - 8, 2 * T - 10, "#c8945a");
+    [[4, 3, "#fbfaf2", 10, 12], [16, 4, "#f8e08a", 9, 9], [27, 3, "#fbfaf2", 10, 14], [16, 15, "#c8e4fa", 9, 6]].forEach(function (h) {
+      rect(g, rx + h[0], ry + h[1], h[3], h[4], h[2]); rect(g, rx + h[0] + 4, ry + h[1], 2, 2, "#c0302a");
+      for (var l = 0; l < Math.floor(h[4] / 3) - 1; l++) rect(g, rx + h[0] + 2, ry + h[1] + 4 + l * 3, h[3] - 4, 1, "#9a9aa8");
+    });
+    // medidor de encaje
+    var mx = 8 * T + 2, my = T + 3;
+    rect(g, mx, my, 2 * T - 4, 2 * T - 8, "#c8a040"); rect(g, mx + 2, my + 2, 2 * T - 8, 2 * T - 12, "#fbfaf2");
+    var enc = typeof p.encaje === "number" ? Math.max(0, Math.min(100, p.encaje)) : null;
+    rect(g, mx + 4, my + 10, 2 * T - 12, 6, "#d8d8e0");
+    if (enc != null) rect(g, mx + 4, my + 10, Math.round((2 * T - 12) * enc / 100), 6, enc >= 70 ? "#3e9f4a" : enc >= 50 ? "#e0a000" : "#d8503a");
+    else { rect(g, mx + 13, my + 4, 4, 1, "#7a86b8"); rect(g, mx + 16, my + 5, 1, 2, "#7a86b8"); rect(g, mx + 14, my + 7, 2, 1, "#7a86b8"); }
+    rect(g, mx + 4, my + 5, 4, 2, "#7a86b8");
+    // biblioteca del historial
+    var bx = 10 * T, by = T + 4;
+    rect(g, bx, by, 2 * T, 3 * T - 4, C.madera2); rect(g, bx + 2, by + 2, 2 * T - 4, 3 * T - 8, "#5a3a22");
+    var libros = ["#c0302a", "#3e6fb0", "#e0a000", "#3e8f6e", "#8a5ad0", "#d8503a", "#4a7ad0"];
+    for (var e = 0; e < 3; e++) {
+      var ey = by + 4 + e * 13;
+      for (var lb = 0; lb < 7; lb++) rect(g, bx + 3 + lb * 4, ey + (lb % 3 === 1 ? 2 : 0), 3, 10 - (lb % 3 === 1 ? 2 : 0), libros[(lb + e * 2) % libros.length]);
+      rect(g, bx + 2, ey + 10, 2 * T - 4, 2, C.madera);
+    }
+    // escritorio con computadora y la silla
+    var dx = 5 * T, dy = 5 * T;
+    rect(g, dx - 1, dy + 2, 3 * T + 2, 13, C.borde); rect(g, dx, dy + 3, 3 * T, 6, C.madera); rect(g, dx, dy + 9, 3 * T, 5, C.madera2);
+    rect(g, dx + 2, dy + 14, 3, 2, C.borde); rect(g, dx + 3 * T - 5, dy + 14, 3, 2, C.borde);
+    rect(g, dx + 18, dy - 9, 14, 11, "#3a3a4a"); rect(g, dx + 19, dy - 8, 12, 8, "#5ab0e8"); rect(g, dx + 20, dy - 7, 5, 1, "#c8ecff");
+    rect(g, dx + 23, dy + 2, 4, 2, "#3a3a4a");
+    rect(g, dx + 5, dy, 9, 4, "#fbfaf2"); rect(g, dx + 36, dy - 1, 6, 5, "#c0302a"); rect(g, dx + 37, dy - 2, 4, 1, "#fbfaf2");
+    rect(g, 6 * T + 3, 6 * T + 2, 10, 8, C.madera2); rect(g, 6 * T + 4, 6 * T + 3, 8, 6, "#3e6fb0");
+    // plantas
+    [[1, 8], [11, 8]].forEach(function (pl) {
+      var px = pl[0] * T, py = pl[1] * T;
+      rect(g, px + 4, py + 9, 8, 6, "#b85a3a"); rect(g, px + 3, py + 8, 10, 2, "#8a3a22");
+      rect(g, px + 3, py + 1, 4, 7, C.arbol2); rect(g, px + 8, py, 5, 8, C.arbol3); rect(g, px + 6, py + 3, 4, 5, C.arbol1);
+    });
+  }
+
+  // ---------- el personaje ----------
   var PALETA_PJ = { H: "#4a2f22", S: "#f2c79a", K: "#222034", W: "#ffffff", M: "#c8786a", J: "#3e8f6e", Y: "#f2d35a", P: "#3a4a7a" };
   var FIGURAS = {
     abajo: [
@@ -379,30 +570,113 @@
     });
   }
 
-  var pj = { tx: 0, ty: 0, nx: 0, ny: 0, x: 0, y: 0, mira: "abajo", mueve: false, avance: 0, paso: 0 };
+  var pj = { tx: 0, ty: 0, nx: 0, ny: 0, x: 0, y: 0, mira: "abajo", mueve: false, avance: 0, paso: 0, ruta: null, alLlegar: null };
   var DIRS = { ArrowUp: [0, -1, "arriba"], ArrowDown: [0, 1, "abajo"], ArrowLeft: [-1, 0, "izquierda"], ArrowRight: [1, 0, "derecha"] };
+  var DELTA = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
   var apretadas = [];
   var toque = null; // una flecha apretada y soltada entre dos cuadros igual da un paso
 
   function libre(i, j) { return i >= 0 && j >= 0 && i < mapa.ancho && j < mapa.alto && !mapa.solido[j][i]; }
+  function ubicar(x, y, mira) { pj.tx = pj.nx = x; pj.ty = pj.ny = y; pj.x = x * T; pj.y = y * T; pj.mueve = false; pj.avance = 0; if (mira) pj.mira = mira; }
+
+  // Chocar contra una puerta, subiendo, es entrar.
+  function puerta(i, j, mira) {
+    if (mira !== "arriba" || escena !== "pueblo") return false;
+    var c = mapa.cosa[j] && mapa.cosa[j][i];
+    if (!c) return false;
+    if (c.tipo === "casa" && i === c.ent.x + 1 && j === c.ent.y + 1) { entrar(c.ent); return true; }
+    if (c.tipo === "estudio" && i === c.ent.puerta.x && j === c.ent.puerta.y) { apretadas = []; abrirDialogo(c); return true; }
+    return false;
+  }
 
   function actualizar(dt) {
-    if (dialogoAbierto) return;
+    if (dialogoAbierto || enTransicion) return;
+    var paso = pj.ruta ? PASO_SOLO : PASO;
     if (pj.mueve) {
-      pj.avance += dt / PASO;
-      if (pj.avance >= 1) { pj.tx = pj.nx; pj.ty = pj.ny; pj.mueve = false; pj.avance = 0; pj.paso ^= 1; }
+      pj.avance += dt / paso;
+      if (pj.avance >= 1) {
+        pj.tx = pj.nx; pj.ty = pj.ny; pj.mueve = false; pj.avance = 0; pj.paso ^= 1;
+        var c = mapa.cosa[pj.ty] && mapa.cosa[pj.ty][pj.tx];
+        if (c && c.tipo === "salida") { salir(); return; }
+      }
     }
-    var tecla = apretadas.length ? apretadas[apretadas.length - 1] : toque;
-    if (!pj.mueve && tecla) {
-      toque = null;
-      var d = DIRS[tecla];
-      pj.mira = d[2];
-      if (libre(pj.tx + d[0], pj.ty + d[1])) { pj.nx = pj.tx + d[0]; pj.ny = pj.ty + d[1]; pj.mueve = true; pj.avance = 0; }
+    if (!pj.mueve && pj.ruta) {
+      if (pj.ruta.length) {
+        var s = pj.ruta.shift(), dx = s[0] - pj.tx, dy = s[1] - pj.ty;
+        pj.mira = dx > 0 ? "derecha" : dx < 0 ? "izquierda" : dy > 0 ? "abajo" : "arriba";
+        pj.nx = s[0]; pj.ny = s[1]; pj.mueve = true; pj.avance = 0;
+      } else {
+        var cb = pj.alLlegar; pj.ruta = null; pj.alLlegar = null;
+        if (cb) cb();
+      }
+    } else if (!pj.mueve) {
+      var tecla = apretadas.length ? apretadas[apretadas.length - 1] : toque;
+      if (tecla) {
+        toque = null;
+        var d = DIRS[tecla];
+        pj.mira = d[2];
+        var nx = pj.tx + d[0], ny = pj.ty + d[1];
+        if (libre(nx, ny)) { pj.nx = nx; pj.ny = ny; pj.mueve = true; pj.avance = 0; }
+        else puerta(nx, ny, d[2]);
+      }
     }
     var a = pj.mueve ? pj.avance : 0;
     pj.x = (pj.tx + (pj.nx - pj.tx) * a) * T;
     pj.y = (pj.ty + (pj.ny - pj.ty) * a) * T;
   }
+
+  // Busca el camino más corto en la escena actual (BFS sobre la grilla).
+  function camino(desde, hasta) {
+    var clave = function (x, y) { return y * mapa.ancho + x; };
+    var previo = {}, cola = [desde], visto = {};
+    visto[clave(desde[0], desde[1])] = true;
+    while (cola.length) {
+      var p = cola.shift();
+      if (p[0] === hasta[0] && p[1] === hasta[1]) {
+        var ruta = [], k = clave(p[0], p[1]);
+        while (k !== clave(desde[0], desde[1])) { ruta.unshift([k % mapa.ancho, Math.floor(k / mapa.ancho)]); k = previo[k]; }
+        return ruta;
+      }
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+        var x = p[0] + d[0], y = p[1] + d[1], kk = clave(x, y);
+        if (!visto[kk] && libre(x, y)) { visto[kk] = true; previo[kk] = clave(p[0], p[1]); cola.push([x, y]); }
+      });
+    }
+    return null;
+  }
+
+  // ---------- cambiar de escena ----------
+  var enTransicion = false;
+  var fundido = document.getElementById("fundido");
+  function transicion(cambio) {
+    enTransicion = true; apretadas = []; toque = null;
+    fundido.classList.add("negro");
+    setTimeout(function () {
+      cambio();
+      fundido.classList.remove("negro");
+      setTimeout(function () { enTransicion = false; }, 120);
+    }, 180);
+  }
+  function entrar(casa) {
+    sonar([392, 523]);
+    transicion(function () {
+      casaActual = casa;
+      escena = "casa";
+      mapa = armarInterior(casa);
+      capaFija = dibujarCapa(mapa);
+      ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+      actualizarAyuda();
+      cargarDetalles(casa.p.id, function () { if (dlg && dlg.cosa && dlg.cosa.tipo === "info") pintarDialogo(); });
+    });
+  }
+  function salirYa() {
+    var casa = casaActual;
+    escena = "pueblo"; casaActual = null;
+    mapa = pueblo.mapa; capaFija = pueblo.capa;
+    if (casa) ubicar(casa.x + 1, casa.y + 2, "abajo");
+    actualizarAyuda();
+  }
+  function salir() { sonar([523, 392]); transicion(salirYa); }
 
   // ---------- pantalla ----------
   var pantalla = document.getElementById("pantalla");
@@ -419,57 +693,62 @@
     pantalla.width = Math.round(vistaW * escala * dpr); pantalla.height = Math.round(vistaH * escala * dpr);
     pantalla.style.width = vistaW * escala + "px"; pantalla.style.height = vistaH * escala + "px";
   }
-
   function camara() {
     var mw = mapa.ancho * T, mh = mapa.alto * T;
     camX = mw <= vistaW ? (mw - vistaW) / 2 : Math.max(0, Math.min(mw - vistaW, pj.x + 8 - vistaW / 2));
-    camY = mh <= vistaH ? (mh - vistaH) / 2 : Math.max(0, Math.min(mh - vistaH, pj.y + 8 - vistaH / 2));
+    // adentro, la cámara deja lugar abajo para el cuadro de diálogo
+    camY = mh <= vistaH ? (mh - vistaH) / 2 - (escena === "casa" ? Math.min(40, (vistaH - mh) / 3) : 0) : Math.max(0, Math.min(mh - vistaH, pj.y + 8 - vistaH / 2));
     camX = Math.round(camX); camY = Math.round(camY);
   }
 
   function dibujarAviso(g, x, y, color, tenue) {
     g.globalAlpha = tenue ? 0.55 : 1;
-    rect(g, x, y, 9, 11, C.borde);
-    rect(g, x + 1, y + 1, 7, 9, "#ffffff");
+    rect(g, x, y, 9, 11, C.borde); rect(g, x + 1, y + 1, 7, 9, "#ffffff");
     rect(g, x + 3, y + 11, 3, 1, C.borde); rect(g, x + 4, y + 12, 1, 1, C.borde);
     rect(g, x + 3, y + 2, 3, 4, color); rect(g, x + 3, y + 7, 3, 2, color);
     g.globalAlpha = 1;
   }
+  function avisoDe(lista) {
+    if (!lista.length) return null;
+    var hoy = hoyISO();
+    return { color: COLOR_PRIORIDAD[lista[0].prioridad] || COLOR_PRIORIDAD.media, tenue: lista.every(function (x) { return x.fecha && x.fecha > hoy; }) };
+  }
 
   function dibujar(t) {
     if (vistaW !== Math.ceil(innerWidth / escala) || vistaH !== Math.ceil(innerHeight / escala)) ajustar();
-    if (!vistaW || !vistaH) return; // pestaña sin tamaño todavía
+    if (!vistaW || !vistaH) return;
     camara();
-    gb.fillStyle = "#1d3524"; gb.fillRect(0, 0, vistaW, vistaH);
+    gb.fillStyle = escena === "casa" ? "#120c0a" : "#1d3524"; gb.fillRect(0, 0, vistaW, vistaH);
     gb.drawImage(capaFija, -camX, -camY);
+    var salto = Math.round(Math.sin(t / 220) * 1.5);
 
-    // brillo de la fuente
-    var f = mapa.plaza.fuente;
-    if (Math.floor(t / 400) % 2) { rect(gb, f.x * T + 12 - camX, f.y * T + 14 - camY, 2, 1, "#ffffff"); rect(gb, f.x * T + 33 - camX, f.y * T + 11 - camY, 2, 1, "#ffffff"); }
-    else { rect(gb, f.x * T + 16 - camX, f.y * T + 22 - camY, 2, 1, "#ffffff"); rect(gb, f.x * T + 27 - camX, f.y * T + 16 - camY, 2, 1, "#ffffff"); }
+    if (escena === "pueblo") {
+      var f = mapa.plaza.fuente;
+      var brillos = Math.floor(t / 400) % 2 ? [[12, 14], [33, 11]] : [[16, 22], [27, 16]];
+      brillos.forEach(function (b) { rect(gb, f.x * T + b[0] - camX, f.y * T + b[1] - camY, 2, 1, "#ffffff"); });
+    }
 
-    // personaje
     var nombre = pj.mira === "izquierda" ? "derecha" : pj.mira;
-    var paso = pj.mueve && pj.avance < 0.5 ? 1 : 0;
-    var fig = figuras[nombre + (paso && pj.paso ? 1 : 0)];
-    if (paso && !pj.paso) fig = figuras[nombre + 1];
-    var px = Math.round(pj.x - camX), py = Math.round(pj.y - camY) - (paso ? 1 : 0) - 2;
+    var dando = pj.mueve && pj.avance < 0.5;
+    var fig = figuras[nombre + (dando ? 1 : 0)];
+    var px = Math.round(pj.x - camX), py = Math.round(pj.y - camY) - (dando ? 1 : 0) - 2;
     gb.fillStyle = "rgba(0,0,0,.22)"; gb.fillRect(px + 3, Math.round(pj.y - camY) + 13, 10, 3);
-    if (pj.mira === "izquierda") { gb.save(); gb.translate(px + 16, py); gb.scale(-1, 1); gb.drawImage(fig, 0, 0); gb.restore(); }
-    else gb.drawImage(fig, px, py);
+    if (pj.mira === "izquierda" || (dando && pj.paso && pj.mira !== "derecha" && nombre !== "derecha")) {
+      gb.save(); gb.translate(px + 16, py); gb.scale(-1, 1); gb.drawImage(fig, 0, 0); gb.restore();
+    } else gb.drawImage(fig, px, py);
 
-    // avisos de acciones pendientes, por encima de todo
-    var hoy = hoyISO(), salto = Math.round(Math.sin(t / 220) * 1.5);
-    mapa.casas.forEach(function (c) {
-      if (!c.pendientes.length) return;
-      var a = c.pendientes[0];
-      var futura = c.pendientes.every(function (x) { return x.fecha && x.fecha > hoy; });
-      dibujarAviso(gb, c.x * T + 20 - camX, c.y * T - 12 + salto - camY, COLOR_PRIORIDAD[a.prioridad] || COLOR_PRIORIDAD.media, futura);
-    });
-    var tb = mapa.plaza.tablon;
-    if (tb.generales.length) dibujarAviso(gb, (tb.x + 1) * T + 11 - camX, tb.y * T - 12 + salto - camY, COLOR_PRIORIDAD[tb.generales[0].prioridad] || COLOR_PRIORIDAD.media, false);
+    if (escena === "pueblo") {
+      mapa.casas.forEach(function (c) {
+        var av = avisoDe(c.pendientes);
+        if (av) dibujarAviso(gb, c.x * T + 20 - camX, c.y * T - 12 + salto - camY, av.color, av.tenue);
+      });
+      var tb = mapa.plaza.tablon, avt = avisoDe(tb.generales);
+      if (avt) dibujarAviso(gb, tb.x * T + 11 - camX, tb.y * T - 12 + salto - camY, avt.color, avt.tenue);
+    } else {
+      var avc = avisoDe(casaActual.pendientes);
+      if (avc) dibujarAviso(gb, 8 * T + 2 - camX, 5 * T - 10 + salto - camY, avc.color, avc.tenue);
+    }
 
-    // a la pantalla, sin suavizar
     gp.setTransform(1, 0, 0, 1, 0, 0);
     gp.imageSmoothingEnabled = false;
     gp.drawImage(base, 0, 0, pantalla.width, pantalla.height);
@@ -477,9 +756,10 @@
     dibujarTextos();
   }
 
-  function texto(s, x, y, tam, color, contorno, alinear) {
-    gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
-    gp.textAlign = alinear || "center"; gp.textBaseline = "middle";
+  function fuente(tam) { gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace"; }
+  function texto(s, x, y, tam, color, contorno) {
+    fuente(tam);
+    gp.textAlign = "center"; gp.textBaseline = "middle";
     gp.lineJoin = "round"; gp.lineWidth = Math.max(3, tam / 3.5); gp.strokeStyle = contorno;
     gp.strokeText(s, x, y); gp.fillStyle = color; gp.fillText(s, x, y);
   }
@@ -488,103 +768,299 @@
     while (s.length > 1 && gp.measureText(s + "…").width > max) s = s.slice(0, -1);
     return s + "…";
   }
+  function placa(s, cx, cy, tam, max) {
+    fuente(tam);
+    s = recortar(s, max);
+    var w = gp.measureText(s).width + tam;
+    gp.fillStyle = "rgba(32,32,58,.62)";
+    gp.fillRect(cx - w / 2, cy - tam * 0.75, w, tam * 1.5);
+    gp.textAlign = "center"; gp.textBaseline = "middle"; gp.fillStyle = "#ffffff";
+    gp.fillText(s, cx, cy + 1);
+  }
+  function enPantalla(x, y) { return x > -120 && x < innerWidth + 120 && y > -40 && y < innerHeight + 40; }
 
   function dibujarTextos() {
-    var e = escala;
-    mapa.zonas.forEach(function (z) {
-      var x = (z.x * T + z.w * T / 2 - camX) * e, y = (z.y * T + 9 - camY) * e;
-      if (y < -40 || y > innerHeight + 40) return;
-      texto(ZONAS[z.id].nombre.toUpperCase() + "  ·  " + z.cantidad, x, y, Math.round(6 * e), "#fffbe8", "#2a2a4a");
-    });
-    var tam = Math.max(10, Math.round(3.8 * e));
-    gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
-    mapa.casas.forEach(function (c) {
-      var cx = (c.x * T + 24 - camX) * e, cy = (c.y * T + 40 - camY) * e;
-      if (cx < -100 || cx > innerWidth + 100 || cy < -40 || cy > innerHeight + 40) return;
-      gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace";
-      var s = recortar(c.p.empresa || c.p.id, 60 * e);
-      var w = gp.measureText(s).width + tam;
-      gp.fillStyle = "rgba(32,32,58,.62)";
-      gp.fillRect(cx - w / 2, cy - tam * 0.75, w, tam * 1.5);
-      texto(s, cx, cy + 1, tam, "#ffffff", "rgba(0,0,0,0)");
-    });
+    var e = escala, tam = Math.max(10, Math.round(3.8 * e));
+    if (escena === "pueblo") {
+      mapa.zonas.forEach(function (z) {
+        var x = (z.x * T + z.w * T / 2 - camX) * e, y = (z.y * T + 9 - camY) * e;
+        if (z.id === "centro") return;
+        if (enPantalla(x, y)) texto(ZONAS[z.id].nombre.toUpperCase() + "  ·  " + z.cantidad, x, y, Math.round(6 * e), "#fffbe8", "#2a2a4a");
+      });
+      var es = mapa.estudio, ex = (es.x * T + es.w * T / 2 - camX) * e, ey = ((es.y + 3) * T + 8 - camY) * e;
+      if (enPantalla(ex, ey)) placa("Estudio de perfil", ex, ey, tam, 90 * e);
+      mapa.casas.forEach(function (c) {
+        var cx = (c.x * T + 24 - camX) * e, cy = (c.y * T + 40 - camY) * e;
+        if (enPantalla(cx, cy)) placa(c.p.empresa || c.p.id, cx, cy, tam, 60 * e);
+      });
+    } else {
+      var p = casaActual.p;
+      fuente(Math.round(4.4 * e));
+      texto(recortar((p.empresa || p.id) + (p.rol ? " · " + p.rol : ""), (IN_W * T - 4) * e) , (IN_W * T / 2 - camX) * e, (8 - camY) * e, Math.round(4.4 * e), "#fffbe8", "#2a2a4a");
+      [["La empresa", 2, 3], ["El rol", 5.5, 3], ["Tu encaje", 9, 3], ["Historial", 11, 4], ["Escritorio", 6.5, 4.15]].forEach(function (l) {
+        placa(l[0], (l[1] * T - camX) * e, (l[2] * T + 6 - camY) * e, tam, 40 * e);
+      });
+    }
   }
 
-  // ---------- mirar (A), copiar el pedido (S) y dar por hecha (D) ----------
+  // ---------- diálogos ----------
   var dialogo = document.getElementById("dialogo");
   var dialogoAbierto = false;
-  var dlg = null;          // { cosa, acciones, sel, confirmar }
+  var dlg = null;          // { cosa, items, sel, confirmar, menu }
   var datosActuales = null;
   var guardando = false;
 
-  function lineaAccion(a, i) {
+  function lineaAccion(a, conEmpresa) {
     var cuando = [a.fecha, a.condicion].filter(Boolean).join(", ");
-    var elegida = dlg && dlg.acciones.length > 1 && i === dlg.sel;
-    return '<li class="' + (elegida ? "elegida" : "") + '"><span class="cursor">' + (elegida ? "▶" : "") + "</span>" +
-      '<span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + esc(a.texto) +
-      (cuando ? ' <span class="tenue">(' + esc(cuando) + ")</span>" : "") + "</li>";
+    var hoy = hoyISO();
+    var vencida = a.fecha && a.fecha < hoy;
+    var empresa = "";
+    if (conEmpresa) {
+      var p = a.postulacion ? postDe(a.postulacion) : null;
+      empresa = "<b>" + esc(p ? p.empresa : "Tablón") + ":</b> ";
+    }
+    return '<span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + empresa + esc(a.texto) +
+      (cuando ? ' <span class="tenue">(' + (vencida ? "vencida · " : "") + esc(cuando) + ")</span>" : "");
   }
+  function postDe(id) { return (datosActuales.postulaciones || []).filter(function (x) { return x.id === id; })[0] || null; }
 
   function pedidoDeAccion(a) {
-    var p = a.postulacion ? (datosActuales.postulaciones || []).filter(function (x) { return x.id === a.postulacion; })[0] : null;
+    var p = a.postulacion ? postDe(a.postulacion) : null;
     var base = a.pedido && a.pedido.trim() ? a.pedido.trim() : "Ayudame con esta tarea de mi búsqueda.";
     return base + "\n\nTarea del tablero: «" + a.texto + "» (id " + a.id + ")" +
       (a.fecha ? ", para el " + a.fecha : "") + (a.condicion ? ", " + a.condicion : "") + "." +
       (p ? "\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." : "") +
       "\nCuando terminemos, marcala como hecha en el tablero.";
   }
+  function pedidoPreparar(p) {
+    return "/preparar-entrevista " + p.id +
+      "\n\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." +
+      (p.estado ? "\nEstado: " + p.estado + "." : "") +
+      "\nArmá también la práctica en el navegador (entrevistas/<empresa>/practica.json), así la practico desde 🎯 Práctica.";
+  }
+  function pedidoAnalizar(p) {
+    return "/analizar-oferta " + (p.link || "postulaciones/" + p.id + "/rol.md") +
+      "\n\nEs la postulación " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/). Guardá el encaje en el tablero.";
+  }
 
-  function pintarDialogo() {
-    var c = dlg.cosa, html = "", acc = dlg.acciones;
+  // Lo reciente que sirve para mejorar el perfil: rechazos y lo que conté en entrevistas y prácticas.
+  function fechaDe(p) {
+    var h = (p.historial || []).filter(function (x) { return x && x.fecha; });
+    return p.ultimaNovedad || (h.length ? h[h.length - 1].fecha : null) || p.enviada || p.creada || "";
+  }
+  function aprendizajes() {
+    var posts = datosActuales.postulaciones || [];
+    var rechazos = posts.filter(function (p) { return p.columna === "cerrada" && p.resultado === "descartada"; })
+      .sort(function (a, b) { return fechaDe(b).localeCompare(fechaDe(a)); });
+    var recientes = rechazos.filter(function (p) { return fechaDe(p) >= haceDias(45); });
+    if (!recientes.length) recientes = rechazos.slice(0, 4);
+    var charlas = posts.filter(function (p) { return p.columna === "conversacion"; });
+    var prs = practicas.slice().sort(function (a, b) { return String(b.fecha || "").localeCompare(String(a.fecha || "")); }).slice(0, 6);
+    return { rechazos: recientes.slice(0, 8), charlas: charlas, practicas: prs };
+  }
+  function pedidoPerfil() {
+    var ap = aprendizajes();
+    var t = "/mejorar-perfil Quiero ajustar mi CV y mi perfil de LinkedIn con lo que aprendí en las últimas postulaciones.\n\nAntes de proponer cambios, leé:\n" +
+      "- El informe de aprendizajes más reciente en investigacion/. Si no hay uno de las últimas dos semanas, corré primero /aprendizajes-busqueda.\n";
+    if (ap.rechazos.length) {
+      t += "- Los rechazos recientes:\n" + ap.rechazos.map(function (p) {
+        return "  - " + p.empresa + " · " + p.rol + " (postulaciones/" + p.id + "/" + (fechaDe(p) ? ", " + fechaDe(p) : "") + ")";
+      }).join("\n") + "\n";
+    }
+    if (ap.practicas.length || ap.charlas.length) {
+      t += "- Lo que conté en entrevistas y prácticas recientes:\n" +
+        ap.practicas.map(function (x) { return "  - " + (x.empresa || x.carpeta) + ": práctica en entrevistas/" + x.carpeta + "/" + (x.fecha ? " (" + x.fecha + ")" : ""); })
+          .concat(ap.charlas.map(function (p) { return "  - " + p.empresa + ": notas de las charlas en postulaciones/" + p.id + "/"; })).join("\n") + "\n";
+    }
+    return t + "\nUsá solo datos que estén en contexto/perfil.md o en esos archivos. Si aparece un dato nuevo sobre mí, preguntame antes de sumarlo.";
+  }
+
+  // El contenido de cada cosa que se puede mirar, y qué hacen las teclas con lo elegido.
+  function contenido(c) {
+    var r = { titulo: "", html: "", items: [], grande: false };
     if (c.tipo === "casa") {
       var p = c.ent.p;
-      html = "<h2>" + esc(p.empresa) + "</h2><p>" + esc(p.rol || "") + "</p>" +
+      r.titulo = p.empresa;
+      r.html = "<p>" + esc(p.rol || "") + "</p>" +
         (p.resultado ? "<p><b>Resultado:</b> " + esc(RESULTADOS[p.resultado] || p.resultado) + "</p>" : "") +
         (p.estado ? "<p><b>Estado:</b> " + esc(p.estado) + "</p>" : "") +
         (p.proximo ? "<p><b>Próximo paso:</b> " + esc(p.proximo) + "</p>" : "") +
-        (acc.length ? "<p><b>Pendiente:</b></p>" : '<p class="tenue">Nada pendiente acá.</p>');
+        (c.ent.pendientes.length ? "<p><b>Pendiente:</b></p>" : '<p class="tenue">Nada pendiente acá.</p>') +
+        '<p class="tenue">Subí por la puerta para entrar a la casa.</p>';
+      r.items = c.ent.pendientes.map(function (a) { return { tipo: "accion", a: a }; });
     } else if (c.tipo === "tablon") {
-      html = "<h2>Tablón del pueblo</h2>" + (acc.length ? "<p>Tareas que no son de ninguna postulación:</p>" : '<p class="tenue">No hay tareas sueltas.</p>');
+      r.titulo = "Tablón del pueblo";
+      r.html = c.ent.generales.length ? "<p>Tareas que no son de ninguna postulación:</p>" : '<p class="tenue">No hay tareas sueltas.</p>';
+      r.items = c.ent.generales.map(function (a) { return { tipo: "accion", a: a }; });
     } else if (c.tipo === "cartel") {
-      html = "<h2>" + esc(ZONAS[c.ent.id].nombre) + "</h2><p>" +
-        (c.ent.cantidad === 1 ? "1 postulación vive en este barrio." : c.ent.cantidad + " postulaciones viven en este barrio.") + "</p>";
+      r.titulo = ZONAS[c.ent.id].nombre;
+      r.html = "<p>" + (c.ent.cantidad === 1 ? "1 postulación vive en este barrio." : c.ent.cantidad + " postulaciones viven en este barrio.") + "</p>";
     } else if (c.tipo === "fuente") {
-      html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
+      r.html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
     } else if (c.tipo === "cerca") {
-      html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
+      r.html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
+    } else if (c.tipo === "planta") {
+      r.html = "<p>Una planta. Alguien la riega todos los días.</p>";
+    } else if (c.tipo === "estudio") {
+      var ap = aprendizajes();
+      r.titulo = "Estudio de perfil";
+      r.grande = true;
+      r.html = "<p>Acá se pulen tu CV y tu LinkedIn con lo que vas aprendiendo en la búsqueda.</p>" +
+        "<h3>Rechazos recientes</h3>" + (ap.rechazos.length ? "<ul>" + ap.rechazos.map(function (p) {
+          return "<li>" + esc(p.empresa) + " · " + esc(p.rol) + ' <span class="tenue">(' + esc(fechaDe(p) || "sin fecha") + ")</span></li>";
+        }).join("") + "</ul>" : '<p class="tenue">No hay rechazos registrados.</p>') +
+        "<h3>Entrevistas y prácticas</h3>" + (ap.practicas.length || ap.charlas.length ? "<ul>" +
+          ap.practicas.map(function (x) { return "<li>Práctica: " + esc(x.empresa || x.carpeta) + (x.fecha ? ' <span class="tenue">(' + esc(x.fecha) + ")</span>" : "") + "</li>"; }).join("") +
+          ap.charlas.map(function (p) { return "<li>En conversación: " + esc(p.empresa) + "</li>"; }).join("") + "</ul>"
+          : '<p class="tenue">Todavía no hay entrevistas ni prácticas.</p>');
+      r.items = [{ tipo: "perfil", etiqueta: "Mejorar mi perfil con estos aprendizajes" }];
+    } else if (c.tipo === "info") {
+      contenidoInterior(c.clave, c.ent, r);
     }
-    if (acc.length) html += "<ul>" + acc.map(lineaAccion).join("") + "</ul>";
+    return r;
+  }
+
+  function contenidoInterior(clave, casa, r) {
+    var p = casa.p, det = detalles[p.id] || { estado: "cargando" };
+    r.grande = true;
+    if (clave === "escritorio") {
+      r.titulo = "Escritorio";
+      r.html = casa.pendientes.length ? "<p>Lo que hay para hacer con " + esc(p.empresa) + ":</p>" : '<p class="tenue">No hay tareas pendientes para esta postulación.</p>';
+      r.items = casa.pendientes.map(function (a) { return { tipo: "accion", a: a }; });
+      if (p.columna !== "cerrada") r.items.push({ tipo: "preparar", etiqueta: practicaDe[p.id] ? "🎯 Practicar la entrevista" : "🎯 Preparar la entrevista" });
+      return;
+    }
+    if (clave === "historial") {
+      r.titulo = "Historial";
+      var h = (p.historial || []).slice().reverse();
+      r.html = (h.length ? "<ul>" + h.map(function (x) { return '<li><span class="tenue">' + esc(x.fecha || "") + "</span> " + esc(x.texto || "") + "</li>"; }).join("") + "</ul>"
+        : '<p class="tenue">Todavía no hay novedades anotadas.</p>') +
+        (det.estado === "listo" && det.archivos && det.archivos.length ? "<h3>Documentos en la carpeta</h3><ul>" +
+          det.archivos.map(function (n) { return "<li><code>" + esc(n) + "</code></li>"; }).join("") + "</ul>" : "");
+      return;
+    }
+    if (det.estado === "cargando") { r.titulo = "…"; r.html = '<p class="tenue">Leyendo la carpeta de la postulación…</p>'; return; }
+    if (det.estado === "error") { r.titulo = "Sin datos"; r.html = '<p class="tenue">' + esc(det.error) + "</p>"; return; }
+    var partes = partesDeRol(det.rol);
+    if (clave === "empresa") {
+      r.titulo = p.empresa;
+      var emp = det.empresa ? md(det.empresa) : partes.empresa.length ? md(mdSecciones(partes.empresa)) : "";
+      r.html = emp || '<p class="tenue">❓ La carpeta no tiene datos de la empresa todavía.</p>';
+    } else if (clave === "rol") {
+      r.titulo = p.rol || "El rol";
+      r.html = (p.link ? '<p><a href="' + esc(p.link) + '" target="_blank" rel="noopener">Ver el aviso original ↗</a></p>' : "") +
+        (partes.rol.length ? md(mdSecciones(partes.rol)) : '<p class="tenue">❓ La carpeta no tiene la descripción del rol.</p>');
+    } else if (clave === "encaje") {
+      r.titulo = "Tu encaje con el rol";
+      var enc = typeof p.encaje === "number" ? p.encaje : null;
+      r.html = enc != null ? '<p><b>Encaje: ' + enc + '/100</b> <span class="barra">' + "■".repeat(Math.round(enc / 10)) +
+        '<span class="vacia">' + "■".repeat(10 - Math.round(enc / 10)) + "</span></span></p>" : "";
+      if (partes.encaje.length) r.html += md(mdSecciones(partes.encaje));
+      else {
+        r.html += '<p class="tenue">❓ Todavía no hay un análisis de encaje para esta postulación.</p>';
+        r.items = [{ tipo: "analizar", etiqueta: "Pedirle a Claude que analice el encaje" }];
+      }
+    }
+  }
+
+  function teclasDe(item, varios) {
+    var t = varios ? '<span class="tecla">↑↓</span> elegir · ' : "";
+    if (!item) return t ? t + '<span class="tecla">A</span> cerrar' : "";
+    if (item.tipo === "accion") return t + '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">D</span> dar por hecha' +
+      (dlg.menu ? ' · <span class="tecla">A</span> ir hasta ahí' : ' · <span class="tecla">A</span> cerrar');
+    if (item.tipo === "preparar") return t + (practicaDe[casaActual.p.id] ? '<span class="tecla">A</span> abrir la práctica · ' : "") +
+      '<span class="tecla">S</span> copiar pedido para Claude';
+    return t + '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">A</span> cerrar';
+  }
+
+  function pintarDialogo() {
+    var html = "", items = dlg.items, varios = items.length > 1;
+    if (dlg.menu) {
+      dlg.titulo = "Prioridades";
+      html = items.length ? '<p class="tenue">Ordenadas de la más importante a la menos.</p>' : '<p>No hay acciones pendientes. ¡Todo al día!</p>';
+    } else {
+      var r = contenido(dlg.cosa);
+      dlg.items = items = r.items; varios = items.length > 1;
+      dlg.sel = Math.min(dlg.sel, Math.max(0, items.length - 1));
+      dialogo.classList.toggle("grande", r.grande);
+      dlg.titulo = r.titulo;
+      html = r.html;
+    }
+    if (dlg.titulo) html = "<h2>" + esc(dlg.titulo) + "</h2>" + html;
+    if (items.length) {
+      html += "<ul>" + items.map(function (it, i) {
+        var elegida = i === dlg.sel && (varios || it.tipo !== "accion");
+        var cuerpo = it.tipo === "accion" ? lineaAccion(it.a, dlg.menu) : "<b>" + esc(it.etiqueta) + "</b>";
+        return '<li class="' + (elegida ? "elegida" : "") + '"><span class="cursor">' + (elegida ? "▶" : "") + "</span>" + cuerpo + "</li>";
+      }).join("") + "</ul>";
+    }
     if (dlg.confirmar) {
-      html += '<p class="pregunta">¿Das por hecha «' + esc(acc[dlg.sel].texto) + '»?<br>' +
+      html += '<p class="pregunta">¿Das por hecha «' + esc(items[dlg.sel].a.texto) + '»?<br>' +
         '<span class="tecla">D</span> sí, está hecha · <span class="tecla">Esc</span> no</p>';
-    } else if (acc.length) {
-      html += '<p class="teclas">' + (acc.length > 1 ? '<span class="tecla">↑↓</span> elegir · ' : "") +
-        '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">D</span> dar por hecha · <span class="tecla">A</span> cerrar</p>';
+    } else {
+      var tec = teclasDe(items[dlg.sel], varios);
+      if (tec) html += '<p class="teclas">' + tec + "</p>";
     }
     dialogo.innerHTML = html + '<span class="sigue">▼</span>';
     var el = dialogo.querySelector(".elegida");
-    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+    if (el && el.scrollIntoView && varios) el.scrollIntoView({ block: "nearest" });
   }
 
-  function abrirDialogo(c) {
-    var acciones = c.tipo === "casa" ? c.ent.pendientes : c.tipo === "tablon" ? c.ent.generales : [];
-    dlg = { cosa: c, acciones: acciones, sel: 0, confirmar: false };
+  function abrirDialogo(c, sel) {
+    dlg = { cosa: c, items: [], sel: sel || 0, confirmar: false, menu: false };
+    dialogoAbierto = true;
     pintarDialogo();
     dialogo.classList.add("abierto");
     dialogo.scrollTop = 0;
+    if (c.tipo === "info" && detalles[c.ent.p.id] && detalles[c.ent.p.id].estado === "cargando") {
+      cargarDetalles(c.ent.p.id, function () { if (dlg && dlg.cosa === c) pintarDialogo(); });
+    }
+  }
+  function accionesPrioritarias() {
+    return ordenarAcciones((datosActuales.acciones || []).filter(function (a) { return !a.hecha; }));
+  }
+  function abrirMenu(sel) {
+    sonar([523, 784]);
+    dlg = { cosa: null, items: accionesPrioritarias().map(function (a) { return { tipo: "accion", a: a }; }), sel: sel || 0, confirmar: false, menu: true };
+    dlg.sel = Math.min(dlg.sel, Math.max(0, dlg.items.length - 1));
+    dialogo.classList.add("grande");
     dialogoAbierto = true;
+    pintarDialogo();
+    dialogo.classList.add("abierto");
+    dialogo.scrollTop = 0;
   }
 
   function delante() {
-    var d = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] }[pj.mira];
+    var d = DELTA[pj.mira];
     var i = pj.tx + d[0], j = pj.ty + d[1];
     return mapa.cosa[j] && mapa.cosa[j][i];
   }
   function mirar() {
     var c = delante();
-    if (c && c.tipo !== "arbol") abrirDialogo(c);
+    if (c && c.tipo !== "arbol" && c.tipo !== "salida") abrirDialogo(c);
+    else nada();
   }
-  function cerrar() { dialogo.classList.remove("abierto"); dialogoAbierto = false; dlg = null; }
+  function cerrar() { dialogo.classList.remove("abierto"); dialogo.classList.remove("grande"); dialogoAbierto = false; dlg = null; }
+
+  // ---------- caminar solo hasta una acción ----------
+  function irA(a) {
+    cerrar();
+    if (escena === "casa") salirYa();
+    var m = pueblo.mapa, destino, alLlegar;
+    var casa = a.postulacion ? m.casas.filter(function (c) { return c.p.id === a.postulacion; })[0] : null;
+    if (casa) {
+      destino = [casa.x + 1, casa.y + 2];
+      alLlegar = function () { pj.mira = "arriba"; abrirDialogo({ tipo: "casa", ent: casa }, Math.max(0, casa.pendientes.indexOf(a))); };
+    } else {
+      var tb = m.plaza.tablon;
+      destino = [tb.x, tb.y + 1];
+      alLlegar = function () { pj.mira = "arriba"; abrirDialogo({ tipo: "tablon", ent: tb }, Math.max(0, tb.generales.indexOf(a))); };
+    }
+    var ruta = camino([pj.tx, pj.ty], destino);
+    if (!ruta) { nada(); avisar("No encontré cómo llegar hasta ahí."); return; }
+    sonar([659, 784]);
+    pj.ruta = ruta; pj.alLlegar = alLlegar;
+  }
 
   // ---------- avisos y sonidos ----------
   var aviso = document.getElementById("aviso");
@@ -595,21 +1071,23 @@
     avisar._t = setTimeout(function () { aviso.classList.remove("visible"); }, 2600);
   }
   var audio = null;
-  function sonar(notas) {
+  function sonar(notas, forma, largo) {
     try {
       audio = audio || new (window.AudioContext || window.webkitAudioContext)();
-      var t = audio.currentTime;
+      var t = audio.currentTime, d = largo || 0.09;
       notas.forEach(function (n, i) {
         var o = audio.createOscillator(), g = audio.createGain();
-        o.type = "square"; o.frequency.value = n;
-        g.gain.setValueAtTime(0.05, t + i * 0.09); g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.12);
+        o.type = forma || "square"; o.frequency.value = n;
+        g.gain.setValueAtTime(0.05, t + i * d); g.gain.exponentialRampToValueAtTime(0.0001, t + i * d + d + 0.03);
         o.connect(g); g.connect(audio.destination);
-        o.start(t + i * 0.09); o.stop(t + i * 0.09 + 0.13);
+        o.start(t + i * d); o.stop(t + i * d + d + 0.04);
       });
     } catch (e) {}
   }
+  function nada() { sonar([156, 117], "square", 0.07); }
 
   function copiar(texto) {
+    function hecho() { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }
     function planB() {
       var ta = document.createElement("textarea");
       ta.value = texto; ta.style.position = "fixed"; ta.style.opacity = "0";
@@ -617,12 +1095,10 @@
       var ok = false;
       try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
       document.body.removeChild(ta);
-      if (ok) { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }
-      else { window.prompt("Copiá este texto:", texto); }
+      if (ok) hecho(); else window.prompt("Copiá este texto:", texto);
     }
-    if (navigator.clipboard && window.isSecureContext) {
-      navigator.clipboard.writeText(texto).then(function () { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }, planB);
-    } else planB();
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(texto).then(hecho, planB);
+    else planB();
   }
 
   // Marca la acción como hecha en postulaciones.json a través del servidor del tablero, igual que el ✓ del tablero.
@@ -644,7 +1120,7 @@
       guardando = false;
       var r0 = res.ok && res.j.resultados && res.j.resultados[0];
       if (!r0 || !r0.ok) {
-        sonar([300, 200]);
+        nada();
         avisar("No pude guardarlo: " + ((r0 && r0.motivo) || res.j.error || "el servidor no respondió bien") + ".");
         return;
       }
@@ -653,24 +1129,35 @@
       cargarDatos(reconstruir);
     }, function () {
       guardando = false;
-      sonar([300, 200]);
+      nada();
       avisar("Se cortó el servidor del tablero. No se guardó nada.");
     });
   }
 
   // Vuelve a armar el pueblo con los datos nuevos, sin mover al personaje y con el diálogo al día.
   function reconstruir(datos) {
-    var antes = dlg ? { tipo: dlg.cosa.tipo, id: dlg.cosa.tipo === "casa" ? dlg.cosa.ent.p.id : null, sel: dlg.sel } : null;
+    var antes = dlg ? { menu: dlg.menu, sel: dlg.sel } : null;
     datosActuales = datos;
-    armarMapa(datos);
-    dibujarMapaFijo();
+    pueblo.mapa = armarPueblo(datos);
+    pueblo.capa = dibujarCapa(pueblo.mapa);
+    if (escena === "casa") {
+      var id = casaActual.p.id;
+      var nueva = pueblo.mapa.casas.filter(function (c) { return c.p.id === id; })[0];
+      if (!nueva) { salirYa(); }
+      else {
+        casaActual = nueva;
+        var x = pj.tx, y = pj.ty, mira = pj.mira;
+        mapa = armarInterior(nueva); capaFija = dibujarCapa(mapa);
+        ubicar(x, y, mira);
+      }
+    }
+    if (escena === "pueblo") { mapa = pueblo.mapa; capaFija = pueblo.capa; }
     actualizarHud();
     if (!antes) return;
+    if (antes.menu) { abrirMenu(antes.sel); return; }
     var c = delante();
-    if (!c || c.tipo !== antes.tipo || (antes.id && c.ent.p.id !== antes.id)) { cerrar(); return; }
-    abrirDialogo(c);
-    dlg.sel = Math.min(antes.sel, Math.max(0, dlg.acciones.length - 1));
-    pintarDialogo();
+    if (!c) { cerrar(); return; }
+    abrirDialogo(c, antes.sel);
   }
 
   function actualizarHud() {
@@ -679,40 +1166,73 @@
     document.getElementById("hud").innerHTML = "Pueblo de " + esc(datosActuales.persona || "la búsqueda") +
       " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes" + (modoEjemplo ? " · <i>prueba</i>" : "");
   }
+  function actualizarAyuda() {
+    document.getElementById("ayuda").textContent = escena === "casa"
+      ? "← ↑ → ↓ caminar · A mirar · Enter prioridades · ↓ por la puerta: salir"
+      : "← ↑ → ↓ caminar · A mirar · Enter prioridades";
+  }
 
+  // ---------- teclado ----------
   function teclaEnDialogo(ev, k) {
-    var acc = dlg.acciones;
+    var items = dlg.items, it = items[dlg.sel];
+    if (ev.key.length > 1 && !DIRS[ev.key] && k !== "enter" && k !== "escape") return; // F5, Tab y compañía siguen andando
+    ev.preventDefault();
     if (dlg.confirmar) {
-      if (k === "d" || k === "a" || k === "enter") { ev.preventDefault(); dlg.confirmar = false; darPorHecha(acc[dlg.sel]); pintarDialogo(); }
-      else if (k === "escape" || k === "s") { ev.preventDefault(); dlg.confirmar = false; pintarDialogo(); }
+      if (k === "d" || k === "a" || k === "enter") { dlg.confirmar = false; darPorHecha(it.a); pintarDialogo(); }
+      else if (k === "escape" || k === "s") { dlg.confirmar = false; pintarDialogo(); }
+      else nada();
       return;
     }
-    if ((ev.key === "ArrowUp" || ev.key === "ArrowDown") && acc.length > 1) {
-      ev.preventDefault();
-      dlg.sel = (dlg.sel + (ev.key === "ArrowUp" ? -1 : 1) + acc.length) % acc.length;
-      sonar([440]); pintarDialogo();
+    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+      if (items.length > 1) {
+        dlg.sel = (dlg.sel + (ev.key === "ArrowUp" ? -1 : 1) + items.length) % items.length;
+        sonar([440], "square", 0.05); pintarDialogo();
+      } else dialogo.scrollTop += ev.key === "ArrowUp" ? -60 : 60;
       return;
     }
-    if (DIRS[ev.key]) { ev.preventDefault(); return; }
-    if (k === "s" && acc.length) { ev.preventDefault(); copiar(pedidoDeAccion(acc[dlg.sel])); return; }
-    if (k === "d" && acc.length) { ev.preventDefault(); dlg.confirmar = true; sonar([440]); pintarDialogo(); return; }
-    if (k === "a" || k === "enter" || k === " " || k === "escape") { ev.preventDefault(); cerrar(); }
+    if (DIRS[ev.key]) return;
+    if (k === "s") {
+      if (!it) return nada();
+      if (it.tipo === "accion") return copiar(pedidoDeAccion(it.a));
+      if (it.tipo === "preparar") return copiar(pedidoPreparar(casaActual.p));
+      if (it.tipo === "perfil") return copiar(pedidoPerfil());
+      if (it.tipo === "analizar") return copiar(pedidoAnalizar(casaActual.p));
+      return nada();
+    }
+    if (k === "d") {
+      if (!it || it.tipo !== "accion") return nada();
+      dlg.confirmar = true; sonar([440], "square", 0.05); pintarDialogo();
+      return;
+    }
+    if (k === "a" || k === "enter" || k === " ") {
+      if (dlg.menu && it) return irA(it.a);
+      if (it && it.tipo === "preparar" && practicaDe[casaActual.p.id]) {
+        sonar([523, 659]);
+        window.open("practica.html?e=" + encodeURIComponent(practicaDe[casaActual.p.id]), "_blank");
+        return;
+      }
+      cerrar();
+      return;
+    }
+    if (k === "escape") cerrar();
   }
 
   addEventListener("keydown", function (ev) {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || !mapa) return;
     var k = ev.key.toLowerCase();
-    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (enTransicion) { ev.preventDefault(); return; }
     if (dialogoAbierto) { if (!ev.repeat || DIRS[ev.key]) teclaEnDialogo(ev, k); else ev.preventDefault(); return; }
     if (DIRS[ev.key]) {
       ev.preventDefault();
+      if (pj.ruta) { pj.ruta = null; pj.alLlegar = null; } // una flecha corta la caminata sola
       if (apretadas.indexOf(ev.key) < 0) apretadas.push(ev.key);
       if (!ev.repeat) toque = ev.key;
       return;
     }
-    if (k === "a" || k === "enter" || k === " ") {
-      ev.preventDefault();
-      if (!ev.repeat && !pj.mueve) mirar();
-    }
+    if (ev.repeat) return;
+    if (k === "enter") { ev.preventDefault(); if (!pj.mueve || pj.ruta) { pj.ruta = null; pj.alLlegar = null; abrirMenu(0); } return; }
+    if (k === "a" || k === " ") { ev.preventDefault(); if (!pj.mueve) mirar(); return; }
+    if (k === "s" || k === "d") { ev.preventDefault(); nada(); }
   });
   addEventListener("keyup", function (ev) {
     var i = apretadas.indexOf(ev.key);
@@ -725,10 +1245,13 @@
   cargarDatos(function (datos) {
     prepararFiguras();
     datosActuales = datos;
-    armarMapa(datos);
-    dibujarMapaFijo();
-    pj.tx = pj.nx = mapa.inicio.x; pj.ty = pj.ny = mapa.inicio.y;
+    var m = armarPueblo(datos);
+    pueblo = { mapa: m, capa: dibujarCapa(m) };
+    mapa = pueblo.mapa; capaFija = pueblo.capa;
+    ubicar(m.inicio.x, m.inicio.y, "arriba");
     actualizarHud();
+    actualizarAyuda();
+    cargarPracticas();
     ajustar();
     var antes = performance.now();
     (function cuadro(ahora) {
