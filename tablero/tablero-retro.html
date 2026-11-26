@@ -482,27 +482,29 @@
     }
   }
   // Tu casa: dos pisos, techo verde, buzón propio y un cantero con flores.
-  var VENTANAS_HOGAR = [[8, 22, 12, 9], [44, 22, 12, 9], [8, 46, 10, 8], [46, 46, 10, 8]];
+  var VENTANAS_HOGAR = [[6, 19, 12, 8], [46, 19, 12, 8], [6, 35, 12, 8], [46, 35, 12, 8]];
   function dibujarHogarFuera(g, e) {
     var x = e.x * T, y = e.y * T;
     rect(g, x + 3, y + 16, 58, 32, C.borde); rect(g, x + 4, y + 17, 56, 30, "#f6efe0");
-    rect(g, x + 4, y + 39, 56, 2, "#d8ccb4");                                    // línea entre los dos pisos
-    for (var k = 0; k < 7; k++) rect(g, x + 4, y + 18 + k * 3, 56, 1, "#efe4cc");
+    rect(g, x + 4, y + 31, 56, 2, "#d8ccb4");                                    // línea entre los dos pisos
+    for (var k = 0; k < 4; k++) rect(g, x + 4, y + 18 + k * 3, 56, 1, "#efe4cc");
     VENTANAS_HOGAR.forEach(function (v) {
       rect(g, x + v[0] - 1, y + v[1] - 1, v[2] + 2, v[3] + 2, C.borde); rect(g, x + v[0], y + v[1], v[2], v[3], C.vidrio);
-      rect(g, x + v[0] + Math.floor(v[2] / 2), y + v[1], 1, v[3], C.borde); rect(g, x + v[0] + 1, y + v[1] + 1, 2, 2, "#fff");
-      rect(g, x + v[0] - 2, y + v[1] + v[3] + 1, v[2] + 4, 2, "#2e7a4a");          // jardinera
+      rect(g, x + v[0] + v[2] / 2, y + v[1], 1, v[3], C.borde); rect(g, x + v[0], y + v[1] + v[3] / 2, v[2], 1, C.borde);
+      rect(g, x + v[0] + 1, y + v[1] + 1, 2, 2, "#fff");
+      rect(g, x + v[0] - 1, y + v[1] + v[3] + 1, v[2] + 2, 2, "#2e7a4a");          // jardinera
+      rect(g, x + v[0] + 1, y + v[1] + v[3] + 1, 2, 1, "#f07888"); rect(g, x + v[0] + 7, y + v[1] + v[3] + 1, 2, 1, "#f8d040");
     });
-    rect(g, x + 22, y + 22, 18, 8, C.borde); rect(g, x + 23, y + 23, 16, 6, "#fbfaf2"); // cartel «HOGAR» con corazón
-    rect(g, x + 29, y + 24, 2, 2, "#d8403a"); rect(g, x + 32, y + 24, 2, 2, "#d8403a"); rect(g, x + 29, y + 26, 5, 1, "#d8403a"); rect(g, x + 30, y + 27, 3, 1, "#d8403a");
-    rect(g, x + 18, y + 33, 12, 15, C.borde); rect(g, x + 19, y + 34, 10, 14, "#2e7a4a"); rect(g, x + 26, y + 40, 2, 2, "#f0d060");
-    rect(g, x + 17, y + 31, 14, 2, C.borde);                                       // alero de la puerta
+    rect(g, x + 24, y + 19, 16, 9, C.borde); rect(g, x + 25, y + 20, 14, 7, "#fbfaf2"); // cartel con un corazón
+    rect(g, x + 29, y + 21, 2, 2, "#d8403a"); rect(g, x + 33, y + 21, 2, 2, "#d8403a"); rect(g, x + 29, y + 23, 6, 1, "#d8403a"); rect(g, x + 30, y + 24, 4, 1, "#d8403a"); rect(g, x + 31, y + 25, 2, 1, "#d8403a");
+    rect(g, x + 18, y + 34, 12, 14, C.borde); rect(g, x + 19, y + 35, 10, 13, "#2e7a4a"); rect(g, x + 26, y + 41, 2, 2, "#f0d060");
+    rect(g, x + 17, y + 33, 14, 2, C.borde);                                       // alero de la puerta
+    rect(g, x + 33, y + 37, 8, 6, C.borde); rect(g, x + 34, y + 38, 6, 4, "#d03a30");  // buzón propio
     rect(g, x, y + 2, 64, 16, C.borde); rect(g, x + 1, y + 3, 62, 13, "#4aa86a");
     for (var t = 0; t < 4; t++) rect(g, x + 1, y + 5 + t * 3, 62, 1, "#2e7a4a");
     rect(g, x + 26, y - 4, 12, 7, C.borde); rect(g, x + 27, y - 3, 10, 6, "#4aa86a");   // buhardilla
     rect(g, x + 30, y - 2, 4, 4, C.vidrio);
     rect(g, x + 50, y - 3, 6, 7, C.borde); rect(g, x + 51, y - 2, 4, 6, "#b85a3a");    // chimenea
-    rect(g, x + 4, y + 45, 12, 3, "#f07888"); rect(g, x + 48, y + 45, 12, 3, "#f8d040"); // flores al pie
   }
   function dibujarCasa(g, casa) {
     var techo = ZONAS[casa.zona].techo;
@@ -633,16 +635,15 @@
     var etiquetas;
     if (piso === 1) {
       pasar(6, IN_H - 1, "salida");
-      poner(1, 4, "opcion", "dia");                                   // lámpara de pie
-      poner(2, 2, "opcion", "musica"); poner(3, 2, "opcion", "musica"); // radiograbador
-      poner(5, 2, "opcion", "velocidad");                             // casco colgado
-      poner(5, 5, "opcion", "efectos"); poner(6, 5, "opcion", "efectos"); // mesita con el timbre
-      poner(8, 4, "opcion", "minimapa");                              // globo terráqueo
-      poner(2, 7, "sillon"); poner(3, 7, "sillon");
+      poner(2, 2, "opcion", "velocidad");                              // casco colgado
+      poner(7, 2, "opcion", "musica"); poner(8, 2, "opcion", "musica"); // radiograbador en su estante
+      poner(1, 4, "opcion", "dia");                                    // lámpara de pie
+      poner(1, 6, "sillon"); poner(1, 7, "sillon");
+      poner(5, 6, "opcion", "efectos"); poner(6, 6, "opcion", "efectos"); // mesa ratona con el timbre
+      poner(9, 6, "opcion", "minimapa");                               // globo terráqueo
       poner(11, 8, "planta");
       pasar(10, 3, "subir"); pasar(11, 3, "subir");
-      etiquetas = [["Lámpara · día y noche", 1.5, 5.2], ["Radio · música", 3, 3], ["Casco · velocidad", 5.5, 1.7],
-        ["Timbre · sonidos", 6, 6.2], ["Globo · minimapa", 8.5, 5.2], ["Escalera", 11, 4.2]];
+      etiquetas = [["Casco", 2.5, 3], ["Radio", 8, 3], ["Lámpara", 1.5, 5], ["Timbre", 6, 7.05], ["Globo", 9.5, 7.05], ["Escalera", 11, 2.1]];
     } else {
       poner(1, 3, "cama"); poner(2, 3, "cama"); poner(1, 4, "cama"); poner(2, 4, "cama");
       poner(3, 3, "mesaluz");
@@ -651,9 +652,9 @@
       poner(8, 5, "practicar"); poner(9, 5, "practicar"); poner(10, 5, "practicar");
       poner(4, 8, "tv"); poner(5, 8, "tv");
       poner(1, 8, "planta");
-      pasar(11, 8, "bajar");
+      pasar(10, 8, "bajar"); pasar(11, 8, "bajar");
       etiquetas = [["Cama", 1.5, 5.2], ["Trofeos", 6.5, 3], ["Espejo", 9.5, 3], ["Escritorio · practicar", 9.5, 4.15],
-        ["TV y consola", 5, 7.2], ["Escalera", 11.5, 7.7]];
+        ["TV y consola", 5, 7.2], ["Escalera", 11, 9.05]];
     }
     return { tipo: "hogar", piso: piso, ancho: IN_W, alto: IN_H, suelo: g.suelo, solido: g.solido, cosa: g.cosa, etiquetas: etiquetas,
       inicio: piso === 1 ? { x: 6, y: 8 } : { x: 10, y: 8 } };
@@ -674,39 +675,44 @@
     rect(g, T, 3 * T - 3, (IN_W - 2) * T, 3, C.madera2);
     rect(g, 0, 0, T, IN_H * T, "#4a5a48"); rect(g, (IN_W - 1) * T, 0, T, IN_H * T, "#4a5a48");
     rect(g, 0, (IN_H - 1) * T, IN_W * T, T, "#4a5a48");
-    // alfombra
-    rect(g, 4 * T - 2, 6 * T, 5 * T + 4, 2 * T + 6, piso === 1 ? "#3e6fb0" : "#8a5ad0");
-    rect(g, 4 * T + 2, 6 * T + 4, 5 * T - 4, 2 * T - 2, piso === 1 ? "#5a8ad0" : "#a87ae0");
+    if (piso === 2) { // alfombra
+      rect(g, 4 * T - 2, 6 * T, 5 * T + 4, 2 * T + 6, "#8a5ad0");
+      rect(g, 4 * T + 2, 6 * T + 4, 5 * T - 4, 2 * T - 2, "#a87ae0");
+    }
     if (piso === 1) {
       rect(g, 6 * T, (IN_H - 1) * T, T, T, C.piso2);
       rect(g, 6 * T + 1, (IN_H - 1) * T + 3, T - 2, 10, "#6a8a4a");
+      // casco colgado de un perchero
+      rect(g, 2 * T + 7, T + 4, 2, 6, C.madera2);
+      rect(g, 2 * T + 2, T + 10, 12, 8, C.borde); rect(g, 2 * T + 3, T + 11, 10, 6, "#e07a2a"); rect(g, 2 * T + 3, T + 13, 10, 1, "#fbfaf2");
+      rect(g, 2 * T + 5, T + 18, 6, 1, "#3a3a4a");
+      // cuadro en la pared
+      rect(g, 4 * T + 4, T + 6, 24, 16, C.madera2); rect(g, 4 * T + 6, T + 8, 20, 12, "#a8dcf4");
+      rect(g, 4 * T + 6, T + 15, 20, 5, "#7ac06a"); rect(g, 4 * T + 18, T + 10, 4, 4, "#f8d040");
+      // estante con el radiograbador de los noventa
+      rect(g, 7 * T, 2 * T + 6, 2 * T, 3, C.madera2);
+      rect(g, 7 * T + 1, T + 9, 30, 13, "#2a2a34"); rect(g, 7 * T + 2, T + 10, 28, 11, "#4a4a58");
+      rect(g, 7 * T + 3, T + 12, 8, 8, "#1a1a22"); rect(g, 7 * T + 21, T + 12, 8, 8, "#1a1a22");
+      rect(g, 7 * T + 5, T + 14, 4, 4, "#6a6a78"); rect(g, 7 * T + 23, T + 14, 4, 4, "#6a6a78");
+      rect(g, 7 * T + 12, T + 12, 8, 5, "#a8dcf4"); rect(g, 7 * T + 13, T + 18, 6, 2, "#d8403a");
+      rect(g, 7 * T + 6, T + 6, 20, 2, "#3a3a4a");
       // lámpara de pie
       rect(g, T + 7, 4 * T + 2, 2, 13, "#3a3a4a"); rect(g, T + 4, 5 * T - 1, 8, 2, "#3a3a4a");
-      rect(g, T + 2, 3 * T + 4, 12, 7, C.borde); rect(g, T + 3, 3 * T + 5, 10, 5, momentoDelDia() === "noche" ? C.luz : "#f8e8c0");
-      // estante con el radiograbador de los noventa
-      rect(g, 2 * T, 2 * T + 6, 2 * T, 3, C.madera2);
-      rect(g, 2 * T + 1, T + 9, 30, 13, "#2a2a34"); rect(g, 2 * T + 2, T + 10, 28, 11, "#4a4a58");
-      rect(g, 2 * T + 3, T + 12, 8, 8, "#1a1a22"); rect(g, 2 * T + 21, T + 12, 8, 8, "#1a1a22");
-      rect(g, 2 * T + 5, T + 14, 4, 4, "#6a6a78"); rect(g, 2 * T + 23, T + 14, 4, 4, "#6a6a78");
-      rect(g, 2 * T + 12, T + 12, 8, 5, "#a8dcf4"); rect(g, 2 * T + 13, T + 18, 6, 2, "#d8403a");
-      rect(g, 2 * T + 6, T + 6, 20, 2, "#3a3a4a");                                       // manija
-      // casco colgado de un perchero
-      rect(g, 5 * T + 7, T + 4, 2, 6, C.madera2);
-      rect(g, 5 * T + 2, T + 10, 12, 8, C.borde); rect(g, 5 * T + 3, T + 11, 10, 6, "#e07a2a"); rect(g, 5 * T + 3, T + 13, 10, 1, "#fbfaf2");
-      rect(g, 5 * T + 5, T + 18, 6, 1, "#3a3a4a");
-      // mesita con el timbre de mostrador
-      rect(g, 5 * T, 5 * T + 4, 2 * T, 6, C.madera); rect(g, 5 * T, 5 * T + 10, 2 * T, 2, C.madera2);
-      rect(g, 5 * T + 2, 5 * T + 12, 2, 4, C.madera2); rect(g, 7 * T - 4, 5 * T + 12, 2, 4, C.madera2);
-      rect(g, 5 * T + 11, 5 * T, 10, 4, "#e0b040"); rect(g, 5 * T + 13, 5 * T - 2, 6, 2, "#f0d060"); rect(g, 5 * T + 15, 5 * T - 4, 2, 2, "#3a3a4a");
-      rect(g, 5 * T + 9, 5 * T + 3, 14, 2, "#6a6a78");
+      rect(g, T + 2, 3 * T + 8, 12, 7, C.borde); rect(g, T + 3, 3 * T + 9, 10, 5, momentoDelDia() === "noche" ? C.luz : "#f8e8c0");
+      // sillón de dos cuerpos, mirando a la sala
+      rect(g, T, 6 * T, 14, 2 * T, "#8a3a32"); rect(g, T + 2, 6 * T + 2, 12, 2 * T - 4, "#c85a50"); rect(g, T + 2, 7 * T - 1, 12, 2, "#a8443e");
+      // alfombra con la mesa ratona y el timbre de mostrador
+      rect(g, 4 * T, 5 * T + 4, 4 * T, 3 * T - 6, "#3e6fb0"); rect(g, 4 * T + 3, 5 * T + 7, 4 * T - 6, 3 * T - 12, "#5a8ad0");
+      rect(g, 5 * T, 6 * T + 3, 2 * T, 8, C.madera); rect(g, 5 * T, 6 * T + 11, 2 * T, 2, C.madera2);
+      rect(g, 5 * T + 2, 6 * T + 13, 2, 3, C.madera2); rect(g, 7 * T - 4, 6 * T + 13, 2, 3, C.madera2);
+      rect(g, 5 * T + 11, 6 * T - 1, 10, 4, "#e0b040"); rect(g, 5 * T + 13, 6 * T - 3, 6, 2, "#f0d060"); rect(g, 5 * T + 15, 6 * T - 5, 2, 2, "#3a3a4a");
+      rect(g, 5 * T + 9, 6 * T + 2, 14, 2, "#6a6a78");
       // globo terráqueo
-      rect(g, 8 * T + 7, 4 * T + 10, 2, 5, C.madera2); rect(g, 8 * T + 4, 4 * T + 14, 8, 2, C.madera2);
-      rect(g, 8 * T + 3, 4 * T, 10, 10, "#3e6fb0"); rect(g, 8 * T + 2, 4 * T + 2, 12, 6, "#3e6fb0");
-      rect(g, 8 * T + 4, 4 * T + 2, 4, 3, "#4a9a4a"); rect(g, 8 * T + 9, 4 * T + 5, 3, 3, "#4a9a4a"); rect(g, 8 * T + 5, 4 * T + 7, 2, 2, "#4a9a4a");
-      rect(g, 8 * T + 1, 4 * T + 4, 1, 4, "#c8a040"); rect(g, 8 * T + 14, 4 * T + 4, 1, 4, "#c8a040");
-      // sillón
-      rect(g, 2 * T, 7 * T, 2 * T, 14, "#a8443e"); rect(g, 2 * T, 7 * T, 2 * T, 5, "#c85a50"); rect(g, 2 * T - 1, 7 * T + 4, 3, 10, "#8a3a32"); rect(g, 4 * T - 2, 7 * T + 4, 3, 10, "#8a3a32");
-      // escalera que sube por la pared derecha
+      rect(g, 9 * T + 7, 6 * T + 10, 2, 5, C.madera2); rect(g, 9 * T + 4, 6 * T + 14, 8, 2, C.madera2);
+      rect(g, 9 * T + 3, 6 * T, 10, 10, "#3e6fb0"); rect(g, 9 * T + 2, 6 * T + 2, 12, 6, "#3e6fb0");
+      rect(g, 9 * T + 4, 6 * T + 2, 4, 3, "#4a9a4a"); rect(g, 9 * T + 9, 6 * T + 5, 3, 3, "#4a9a4a"); rect(g, 9 * T + 5, 6 * T + 7, 2, 2, "#4a9a4a");
+      rect(g, 9 * T + 1, 6 * T + 4, 1, 4, "#c8a040"); rect(g, 9 * T + 14, 6 * T + 4, 1, 4, "#c8a040");
+      // escalera de dos cuadros que sube por la pared derecha
       for (var e = 0; e < 5; e++) { rect(g, 10 * T, T + e * 9, 2 * T, 9, e % 2 ? "#8a5a32" : "#a8743c"); rect(g, 10 * T, T + e * 9 + 8, 2 * T, 1, C.madera2); }
       rect(g, 10 * T - 2, T, 2, 3 * T + 4, C.madera2);
     } else {
@@ -741,9 +747,10 @@
       rect(g, 4 * T + 4, 8 * T - 8, 24, 17, "#3a3a4a"); rect(g, 4 * T + 6, 8 * T - 6, 16, 12, "#4ab0a0"); rect(g, 4 * T + 24, 8 * T - 4, 2, 2, "#d8403a");
       rect(g, 4 * T + 8, 8 * T + 10, 10, 4, "#9a9aa8"); rect(g, 4 * T + 9, 8 * T + 11, 3, 1, "#3a3a4a");
       rect(g, 6 * T + 1, 8 * T + 6, 6, 4, "#2a2a34"); rect(g, 6 * T + 3, 8 * T + 3, 2, 3, "#d8403a");
-      // escalera que baja
-      for (var b = 0; b < 3; b++) rect(g, 11 * T, 8 * T + b * 5, T, 5, b % 2 ? "#6a4a2a" : "#8a5a32");
-      rect(g, 11 * T, 8 * T, T, 1, C.borde);
+      // escalera de dos cuadros que baja
+      rect(g, 10 * T - 1, 8 * T, 2 * T + 1, T, C.borde);
+      for (var b = 0; b < 4; b++) rect(g, 10 * T, 8 * T + b * 4, 2 * T, 4, ["#a8743c", "#8a5a32", "#6a4a2a", "#4a3020"][b]);
+      rect(g, 10 * T - 2, 7 * T, 2, 2 * T, C.madera2);
     }
     // planta
     var pl = piso === 1 ? [11, 8] : [1, 8], px = pl[0] * T, py = pl[1] * T;
@@ -953,8 +960,8 @@
         guardarPosicion();
         var c = mapa.cosa[pj.ty] && mapa.cosa[pj.ty][pj.tx];
         if (c && c.tipo === "salida") { if (escena === "hogar") salirHogar(); else salir(); return; }
-        if (c && c.tipo === "subir") { cambiarPiso(2); return; }
-        if (c && c.tipo === "bajar") { cambiarPiso(1); return; }
+        if (c && c.tipo === "subir") { cambiarPiso(2, pj.tx); return; }
+        if (c && c.tipo === "bajar") { cambiarPiso(1, pj.tx); return; }
       }
     }
     if (!pj.mueve && pj.ruta) {
@@ -1059,12 +1066,12 @@
       actualizarAyuda();
     });
   }
-  function cambiarPiso(piso) {
+  function cambiarPiso(piso, x) {
     sonar(piso === 2 ? [392, 494, 587] : [587, 494, 392], "square", 0.06);
     transicion(function () {
       mapa = armarHogar(piso);
       capaFija = dibujarCapa(mapa);
-      if (piso === 2) ubicar(10, 8, "izquierda"); else ubicar(9, 3, "izquierda");
+      if (piso === 2) ubicar(x, 7, "arriba"); else ubicar(x, 4, "abajo");
       actualizarAyuda();
     });
   }
@@ -1420,6 +1427,10 @@
       r.html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
     } else if (c.tipo === "cerca") {
       r.html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
+    } else if (c.tipo === "hogar") {
+      r.titulo = "Tu casa";
+      r.html = "<p>Ingresá para ajustar tu configuración y recorrer tu hogar.</p>" +
+        '<p class="tenue">Subí por la puerta para entrar. Arriba están tu cuarto, tus trofeos y el escritorio para practicar.</p>';
     } else if (c.tipo === "bici") {
       r.titulo = "Bicicleta";
       r.html = "<p>La más veloz del condado.</p>" + (config.velocidad === 1
@@ -1915,7 +1926,7 @@
       " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes" + (modoEjemplo ? " · <i>prueba</i>" : "");
   }
   function actualizarAyuda() {
-    document.getElementById("ayuda").innerHTML = "← ↑ → ↓ caminar · A mirar · Enter prioridades · <span class=\"m\">M minimapa</span>" +
+    document.getElementById("ayuda").innerHTML = "← ↑ → ↓ moverse · A mirar · Enter prioridades · <span class=\"m\">M minimapa</span>" +
       (escena === "casa" || (escena === "hogar" && mapa.piso === 1) ? " · ↓ por la puerta: salir" : escena === "hogar" ? " · la escalera baja" : "");
   }
 
