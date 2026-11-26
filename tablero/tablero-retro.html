@@ -28,15 +28,24 @@
   .p-alta { color: #c0302a; } .p-media { color: #b87a00; } .p-baja { color: #4a6a9a; }
   .tenue { color: #6a6a80; font-weight: normal; }
   @keyframes parpadeo { 50% { opacity: 0; } }
+  #dialogo li { padding-left: 18px; position: relative; }
+  #dialogo li .cursor { position: absolute; left: 0; }
+  #dialogo li.elegida { background: #eef0ff; }
+  #dialogo .teclas, #dialogo .pregunta { margin-top: 10px; font-size: 13px; }
+  #dialogo .pregunta { color: #b0302a; }
+  .tecla { display: inline-block; padding: 0 5px; border: 2px solid #2a2a4a; border-radius: 3px; background: #fff; color: #20203a; }
+  #aviso { top: 14px; left: 50%; transform: translate(-50%, -80px); padding: 8px 14px; transition: transform .2s; }
+  #aviso.visible { transform: translate(-50%, 0); }
   #error { top: 40%; left: 50%; transform: translateX(-50%); padding: 16px 20px; display: none; max-width: 520px; }
 </style>
 </head>
 <body>
 <canvas id="pantalla"></canvas>
 <div id="hud" class="caja">Cargando el pueblo…</div>
-<div id="ayuda" class="caja">← ↑ → ↓ caminar · A mirar · Esc cerrar</div>
+<div id="ayuda" class="caja">← ↑ → ↓ caminar · A mirar</div>
 <div id="dialogo" class="caja" role="dialog" aria-live="polite"></div>
 <div id="error" class="caja"></div>
+<div id="aviso" class="caja"></div>
 
 <script>
 (function () {
@@ -48,6 +57,7 @@
   var T = 16;            // lado de una baldosa, en píxeles del mundo
   var ANCHO = 48;        // ancho del mapa, en baldosas
   var PASO = 0.14;       // segundos por baldosa al caminar
+  var modoEjemplo = /[?&]ejemplo\b/.test(location.search);
 
   var ZONAS = {
     "por-enviar":   { nombre: "Por enviar",          techo: ["#e0a83a", "#b07a1e"] },
@@ -89,7 +99,7 @@
 
   // ---------- datos ----------
   function cargarDatos(listo) {
-    var ejemplo = /[?&]ejemplo\b/.test(location.search);
+    var ejemplo = modoEjemplo;
     var s = document.createElement("script");
     s.src = (ejemplo ? "ejemplo.js" : "datos.js") + "?t=" + Date.now();
     s.onload = function () {
@@ -500,63 +510,209 @@
     });
   }
 
-  // ---------- mirar (A) ----------
+  // ---------- mirar (A), copiar el pedido (S) y dar por hecha (D) ----------
   var dialogo = document.getElementById("dialogo");
   var dialogoAbierto = false;
+  var dlg = null;          // { cosa, acciones, sel, confirmar }
+  var datosActuales = null;
+  var guardando = false;
 
-  function lineaAccion(a) {
+  function lineaAccion(a, i) {
     var cuando = [a.fecha, a.condicion].filter(Boolean).join(", ");
-    return '<li><span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + esc(a.texto) +
+    var elegida = dlg && dlg.acciones.length > 1 && i === dlg.sel;
+    return '<li class="' + (elegida ? "elegida" : "") + '"><span class="cursor">' + (elegida ? "▶" : "") + "</span>" +
+      '<span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + esc(a.texto) +
       (cuando ? ' <span class="tenue">(' + esc(cuando) + ")</span>" : "") + "</li>";
   }
 
-  function mirar() {
-    var d = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] }[pj.mira];
-    var i = pj.tx + d[0], j = pj.ty + d[1];
-    var c = mapa.cosa[j] && mapa.cosa[j][i];
-    if (!c) return;
-    var html = "";
+  function pedidoDeAccion(a) {
+    var p = a.postulacion ? (datosActuales.postulaciones || []).filter(function (x) { return x.id === a.postulacion; })[0] : null;
+    var base = a.pedido && a.pedido.trim() ? a.pedido.trim() : "Ayudame con esta tarea de mi búsqueda.";
+    return base + "\n\nTarea del tablero: «" + a.texto + "» (id " + a.id + ")" +
+      (a.fecha ? ", para el " + a.fecha : "") + (a.condicion ? ", " + a.condicion : "") + "." +
+      (p ? "\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." : "") +
+      "\nCuando terminemos, marcala como hecha en el tablero.";
+  }
+
+  function pintarDialogo() {
+    var c = dlg.cosa, html = "", acc = dlg.acciones;
     if (c.tipo === "casa") {
       var p = c.ent.p;
       html = "<h2>" + esc(p.empresa) + "</h2><p>" + esc(p.rol || "") + "</p>" +
         (p.resultado ? "<p><b>Resultado:</b> " + esc(RESULTADOS[p.resultado] || p.resultado) + "</p>" : "") +
         (p.estado ? "<p><b>Estado:</b> " + esc(p.estado) + "</p>" : "") +
         (p.proximo ? "<p><b>Próximo paso:</b> " + esc(p.proximo) + "</p>" : "") +
-        (c.ent.pendientes.length ? "<p><b>Pendiente:</b></p><ul>" + c.ent.pendientes.map(lineaAccion).join("") + "</ul>"
-          : '<p class="tenue">Nada pendiente acá.</p>');
+        (acc.length ? "<p><b>Pendiente:</b></p>" : '<p class="tenue">Nada pendiente acá.</p>');
+    } else if (c.tipo === "tablon") {
+      html = "<h2>Tablón del pueblo</h2>" + (acc.length ? "<p>Tareas que no son de ninguna postulación:</p>" : '<p class="tenue">No hay tareas sueltas.</p>');
     } else if (c.tipo === "cartel") {
       html = "<h2>" + esc(ZONAS[c.ent.id].nombre) + "</h2><p>" +
         (c.ent.cantidad === 1 ? "1 postulación vive en este barrio." : c.ent.cantidad + " postulaciones viven en este barrio.") + "</p>";
-    } else if (c.tipo === "tablon") {
-      var gen = c.ent.generales;
-      html = "<h2>Tablón del pueblo</h2>" + (gen.length ? "<p>Tareas que no son de ninguna postulación:</p><ul>" + gen.map(lineaAccion).join("") + "</ul>"
-        : '<p class="tenue">No hay tareas sueltas.</p>');
     } else if (c.tipo === "fuente") {
       html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
     } else if (c.tipo === "cerca") {
       html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
-    } else return;
+    }
+    if (acc.length) html += "<ul>" + acc.map(lineaAccion).join("") + "</ul>";
+    if (dlg.confirmar) {
+      html += '<p class="pregunta">¿Das por hecha «' + esc(acc[dlg.sel].texto) + '»?<br>' +
+        '<span class="tecla">D</span> sí, está hecha · <span class="tecla">Esc</span> no</p>';
+    } else if (acc.length) {
+      html += '<p class="teclas">' + (acc.length > 1 ? '<span class="tecla">↑↓</span> elegir · ' : "") +
+        '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">D</span> dar por hecha · <span class="tecla">A</span> cerrar</p>';
+    }
     dialogo.innerHTML = html + '<span class="sigue">▼</span>';
+    var el = dialogo.querySelector(".elegida");
+    if (el && el.scrollIntoView) el.scrollIntoView({ block: "nearest" });
+  }
+
+  function abrirDialogo(c) {
+    var acciones = c.tipo === "casa" ? c.ent.pendientes : c.tipo === "tablon" ? c.ent.generales : [];
+    dlg = { cosa: c, acciones: acciones, sel: 0, confirmar: false };
+    pintarDialogo();
     dialogo.classList.add("abierto");
     dialogo.scrollTop = 0;
     dialogoAbierto = true;
   }
-  function cerrar() { dialogo.classList.remove("abierto"); dialogoAbierto = false; }
+
+  function delante() {
+    var d = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] }[pj.mira];
+    var i = pj.tx + d[0], j = pj.ty + d[1];
+    return mapa.cosa[j] && mapa.cosa[j][i];
+  }
+  function mirar() {
+    var c = delante();
+    if (c && c.tipo !== "arbol") abrirDialogo(c);
+  }
+  function cerrar() { dialogo.classList.remove("abierto"); dialogoAbierto = false; dlg = null; }
+
+  // ---------- avisos y sonidos ----------
+  var aviso = document.getElementById("aviso");
+  function avisar(texto) {
+    aviso.textContent = texto;
+    aviso.classList.add("visible");
+    clearTimeout(avisar._t);
+    avisar._t = setTimeout(function () { aviso.classList.remove("visible"); }, 2600);
+  }
+  var audio = null;
+  function sonar(notas) {
+    try {
+      audio = audio || new (window.AudioContext || window.webkitAudioContext)();
+      var t = audio.currentTime;
+      notas.forEach(function (n, i) {
+        var o = audio.createOscillator(), g = audio.createGain();
+        o.type = "square"; o.frequency.value = n;
+        g.gain.setValueAtTime(0.05, t + i * 0.09); g.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.09 + 0.12);
+        o.connect(g); g.connect(audio.destination);
+        o.start(t + i * 0.09); o.stop(t + i * 0.09 + 0.13);
+      });
+    } catch (e) {}
+  }
+
+  function copiar(texto) {
+    function planB() {
+      var ta = document.createElement("textarea");
+      ta.value = texto; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }
+      else { window.prompt("Copiá este texto:", texto); }
+    }
+    if (navigator.clipboard && window.isSecureContext) {
+      navigator.clipboard.writeText(texto).then(function () { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }, planB);
+    } else planB();
+  }
+
+  // Marca la acción como hecha en postulaciones.json a través del servidor del tablero, igual que el ✓ del tablero.
+  function darPorHecha(a) {
+    if (guardando) return;
+    if (modoEjemplo) {
+      a.hecha = true; a.hechaEl = hoyISO();
+      reconstruir(datosActuales);
+      sonar([523, 659, 784, 1047]); avisar("¡Hecha! (pueblo de prueba: no se guarda)");
+      return;
+    }
+    guardando = true;
+    fetch("/api/cambios", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cambios: [{ tipo: "hecha", id: a.id, fecha: hoyISO() }] })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    }).then(function (res) {
+      guardando = false;
+      var r0 = res.ok && res.j.resultados && res.j.resultados[0];
+      if (!r0 || !r0.ok) {
+        sonar([300, 200]);
+        avisar("No pude guardarlo: " + ((r0 && r0.motivo) || res.j.error || "el servidor no respondió bien") + ".");
+        return;
+      }
+      sonar([523, 659, 784, 1047]);
+      avisar("¡Hecha! Quedó guardada en el tablero.");
+      cargarDatos(reconstruir);
+    }, function () {
+      guardando = false;
+      sonar([300, 200]);
+      avisar("Se cortó el servidor del tablero. No se guardó nada.");
+    });
+  }
+
+  // Vuelve a armar el pueblo con los datos nuevos, sin mover al personaje y con el diálogo al día.
+  function reconstruir(datos) {
+    var antes = dlg ? { tipo: dlg.cosa.tipo, id: dlg.cosa.tipo === "casa" ? dlg.cosa.ent.p.id : null, sel: dlg.sel } : null;
+    datosActuales = datos;
+    armarMapa(datos);
+    dibujarMapaFijo();
+    actualizarHud();
+    if (!antes) return;
+    var c = delante();
+    if (!c || c.tipo !== antes.tipo || (antes.id && c.ent.p.id !== antes.id)) { cerrar(); return; }
+    abrirDialogo(c);
+    dlg.sel = Math.min(antes.sel, Math.max(0, dlg.acciones.length - 1));
+    pintarDialogo();
+  }
+
+  function actualizarHud() {
+    var pend = (datosActuales.acciones || []).filter(function (a) { return !a.hecha; }).length;
+    var activas = (datosActuales.postulaciones || []).filter(function (p) { return p.columna !== "cerrada"; }).length;
+    document.getElementById("hud").innerHTML = "Pueblo de " + esc(datosActuales.persona || "la búsqueda") +
+      " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes" + (modoEjemplo ? " · <i>prueba</i>" : "");
+  }
+
+  function teclaEnDialogo(ev, k) {
+    var acc = dlg.acciones;
+    if (dlg.confirmar) {
+      if (k === "d" || k === "a" || k === "enter") { ev.preventDefault(); dlg.confirmar = false; darPorHecha(acc[dlg.sel]); pintarDialogo(); }
+      else if (k === "escape" || k === "s") { ev.preventDefault(); dlg.confirmar = false; pintarDialogo(); }
+      return;
+    }
+    if ((ev.key === "ArrowUp" || ev.key === "ArrowDown") && acc.length > 1) {
+      ev.preventDefault();
+      dlg.sel = (dlg.sel + (ev.key === "ArrowUp" ? -1 : 1) + acc.length) % acc.length;
+      sonar([440]); pintarDialogo();
+      return;
+    }
+    if (DIRS[ev.key]) { ev.preventDefault(); return; }
+    if (k === "s" && acc.length) { ev.preventDefault(); copiar(pedidoDeAccion(acc[dlg.sel])); return; }
+    if (k === "d" && acc.length) { ev.preventDefault(); dlg.confirmar = true; sonar([440]); pintarDialogo(); return; }
+    if (k === "a" || k === "enter" || k === " " || k === "escape") { ev.preventDefault(); cerrar(); }
+  }
 
   addEventListener("keydown", function (ev) {
+    var k = ev.key.toLowerCase();
+    if (ev.ctrlKey || ev.metaKey || ev.altKey) return;
+    if (dialogoAbierto) { if (!ev.repeat || DIRS[ev.key]) teclaEnDialogo(ev, k); else ev.preventDefault(); return; }
     if (DIRS[ev.key]) {
       ev.preventDefault();
-      if (dialogoAbierto) return;
       if (apretadas.indexOf(ev.key) < 0) apretadas.push(ev.key);
       if (!ev.repeat) toque = ev.key;
       return;
     }
-    var k = ev.key.toLowerCase();
     if (k === "a" || k === "enter" || k === " ") {
       ev.preventDefault();
-      if (ev.repeat) return;
-      if (dialogoAbierto) cerrar(); else if (!pj.mueve) mirar();
-    } else if (k === "escape") cerrar();
+      if (!ev.repeat && !pj.mueve) mirar();
+    }
   });
   addEventListener("keyup", function (ev) {
     var i = apretadas.indexOf(ev.key);
@@ -567,14 +723,12 @@
 
   // ---------- arranque ----------
   cargarDatos(function (datos) {
+    prepararFiguras();
+    datosActuales = datos;
     armarMapa(datos);
     dibujarMapaFijo();
-    prepararFiguras();
     pj.tx = pj.nx = mapa.inicio.x; pj.ty = pj.ny = mapa.inicio.y;
-    var pend = (datos.acciones || []).filter(function (a) { return !a.hecha; }).length;
-    var activas = (datos.postulaciones || []).filter(function (p) { return p.columna !== "cerrada"; }).length;
-    document.getElementById("hud").innerHTML = "Pueblo de " + esc(datos.persona || "la búsqueda") +
-      " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes";
+    actualizarHud();
     ajustar();
     var antes = performance.now();
     (function cuadro(ahora) {
