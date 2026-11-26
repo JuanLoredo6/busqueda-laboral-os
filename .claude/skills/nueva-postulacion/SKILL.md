@@ -19,6 +19,7 @@ Hablá en rioplatense, con voseo (o en portugués de Brasil si es el idioma de l
 
 - Si viene de `analizar-oferta`, la carpeta `postulaciones/<empresa-rol>/` y su `rol.md` ya existen. Leelos.
 - Si no, pedí el link o el texto del aviso, creá la carpeta (minúsculas, con guiones) y guardá en `rol.md`: link, fecha, un resumen propio con ubicación, modalidad y requisitos excluyentes, y el aviso original pegado al final. Si no hay análisis previo, ofrecé correr `analizar-oferta` primero (2 minutos).
+- **La ficha de la empresa:** si la carpeta no tiene `empresa.md` (o es de hace más de 3 meses), armala antes de seguir, como dice `.claude/skills/analizar-oferta/SKILL.md#la-ficha-de-la-empresa`, con `plantillas/empresa.md`. Sirve para las respuestas del formulario («¿por qué esta empresa?»), para la entrevista y para el tablero retro. Vale también cuando la persona ya se postuló o cuando la empresa la contactó sin aviso.
 
 Leé `contexto/perfil.md`, `contexto/busqueda.md`, `contexto/voz.md` y, si existe, `contexto/posicionamiento.md`.
 
@@ -39,7 +40,7 @@ Si el cambio es mínimo, decilo y recomendá mandar el CV base: no hace falta ad
 
 Si el formulario tiene preguntas abiertas, pedí que las pegue. Para cada una:
 
-- Respuesta con su voz (`contexto/voz.md`), corta y concreta, con un ejemplo real de `contexto/perfil.md` (📌 con la sección).
+- Respuesta con su voz (`contexto/voz.md`), corta y concreta, con un ejemplo real de `contexto/perfil.md` (📌 con la sección). Lo que diga de la empresa sale de `empresa.md`, con lo que tiene fuente.
 - Las preguntas delicadas siguen `contexto/busqueda.md`:
   - **Motivo de salida:** usá la frase acordada, sin agregar detalles.
   - **Pretensión salarial:** no la completes. Marcala ❓ y preguntale qué quiere poner, salvo que `busqueda.md` diga otra cosa.
@@ -85,3 +86,4 @@ No pude comprobar en tu perfil "liderazgo de 4 personas": confirmalo o lo saco.
 - Claude no envía postulaciones, mensajes ni formularios. Prepara y registra. (límite L3)
 - Nada en el CV ni en las respuestas que no esté en `contexto/perfil.md` o que la persona no confirme.
 - Antes de cerrar, revisá cada respuesta contra el perfil y decí qué no pudiste comprobar.
+- La carpeta no queda sin `rol.md` ni sin `empresa.md`.

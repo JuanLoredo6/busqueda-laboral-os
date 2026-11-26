@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 # SPDX-License-Identifier: MIT
 # Copyright (c) 2026 Juan Rodríguez Loredo. Ver LICENSE en la raíz del repo.
-"""Servidor local del tablero: sirve tablero.html y guarda en postulaciones.json
+"""Servidor local del tablero: sirve tablero.html (kanban) o tablero-retro.html (el pueblo en
+pixel art) y guarda en postulaciones.json
 los cambios mecánicos que la persona marca (acción hecha, tarjeta movida, nota,
 acción nueva), sin pasar por Claude. También sirve practica.html: lee la práctica
 de cada entrevista (entrevistas/<carpeta>/practica.json) y guarda las respuestas
@@ -12,9 +13,10 @@ computadora (límite L8). Lo que necesita criterio (cerrar una postulación, cam
 el estado o el próximo paso) no se aplica acá: queda como pedido para Claude.
 
 Uso:
-  python tablero/servidor.py              abre el tablero en el navegador
-  python tablero/servidor.py --no-abrir   solo levanta el servidor
-  python tablero/servidor.py --puerto 8766
+  python tablero/servidor.py                 abre el tablero kanban en el navegador (puerto 8765)
+  python tablero/servidor.py --pagina retro  abre el tablero retro (puerto 8766)
+  python tablero/servidor.py --no-abrir      solo levanta el servidor
+  python tablero/servidor.py --puerto 8770
   python tablero/servidor.py --raiz <carpeta del proyecto>
 
 Sin el servidor, tablero.html sigue funcionando con doble clic como siempre.
@@ -271,6 +273,72 @@ def leer_practica(raiz, carpeta):
     return 200, {"carpeta": carpeta, "practica": datos, "archivos": sesiones}
 
 
+MAX_DETALLE = 200 * 1024
+
+
+def leer_postulacion(raiz, carpeta):
+    """Lo que el tablero retro muestra dentro de una casa: rol.md, empresa.md y los nombres de los documentos."""
+    if not isinstance(carpeta, str) or not CARPETA.match(carpeta):
+        return 400, {"error": "Nombre de carpeta inválido."}
+    base = os.path.join(raiz, "postulaciones", carpeta)
+    if not os.path.isdir(base):
+        return 404, {"error": "Esa postulación todavía no tiene carpeta."}
+    textos = {}
+    for clave, nombre in (("rol", "rol.md"), ("empresa", "empresa.md")):
+        ruta = os.path.join(base, nombre)
+        if os.path.isfile(ruta):
+            with open(ruta, encoding="utf-8", errors="replace") as f:
+                textos[clave] = f.read(MAX_DETALLE)
+    archivos = sorted(n for n in os.listdir(base) if n.lower().endswith(".md"))
+    return 200, {"carpeta": carpeta, "rol": textos.get("rol"), "empresa": textos.get("empresa"), "archivos": archivos,
+                 "aprendizajes": aprendizajes_de(raiz, base, empresa_de(raiz, carpeta))}
+
+
+APRENDIZAJE = re.compile(r"aprend|feedback|devoluci|rechazo", re.I)
+
+
+def empresa_de(raiz, carpeta):
+    try:
+        with open(os.path.join(raiz, "postulaciones", "postulaciones.json"), encoding="utf-8") as f:
+            datos = json.load(f)
+        return next((p.get("empresa") for p in datos.get("postulaciones", []) if isinstance(p, dict) and p.get("id") == carpeta), None)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def aprendizajes_de(raiz, base, empresa):
+    """Aprendizajes registrados de una postulación: documentos de su carpeta con ese tema y las secciones
+    de los informes de aprendizajes de investigacion/ que nombran a la empresa. Se devuelven tal cual."""
+    lista = []
+    for n in sorted(os.listdir(base)):
+        if n.lower().endswith(".md") and APRENDIZAJE.search(n):
+            with open(os.path.join(base, n), encoding="utf-8", errors="replace") as f:
+                lista.append({"fuente": "postulaciones/" + os.path.basename(base) + "/" + n, "texto": f.read(MAX_DETALLE)})
+    inv = os.path.join(raiz, "investigacion")
+    nombre = (empresa or "").split("(")[0].strip().lower()
+    if nombre and os.path.isdir(inv):
+        for n in sorted(os.listdir(inv)):
+            if not (n.lower().endswith(".md") and "aprendizaje" in n.lower()):
+                continue
+            with open(os.path.join(inv, n), encoding="utf-8", errors="replace") as f:
+                texto = f.read(MAX_DETALLE)
+            for sec in re.split(r"\n(?=#{2,3} )", texto):
+                if nombre in sec.lower():
+                    lista.append({"fuente": "investigacion/" + n, "texto": sec.strip()})
+    return lista
+
+
+def leer_perfil(raiz):
+    """Lo que muestra tu casa en el tablero retro: el perfil (para los trofeos) y el posicionamiento (el espejo)."""
+    textos = {}
+    for clave, nombre in (("perfil", "perfil.md"), ("posicionamiento", "posicionamiento.md")):
+        ruta = os.path.join(raiz, "contexto", nombre)
+        if os.path.isfile(ruta):
+            with open(ruta, encoding="utf-8", errors="replace") as f:
+                textos[clave] = f.read(MAX_DETALLE)
+    return 200, {"perfil": textos.get("perfil"), "posicionamiento": textos.get("posicionamiento")}
+
+
 def listar_practicas(raiz):
     base = os.path.join(raiz, "entrevistas")
     lista = []
@@ -408,6 +476,7 @@ transcriptor = Transcriptor(None)
 class Manejador(SimpleHTTPRequestHandler):
     raiz = None
     puerto = None
+    pagina = "kanban"
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, directory=AQUI, **kwargs)
@@ -452,13 +521,20 @@ class Manejador(SimpleHTTPRequestHandler):
         if ruta == "/api/practicas":
             self.responder(*listar_practicas(self.raiz))
             return
+        if ruta == "/api/perfil":
+            self.responder(*leer_perfil(self.raiz))
+            return
+        if ruta == "/api/postulacion":
+            carpeta = (urllib.parse.parse_qs(consulta).get("id") or [""])[0]
+            self.responder(*leer_postulacion(self.raiz, carpeta))
+            return
         if ruta == "/api/practica":
             carpeta = (urllib.parse.parse_qs(consulta).get("e") or [""])[0]
             self.responder(*leer_practica(self.raiz, carpeta))
             return
         if self.path in ("/", ""):
             self.send_response(302)
-            self.send_header("Location", "/tablero.html")
+            self.send_header("Location", "/" + PAGINAS[self.pagina])
             self.end_headers()
             return
         nombre = self.path.split("?")[0].lstrip("/")
@@ -489,7 +565,7 @@ class Manejador(SimpleHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(cuerpo)
             return
-        if nombre not in {"tablero.html", "practica.html", "ejemplo.js"}:
+        if nombre not in {"tablero.html", "tablero-retro.html", "practica.html", "ejemplo.js"}:
             self.send_error(404)
             return
         super().do_GET()
@@ -572,9 +648,17 @@ def raiz_en_puerto(puerto):
         return None
 
 
+# Las dos formas de ver el tablero. Cada una tiene su lanzador y su puerto por defecto, así pueden
+# estar abiertas a la vez: abrir-tablero (kanban, 8765) y abrir-tablero-retro (pueblo en pixel art, 8766).
+PAGINAS = {"kanban": "tablero.html", "retro": "tablero-retro.html"}
+PUERTOS = {"kanban": 8765, "retro": 8766}
+
+
 def main():
     ap = argparse.ArgumentParser(description="Servidor local del tablero de búsqueda.")
-    ap.add_argument("--puerto", type=int, default=8765)
+    ap.add_argument("--pagina", choices=sorted(PAGINAS), default="kanban",
+                    help="qué tablero abrir: kanban (el de siempre) o retro (el pueblo en pixel art)")
+    ap.add_argument("--puerto", type=int, default=None)
     ap.add_argument("--raiz", default=os.environ.get("CLAUDE_PROJECT_DIR") or os.path.dirname(AQUI))
     ap.add_argument("--no-abrir", action="store_true")
     ap.add_argument("--modelo", default=os.environ.get("TRANSCRIPCION_MODELO", "small"),
@@ -586,6 +670,9 @@ def main():
     with contextlib.suppress(Exception):  # tildes bien escritas también si la salida va a un archivo
         sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     Manejador.raiz = os.path.abspath(args.raiz)
+    Manejador.pagina = args.pagina
+    if args.puerto is None:
+        args.puerto = PUERTOS[args.pagina]
     # Si el puerto lo usa otro tablero (otra carpeta de datos), no se abre ese: se busca el siguiente libre.
     # Si lo usa este mismo tablero, se abre el que ya está andando.
     servidor = None
@@ -596,7 +683,7 @@ def main():
         except OSError:
             otra = raiz_en_puerto(puerto)
             if otra is not None and otra == os.path.normcase(Manejador.raiz):
-                url = f"http://127.0.0.1:{puerto}/tablero.html"
+                url = f"http://127.0.0.1:{puerto}/{PAGINAS[args.pagina]}"
                 print(f"Este tablero ya está abierto en {url}")
                 if not args.no_abrir:
                     webbrowser.open(url)
@@ -610,8 +697,8 @@ def main():
     transcriptor =Transcriptor(None if args.sin_transcripcion else args.modelo)
     if transcriptor.estado == "sin-libreria":
         print("Transcripción local: no está instalada (se abre con abrir-tablero, que usa uv). La práctica usa el dictado del navegador.")
-    url = f"http://127.0.0.1:{args.puerto}/tablero.html"
-    print(f"Tablero en {url}")
+    url = f"http://127.0.0.1:{args.puerto}/{PAGINAS[args.pagina]}"
+    print(("Tablero retro" if args.pagina == "retro" else "Tablero") + f" en {url}")
     print("Dejá esta ventana abierta mientras lo uses. Para cerrarlo: Ctrl+C.")
     if not args.no_abrir:
         webbrowser.open(url)

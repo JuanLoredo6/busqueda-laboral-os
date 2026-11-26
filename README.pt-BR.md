@@ -92,6 +92,8 @@ Se você abrir com dois cliques, o que marcar fica pendente: toque em **Copiar p
 
 Com o servidor, o botão **🎯 Práctica** abre a prática das entrevistas que você preparou com `/preparar-entrevista`. Você responde cada pergunta escrevendo ou em voz alta (o ditado é opcional: se você tiver o [uv](https://docs.astral.sh/uv/) instalado, a voz é transcrita no seu computador com o Whisper e o áudio não sai dele; na primeira vez baixa uns 480 MB. Sem o uv, usa o ditado do navegador, que processa o áudio na nuvem). A página mede quanto tempo você leva, salva suas respostas na pasta da entrevista e dá um pedido de uma linha para o Claude devolver o feedback e atualizar sua pontuação de preparação.
 
+**Painel retrô.** Se você prefere algo mais de jogo, abra `tablero/abrir-tablero-retro.bat` no Windows ou `tablero/abrir-tablero-retro.command` no Mac: suas candidaturas viram uma cidadezinha em pixel art que você percorre com o teclado (a cidade está em espanhol). Cada status é um bairro e cada candidatura uma casa, com um «!» quando há algo pendente; dentro de cada casa estão a empresa, a vaga, o seu encaixe, o histórico e uma escrivaninha com as tarefas. **A** olha e entra, **S** copia o pedido para o Claude, **D** marca uma tarefa como feita, **Enter** mostra as prioridades e o personagem anda sozinho até a que você escolher, e **M** abre o minimapa. Na praça ficam o mural, a caixa de correio da sincronização, o calendário e a mudança; na Universidade, no farol e na sua casa, melhorar o perfil, a revisão semanal e as configurações (dia ou noite, a pé ou de bicicleta, música e sons). Usa os mesmos dados e o mesmo servidor local que o kanban, em outra porta (8766), então dá para deixar os dois abertos: o que você marca é salvo do mesmo jeito.
+
 Para ver o painel com dados de exemplo antes de carregar os seus, abra o painel e toque em **Ver el tablero con datos de ejemplo**.
 
 ### Novidades do Gmail e do Google Calendar (opcional)
@@ -131,8 +133,8 @@ busqueda-laboral-os/
 |---|---|
 | `empezar` | Primeiros passos: traz o que você já tem (currículo, LinkedIn, notas, o contexto de outra IA), carrega seu perfil, o que você busca e sua voz, e deixa o painel pronto |
 | `mejorar-perfil` | Lê seu PDF do LinkedIn, seu currículo ou os dois, compara o que cada um tem, entrevista você e entrega textos prontos para copiar e colar, mais o currículo. Também em português do Brasil, sem portunhol, e em inglês |
-| `analizar-oferta` | Aderência de uma vaga ao seu perfil (0 a 100), requisito por requisito, e se vale a pena |
-| `nueva-postulacion` | Pasta, currículo adaptado, respostas do formulário e cartão no painel |
+| `analizar-oferta` | Aderência de uma vaga ao seu perfil (0 a 100), requisito por requisito, se vale a pena e a ficha da empresa |
+| `nueva-postulacion` | Pasta com a ficha da empresa, currículo adaptado, respostas do formulário e cartão no painel |
 | `actualizar` | Leva cada novidade ao painel e cria as próximas ações |
 | `sincronizar-correo` | Traz as novidades do Gmail e do Google Calendar ao painel, sob demanda (🔄 SYNC) ou a cada 2 horas das 8 às 22 |
 | `redactar-mensaje` | Mensagens para recrutadores, indicações, follow-ups e agradecimentos com a sua voz |

@@ -1,0 +1,2073 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tablero retro · búsqueda laboral</title>
+<style>
+  html, body { margin: 0; height: 100%; background: #1d3524; overflow: hidden; }
+  canvas#pantalla { display: block; image-rendering: pixelated; }
+  .caja {
+    position: fixed; font: bold 15px/1.45 "Courier New", ui-monospace, monospace; color: #20203a;
+    background: #fbfaf2; border: 4px solid #2a2a4a; border-radius: 6px;
+    box-shadow: inset 0 0 0 3px #fbfaf2, inset 0 0 0 5px #7a86b8, 0 4px 0 rgba(0,0,0,.35);
+  }
+  #hud { bottom: 12px; left: 12px; padding: 8px 12px; font-size: 13px; }
+  #hud b { color: #b0302a; }
+  #ayuda { bottom: 12px; right: 12px; padding: 6px 10px; font-size: 12px; }
+  #ayuda .m { color: #3a4a8a; }
+  #dialogo {
+    left: 50%; bottom: 16px; transform: translateX(-50%); width: min(780px, calc(100vw - 48px));
+    padding: 14px 18px 18px; display: none; max-height: 45vh; overflow: auto; box-sizing: border-box; z-index: 3;
+  }
+  #dialogo.grande { max-height: 62vh; }
+  #dialogo.abierto { display: block; }
+  #dialogo h2 { margin: 0 0 6px; font-size: 17px; }
+  #dialogo h3 { margin: 12px 0 4px; font-size: 15px; color: #3a4a8a; }
+  #dialogo h4 { margin: 8px 0 2px; font-size: 14px; }
+  #dialogo p { margin: 4px 0; }
+  #dialogo ul { margin: 6px 0 0; padding-left: 0; list-style: none; }
+  #dialogo li { margin: 3px 0; padding-left: 18px; position: relative; }
+  #dialogo .md li::before { content: "▸"; position: absolute; left: 2px; color: #7a86b8; }
+  #dialogo .md p, #dialogo .md li { font-weight: normal; }
+  #dialogo .md b { font-weight: bold; }
+  #dialogo code { background: #eceadc; padding: 0 3px; }
+  #dialogo a { color: #3a4a8a; }
+  #dialogo li .cursor { position: absolute; left: 0; }
+  #dialogo li.elegida { background: #eef0ff; }
+  #dialogo .teclas, #dialogo .pregunta { margin-top: 10px; font-size: 13px; }
+  #dialogo .pregunta { color: #b0302a; }
+  #dialogo .sigue { position: sticky; float: right; bottom: 0; animation: parpadeo 1s steps(2) infinite; }
+  #dialogo .valor { color: #3a4a8a; }
+  .p-alta { color: #c0302a; } .p-media { color: #b87a00; } .p-baja { color: #4a6a9a; }
+  .tenue { color: #6a6a80; font-weight: normal; }
+  .rojo { color: #c0302a; } .amarillo { color: #b87a00; } .gris { color: #6a6a80; } .verde { color: #3e8f4a; }
+  .barra { letter-spacing: 1px; color: #3e8f4a; }
+  .barra .vacia { color: #c8c8d4; }
+  @keyframes parpadeo { 50% { opacity: 0; } }
+  .tecla { display: inline-block; padding: 0 5px; border: 2px solid #2a2a4a; border-radius: 3px; background: #fff; color: #20203a; }
+  #aviso { top: 14px; left: 50%; transform: translate(-50%, -90px); padding: 8px 14px; transition: transform .2s; z-index: 5; }
+  #aviso.visible { transform: translate(-50%, 0); }
+  #error { top: 40%; left: 50%; transform: translateX(-50%); padding: 16px 20px; display: none; max-width: 520px; }
+  #fundido { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 4; }
+  #fundido.negro { opacity: 1; }
+</style>
+</head>
+<body>
+<canvas id="pantalla"></canvas>
+<div id="hud" class="caja">Cargando el pueblo…</div>
+<div id="ayuda" class="caja"></div>
+<div id="dialogo" class="caja" role="dialog" aria-live="polite"></div>
+<div id="error" class="caja"></div>
+<div id="aviso" class="caja"></div>
+<div id="fundido"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // Un pueblo en pixel art armado con postulaciones.json.
+  // Cada columna del tablero es un barrio y cada postulación es una casa con su interior.
+  // Un «!» marca acciones pendientes. Los cambios pasan por el servidor del tablero, igual que en tablero.html.
+
+  var T = 16;            // lado de una baldosa, en píxeles del mundo
+  var ANCHO = 48;        // ancho del pueblo, en baldosas
+  var PASO = 0.14;       // segundos por baldosa caminando (velocidad 1)
+  var modoEjemplo = /[?&]ejemplo\b/.test(location.search);
+
+  var ZONAS = {
+    "por-enviar":   { nombre: "Por enviar",          techo: ["#e0a83a", "#b07a1e"], papel: ["#f4e2b0", "#ead098"] },
+    "conversacion": { nombre: "En conversación",     techo: ["#d8503a", "#9a2e22"], papel: ["#f4c8b8", "#eab4a0"] },
+    "esperando":    { nombre: "Esperando respuesta", techo: ["#4a7ad0", "#2e4f94"], papel: ["#c4d6f2", "#b0c6ea"] },
+    "cerrada":      { nombre: "Cerradas",            techo: ["#9a9aa8", "#6a6a78"], papel: ["#d4d4da", "#c4c4cc"] }
+  };
+  var MUDABLES = ["por-enviar", "esperando", "conversacion"];
+  var RESULTADOS = { "descartada": "Descartada", "descartada-por-mi": "Descartada por mí", "retirada": "Me retiré",
+    "sin-respuesta": "Sin respuesta", "oferta-aceptada": "Oferta aceptada", "oferta-rechazada": "Oferta rechazada" };
+  var PRIORIDAD = { alta: 0, media: 1, baja: 2 };
+  var COLOR_PRIORIDAD = { alta: "#d8302a", media: "#e0a000", baja: "#5a7ab0" };
+  var DIAS = ["dom", "lun", "mar", "mié", "jue", "vie", "sáb"];
+  var DIAS_LARGOS = ["domingo", "lunes", "martes", "miércoles", "jueves", "viernes", "sábado"];
+  var MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
+
+  var C = {
+    pasto: "#8fd07c", mata: "#4f9a4a", pastoGris: "#9fb894", pastoGris2: "#8aa680",
+    camino: "#ead69c", camino2: "#d2bb7a", piedra: "#cfcfd8", piedra2: "#a8a8b8",
+    arbol1: "#2c6638", arbol2: "#3f8f4a", arbol3: "#66b65c", tronco: "#7a4b2a",
+    agua: "#5aa8e8", agua2: "#a8dcff", madera: "#a8743c", madera2: "#7a5028",
+    pared: "#f4eadc", borde: "#4a3a32", puerta: "#8a5a32", vidrio: "#9fd4f4", luz: "#ffd860",
+    piso: "#c88c50", piso2: "#a8703c", piso3: "#d89c60"
+  };
+
+  // ---------- configuración (queda guardada en este navegador) ----------
+  var CLAVE_CONFIG = "tablero-retro-config";
+  var config = { dia: "auto", velocidad: 1, musica: true, efectos: true, minimapa: false, pos: null };
+  function leerConfig() {
+    try { Object.assign(config, JSON.parse(localStorage.getItem(CLAVE_CONFIG) || "{}")); } catch (e) {}
+    config.velocidad = +config.velocidad >= 2 ? 2 : 1; // dos opciones: caminando (1) o en bicicleta (2)
+  }
+  leerConfig();
+  function guardarConfig() { try { localStorage.setItem(CLAVE_CONFIG, JSON.stringify(config)); } catch (e) {} }
+
+  // ---------- utilidades ----------
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function iso(d) { return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0"); }
+  function hoyISO() { return iso(new Date()); }
+  function haceDias(n) { var d = new Date(); d.setDate(d.getDate() - n); return iso(d); }
+  function fechaCorta(f) {
+    var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(f || "");
+    if (!m) return f || "";
+    var d = new Date(+m[1], +m[2] - 1, +m[3]);
+    return DIAS[d.getDay()] + " " + m[3] + "/" + m[2];
+  }
+  function azar(semilla) { // mulberry32: el pueblo se ve igual cada vez que se abre
+    return function () {
+      semilla |= 0; semilla = semilla + 0x6D2B79F5 | 0;
+      var t = Math.imul(semilla ^ semilla >>> 15, 1 | semilla);
+      t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+      return ((t ^ t >>> 14) >>> 0) / 4294967296;
+    };
+  }
+  function ordenarAcciones(lista) {
+    return lista.sort(function (a, b) {
+      var pa = PRIORIDAD[a.prioridad] != null ? PRIORIDAD[a.prioridad] : 1, pb = PRIORIDAD[b.prioridad] != null ? PRIORIDAD[b.prioridad] : 1;
+      return pa - pb || String(a.fecha || "9999").localeCompare(String(b.fecha || "9999"));
+    });
+  }
+  function momentoDelDia() {
+    if (config.dia === "dia") return "dia";
+    if (config.dia === "noche") return "noche";
+    var h = new Date().getHours();
+    return h < 7 || h >= 20 ? "noche" : h >= 18 ? "atardecer" : "dia";
+  }
+
+  // Markdown mínimo para mostrar rol.md y empresa.md dentro de las casas.
+  function md(texto) {
+    var html = "", lista = false;
+    function linea(s) {
+      s = esc(s);
+      return s.replace(/\*\*(.+?)\*\*/g, "<b>$1</b>").replace(/`([^`]+)`/g, "<code>$1</code>")
+        .replace(/\[([^\]]+)\]\((https?:[^)\s]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+    }
+    function cerrarLista() { if (lista) { html += "</ul>"; lista = false; } }
+    String(texto || "").replace(/\r/g, "").split("\n").forEach(function (l) {
+      var m;
+      if (/^\s*\|?\s*:?-{3,}/.test(l)) return;
+      if ((m = /^###+\s+(.*)/.exec(l))) { cerrarLista(); html += "<h4>" + linea(m[1]) + "</h4>"; return; }
+      if ((m = /^##\s+(.*)/.exec(l))) { cerrarLista(); html += "<h3>" + linea(m[1]) + "</h3>"; return; }
+      if (/^#\s/.test(l)) return;
+      if ((m = /^\s*(?:[-*]|\d+\.)\s+(.*)/.exec(l)) || (m = /^\s*\|(.*)\|\s*$/.exec(l))) {
+        var item = m[1];
+        if (/^\s*\|/.test(l)) item = item.split("|").map(function (x) { return x.trim(); }).filter(Boolean).join(" · ");
+        if (!lista) { html += "<ul>"; lista = true; }
+        html += "<li>" + linea(item) + "</li>"; return;
+      }
+      if (!l.trim()) { cerrarLista(); return; }
+      cerrarLista(); html += "<p>" + linea(l) + "</p>";
+    });
+    cerrarLista();
+    return '<div class="md">' + html + "</div>";
+  }
+  function secciones(texto) {
+    var out = [], act = { titulo: "", lineas: [] };
+    String(texto || "").replace(/\r/g, "").split("\n").forEach(function (l) {
+      var m = /^##\s+(.*)/.exec(l);
+      if (m) { out.push(act); act = { titulo: m[1].trim(), lineas: [] }; }
+      else if (!/^#\s/.test(l)) act.lineas.push(l);
+    });
+    out.push(act);
+    return out.filter(function (s) { return s.lineas.join("").trim(); });
+  }
+  var RE_ENCAJE = /encaje|por qu[eé] entra|relaci[oó]n con (la experiencia|tu|mi)|recomendaci|qu[eé] ajustar|qu[eé] falta|no pude comprobar|se[nñ]ales/i;
+  var RE_EMPRESA = /empresa|^qu[eé] (es|hace)\b(?!\s+(el|la)\s+(rol|[aá]rea|puesto))/i;
+  var RE_FUERA = /respuestas|seguimiento|tema elegido|relaci[oó]n con otras|relaci[oó]n con la tarjeta/i;
+  function partesDeRol(texto) {
+    var r = { rol: [], empresa: [], encaje: [] };
+    secciones(texto).forEach(function (s) {
+      if (RE_FUERA.test(s.titulo)) return;
+      if (RE_ENCAJE.test(s.titulo)) r.encaje.push(s);
+      else if (RE_EMPRESA.test(s.titulo)) r.empresa.push(s);
+      else r.rol.push(s);
+    });
+    return r;
+  }
+  function mdSecciones(lista) {
+    return lista.map(function (s) { return (s.titulo ? "## " + s.titulo + "\n" : "") + s.lineas.join("\n"); }).join("\n\n");
+  }
+
+  // ---------- datos ----------
+  function cargarDatos(listo) {
+    var s = document.createElement("script");
+    s.src = (modoEjemplo ? "ejemplo.js" : "datos.js") + "?t=" + Date.now();
+    s.onload = function () {
+      var d = modoEjemplo ? (typeof window.DATOS_EJEMPLO === "function" ? window.DATOS_EJEMPLO() : window.DATOS_EJEMPLO) : window.DATOS_TABLERO;
+      if (!d) return fallar();
+      listo(d);
+    };
+    s.onerror = fallar;
+    document.head.appendChild(s);
+  }
+  function fallar() {
+    var e = document.getElementById("error");
+    e.style.display = "block";
+    e.innerHTML = "No encontré los datos del tablero. Abrí el tablero retro con <b>tablero/abrir-tablero-retro</b> (.bat en Windows, .command en Mac): " +
+      "levanta el servidor local y abre esta página. Para ver un pueblo de prueba, agregá <b>?ejemplo</b> a la dirección.";
+    document.getElementById("hud").style.display = "none";
+  }
+  var practicas = [];
+  var practicaDe = {};
+  function cargarPracticas() {
+    if (modoEjemplo || !window.fetch) return;
+    fetch("/api/practicas", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; }).then(function (j) {
+      practicas = ((j && j.practicas) || []).filter(function (p) { return !p.error; });
+      practicaDe = {};
+      practicas.forEach(function (p) { if (p.postulacion) practicaDe[p.postulacion] = p.carpeta; });
+    }, function () {});
+  }
+  var detalles = {};
+  function cargarDetalles(id, listo) {
+    if (detalles[id] && detalles[id].estado === "listo") return listo();
+    if (modoEjemplo) { detalles[id] = { estado: "error", error: "En el pueblo de prueba no hay carpetas para leer." }; return listo(); }
+    detalles[id] = { estado: "cargando" };
+    fetch("/api/postulacion?id=" + encodeURIComponent(id), { cache: "no-store" }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    }).then(function (res) {
+      detalles[id] = res.ok ? Object.assign({ estado: "listo" }, res.j) : { estado: "error", error: res.j.error || "No pude leer la carpeta." };
+      listo();
+    }, function () { detalles[id] = { estado: "error", error: "El servidor del tablero no respondió." }; listo(); });
+  }
+
+  // Cuánto hace que no se sincroniza el correo, con la regla de colores del buzón.
+  function estadoSync() {
+    var s = (datosActuales && datosActuales.sync) || {};
+    if (!s.ultima) return { color: "rojo", horas: null, texto: "Todavía no se sincronizó el correo desde el tablero." };
+    var d = new Date(String(s.ultima).replace(" ", "T"));
+    var horas = (Date.now() - d.getTime()) / 36e5;
+    if (isNaN(horas)) return { color: "rojo", horas: null, texto: "No entiendo la fecha de la última sincronización (" + s.ultima + ")." };
+    var color = horas > 20 ? "rojo" : horas > 6 ? "amarillo" : horas > 2 ? "gris" : null;
+    var hace = horas < 1 ? "hace menos de una hora" : horas < 48 ? "hace " + Math.floor(horas) + " h" : "hace " + Math.floor(horas / 24) + " días";
+    return { color: color, horas: horas, texto: "Última sincronización: " + hace + " (" + String(s.ultima).replace("T", " ") + ")." };
+  }
+  var COLOR_SOBRE = { gris: "#8a8a9a", amarillo: "#e0a000", rojo: "#d8302a" };
+
+  // ---------- el pueblo ----------
+  var mapa = null, capaFija = null, pueblo = null, escena = "pueblo", casaActual = null;
+
+  function porFila(ancho) { return Math.max(1, Math.floor((ancho - 1) / 4)); }
+  function nuevaGrilla(ancho, alto, suelo) {
+    var g = { suelo: [], solido: [], cosa: [] };
+    for (var j = 0; j < alto; j++) {
+      g.suelo.push([]); g.solido.push([]); g.cosa.push([]);
+      for (var i = 0; i < ancho; i++) { g.suelo[j].push(suelo); g.solido[j].push(false); g.cosa[j].push(null); }
+    }
+    return g;
+  }
+
+  function armarPueblo(datos) {
+    var grupos = { "por-enviar": [], "conversacion": [], "esperando": [], "cerrada": [] };
+    (datos.postulaciones || []).forEach(function (p) { (grupos[p.columna] || grupos.esperando).push(p); });
+    Object.keys(grupos).forEach(function (k) { // en cada barrio, las casas van por orden alfabético
+      grupos[k].sort(function (a, b) { return String(a.empresa || a.id).localeCompare(String(b.empresa || b.id), "es", { sensitivity: "base" }); });
+    });
+
+    var pendientes = {}, generales = [], ids = {};
+    (datos.postulaciones || []).forEach(function (p) { ids[p.id] = true; });
+    (datos.acciones || []).forEach(function (a) {
+      if (a.hecha) return;
+      if (a.postulacion && ids[a.postulacion]) (pendientes[a.postulacion] = pendientes[a.postulacion] || []).push(a);
+      else generales.push(a);
+    });
+    Object.keys(pendientes).forEach(function (k) { ordenarAcciones(pendientes[k]); });
+    ordenarAcciones(generales);
+
+    function alturaZona(n, ancho) { return 2 + Math.max(1, Math.ceil(n / porFila(ancho))) * 4; }
+
+    var zCentro = { id: "centro", x: 1, w: ANCHO - 2, y: 1, h: 11 };
+    var calle = zCentro.y + 9;
+    var y = zCentro.y + zCentro.h;
+    var zEnv = { id: "por-enviar", x: 1, w: 19, y: y };
+    var zConv = { id: "conversacion", x: 22, w: ANCHO - 23, y: y };
+    var alto1 = Math.max(alturaZona(grupos["por-enviar"].length, zEnv.w), alturaZona(grupos.conversacion.length, zConv.w));
+    zEnv.h = alto1; zConv.h = alto1;
+    y += alto1 + 2;
+    var zEsp = { id: "esperando", x: 1, w: ANCHO - 2, y: y };
+    zEsp.h = alturaZona(grupos.esperando.length, zEsp.w);
+    y += zEsp.h + 2;
+    var zCer = { id: "cerrada", x: 1, w: ANCHO - 2, y: y };
+    zCer.h = alturaZona(grupos.cerrada.length, zCer.w);
+    var alto = y + zCer.h + 1;
+    var zonas = [zEnv, zConv, zEsp, zCer];
+
+    var g = nuevaGrilla(ANCHO, alto, "pasto");
+    var suelo = g.suelo, solido = g.solido, cosa = g.cosa;
+    function poner(i, j, tipo, ent) { if (j >= 0 && j < alto && i >= 0 && i < ANCHO) { cosa[j][i] = { tipo: tipo, ent: ent }; solido[j][i] = true; } }
+    function bloque(x, y0, w, h, tipo, ent) { for (var a = 0; a < w; a++) for (var b = 0; b < h; b++) poner(x + a, y0 + b, tipo, ent); }
+
+    // calles
+    [calle, zEnv.y + alto1, zEsp.y + zEsp.h].forEach(function (fy, k) {
+      for (var i = 1; i < ANCHO - 1; i++) { suelo[fy][i] = "camino"; if (k) suelo[fy + 1][i] = "camino"; }
+    });
+    for (var j2 = calle; j2 < zEnv.y + alto1; j2++) { suelo[j2][20] = "camino"; suelo[j2][21] = "camino"; }
+
+    // ---- la plaza ----
+    var plaza = { x: 2, y: 2, w: 23, h: 7 };
+    for (var pj2 = plaza.y; pj2 < plaza.y + plaza.h; pj2++) for (var pi = plaza.x; pi < plaza.x + plaza.w; pi++) suelo[pj2][pi] = "piedra";
+    plaza.fuente = { x: 12, y: 4 };
+    plaza.tablon = { x: 4, y: 3, w: 2, generales: generales };
+    plaza.buzon = { x: 8, y: 3, w: 1 };
+    plaza.calendario = { x: 18, y: 3, w: 2 };
+    plaza.mudanza = { x: 18, y: 6, w: 4 };
+    plaza.faroles = [[2, 2], [24, 2], [2, 8], [24, 8]];
+    plaza.bancos = [[8, 7], [13, 7]];
+    bloque(12, 4, 3, 2, "fuente");
+    bloque(4, 3, 2, 1, "tablon", plaza.tablon);
+    poner(8, 3, "buzon", plaza.buzon);
+    bloque(18, 3, 2, 1, "calendario", plaza.calendario);
+    bloque(18, 6, 3, 2, "mudanza", plaza.mudanza); poner(21, 7, "mudanza", plaza.mudanza);
+    plaza.faroles.forEach(function (f) { poner(f[0], f[1], "farol"); });
+    plaza.bancos.forEach(function (b) { bloque(b[0], b[1], 2, 1, "banco"); });
+
+    // ---- la universidad, el faro y tu casa ----
+    for (var ci = 26; ci < ANCHO - 1; ci++) suelo[7][ci] = "camino";
+    var universidad = { tipo: "universidad", x: 27, y: 4, w: 5, h: 3, puerta: { x: 29, y: 6 } };
+    var faro = { tipo: "faro", x: 33, y: 2, w: 3, h: 5, puerta: { x: 34, y: 6 } };
+    var miCasa = { tipo: "hogar", x: 39, y: 4, w: 4, h: 3, puerta: { x: 40, y: 6 } };
+    miCasa.bici = { x: miCasa.puerta.x - 1, y: miCasa.puerta.y + 1 }; // donde descansa la bicicleta
+    [universidad, faro, miCasa].forEach(function (e) { bloque(e.x, e.y, e.w, e.h, e.tipo, e); });
+    [[37, 3], [44, 3], [45, 5], [25, 2], [43, 7]].forEach(function (a) { poner(a[0], a[1], "arbol"); });
+
+    // ---- los barrios ----
+    var casas = [];
+    zonas.forEach(function (z) {
+      var lista = grupos[z.id];
+      z.cantidad = lista.length;
+      var n = porFila(z.w);
+      var margen = Math.floor((z.w - n * 4) / 2) + 1;
+      if (z.id === "cerrada") {
+        for (var jj = z.y; jj < z.y + z.h; jj++) for (var ii = z.x; ii < z.x + z.w; ii++) suelo[jj][ii] = "pastoGris";
+        for (var i = z.x; i < z.x + z.w; i++) if (Math.abs(i - (z.x + Math.floor(z.w / 2))) > 1) poner(i, z.y, "cerca");
+      }
+      poner(z.x + margen - 1, z.y + 1, "cartel", z);
+      var filas = Math.max(1, Math.ceil(lista.length / n));
+      for (var f = 0; f < filas; f++) {
+        var fy = z.y + 2 + f * 4 + 2;
+        for (var k = z.x; k < z.x + z.w; k++) suelo[fy][k] = "camino";
+      }
+      lista.forEach(function (p, idx) {
+        var hx = z.x + margen + (idx % n) * 4, hy = z.y + 2 + Math.floor(idx / n) * 4;
+        var casa = { p: p, zona: z.id, x: hx, y: hy, pendientes: pendientes[p.id] || [] };
+        casas.push(casa);
+        bloque(hx, hy, 3, 2, "casa", casa);
+      });
+    });
+
+    for (var bi = 0; bi < ANCHO; bi++) { poner(bi, 0, "arbol"); poner(bi, alto - 1, "arbol"); }
+    for (var bj = 0; bj < alto; bj++) { poner(0, bj, "arbol"); poner(ANCHO - 1, bj, "arbol"); }
+
+    return { tipo: "pueblo", ancho: ANCHO, alto: alto, suelo: suelo, solido: solido, cosa: cosa, casas: casas, zonas: zonas,
+      plaza: plaza, universidad: universidad, faro: faro, miCasa: miCasa, inicio: { x: 20, y: calle } };
+  }
+
+  // ---------- dibujo ----------
+  function rect(g, x, y, w, h, c) { g.fillStyle = c; g.fillRect(x, y, w, h); }
+
+  function dibujarPasto(g, x, y, r, gris) {
+    rect(g, x, y, T, T, gris ? C.pastoGris : C.pasto);
+    var oscuro = gris ? C.pastoGris2 : C.mata;
+    for (var k = 0; k < 2; k++) {
+      if (r() < 0.55) {
+        var ox = x + 2 + Math.floor(r() * 11), oy = y + 3 + Math.floor(r() * 10);
+        rect(g, ox, oy, 1, 2, oscuro); rect(g, ox + 2, oy, 1, 2, oscuro); rect(g, ox + 1, oy + 1, 1, 2, oscuro);
+      }
+    }
+    if (!gris && r() < 0.06) {
+      var fx = x + 4 + Math.floor(r() * 8), fy = y + 4 + Math.floor(r() * 8), col = r() < 0.5 ? "#f8f0f0" : "#f07888";
+      rect(g, fx - 1, fy, 3, 1, col); rect(g, fx, fy - 1, 1, 3, col); rect(g, fx, fy, 1, 1, "#f8d040");
+    }
+  }
+  function dibujarCamino(g, x, y, r, i, j, m) {
+    rect(g, x, y, T, T, C.camino);
+    for (var k = 0; k < 3; k++) if (r() < 0.5) rect(g, x + Math.floor(r() * 15), y + Math.floor(r() * 15), 1, 1, C.camino2);
+    if (j > 0 && m.suelo[j - 1][i] !== "camino") rect(g, x, y, T, 1, C.camino2);
+    if (j < m.alto - 1 && m.suelo[j + 1][i] !== "camino") rect(g, x, y + T - 1, T, 1, C.camino2);
+  }
+  function dibujarPiedra(g, x, y) {
+    rect(g, x, y, T, T, C.piedra);
+    rect(g, x, y + 7, T, 1, C.piedra2); rect(g, x, y + 15, T, 1, C.piedra2);
+    rect(g, x + 7, y, 1, 7, C.piedra2); rect(g, x + 15, y + 8, 1, 7, C.piedra2);
+  }
+  function dibujarArbol(g, x, y) {
+    rect(g, x + 6, y + 11, 4, 5, C.tronco);
+    rect(g, x + 2, y + 2, 12, 10, C.arbol1); rect(g, x + 1, y + 4, 14, 6, C.arbol1); rect(g, x + 4, y, 8, 2, C.arbol1);
+    rect(g, x + 3, y + 2, 9, 7, C.arbol2); rect(g, x + 5, y + 1, 5, 2, C.arbol2);
+    rect(g, x + 4, y + 3, 3, 2, C.arbol3); rect(g, x + 8, y + 2, 2, 1, C.arbol3);
+  }
+  function dibujarCerca(g, x, y) {
+    rect(g, x, y + 6, T, 2, C.madera); rect(g, x, y + 11, T, 2, C.madera);
+    rect(g, x + 2, y + 3, 3, 12, C.madera2); rect(g, x + 11, y + 3, 3, 12, C.madera2);
+    rect(g, x + 2, y + 3, 3, 1, C.madera); rect(g, x + 11, y + 3, 3, 1, C.madera);
+  }
+  function dibujarCartel(g, x, y) {
+    rect(g, x + 7, y + 9, 2, 7, C.madera2);
+    rect(g, x + 1, y + 2, 14, 8, C.borde); rect(g, x + 2, y + 3, 12, 6, C.madera);
+    rect(g, x + 4, y + 5, 8, 1, C.madera2); rect(g, x + 4, y + 7, 6, 1, C.madera2);
+  }
+  function dibujarTablon(g, x, y) {
+    rect(g, x + 3, y + 10, 2, 6, C.madera2); rect(g, x + 27, y + 10, 2, 6, C.madera2);
+    rect(g, x + 1, y + 1, 30, 11, C.borde); rect(g, x + 2, y + 2, 28, 9, C.madera);
+    [[4, 3, "#fbfaf2"], [11, 4, "#f8e08a"], [18, 3, "#fbfaf2"], [24, 4, "#c8e4fa"]].forEach(function (h) {
+      rect(g, x + h[0], y + h[1], 5, 6, h[2]); rect(g, x + h[0] + 2, y + h[1], 1, 1, "#c0302a");
+    });
+  }
+  function dibujarFuente(g, x, y) {
+    rect(g, x + 2, y + 6, 44, 24, C.piedra2); rect(g, x + 4, y + 4, 40, 24, C.piedra2);
+    rect(g, x + 5, y + 7, 38, 19, C.agua);
+    rect(g, x + 8, y + 10, 6, 1, C.agua2); rect(g, x + 30, y + 20, 7, 1, C.agua2);
+    rect(g, x + 20, y + 2, 8, 16, C.piedra2); rect(g, x + 21, y + 3, 6, 14, C.piedra); rect(g, x + 22, y, 4, 4, C.agua2);
+  }
+  function dibujarBuzon(g, x, y) {
+    rect(g, x + 7, y + 9, 2, 7, C.madera2);
+    rect(g, x + 2, y + 1, 12, 10, C.borde); rect(g, x + 3, y + 2, 10, 8, "#d03a30"); rect(g, x + 3, y + 2, 10, 2, "#e86a5a");
+    rect(g, x + 5, y + 6, 6, 1, "#3a2020");
+    rect(g, x + 14, y + 2, 1, 6, C.borde); rect(g, x + 14, y + 2, 2, 2, "#f8d040");
+  }
+  function dibujarCalendario(g, x, y) {
+    rect(g, x + 4, y + 11, 2, 5, C.madera2); rect(g, x + 26, y + 11, 2, 5, C.madera2);
+    rect(g, x + 1, y, 30, 13, C.borde); rect(g, x + 2, y + 1, 28, 11, "#fbfaf2"); rect(g, x + 2, y + 1, 28, 3, "#d03a30");
+    for (var f = 0; f < 2; f++) for (var c = 0; c < 6; c++) rect(g, x + 4 + c * 4, y + 6 + f * 3, 3, 2, f === 0 && c === 3 ? "#3e6fb0" : "#c8c8d4");
+  }
+  function dibujarMudanza(g, x, y) {
+    // camión de 3x2 y cajas en la baldosa de al lado
+    rect(g, x + 1, y + 3, 31, 23, C.borde); rect(g, x + 2, y + 4, 29, 21, "#eef0f4");
+    rect(g, x + 2, y + 13, 29, 3, "#e07a2a");
+    rect(g, x + 31, y + 11, 16, 15, C.borde); rect(g, x + 32, y + 12, 14, 13, "#3e6fb0");
+    rect(g, x + 37, y + 13, 8, 5, C.agua2); rect(g, x + 32, y + 22, 14, 2, "#2e4f94");
+    [9, 39].forEach(function (wx) { rect(g, x + wx - 4, y + 24, 9, 7, "#222034"); rect(g, x + wx - 1, y + 26, 3, 3, "#9a9aa8"); });
+    var bx = x + 48, by = y + 16;
+    rect(g, bx + 1, by + 6, 14, 10, "#8a5a2a"); rect(g, bx + 2, by + 7, 12, 8, "#c8945a"); rect(g, bx + 7, by + 7, 2, 8, "#e0c08a");
+    rect(g, bx + 3, by, 10, 7, "#8a5a2a"); rect(g, bx + 4, by + 1, 8, 5, "#d8a46a"); rect(g, bx + 7, by + 1, 2, 5, "#e0c08a");
+  }
+  function dibujarFarol(g, x, y) {
+    rect(g, x + 7, y + 5, 2, 11, "#3a3a4a"); rect(g, x + 5, y + 14, 6, 2, "#3a3a4a");
+    rect(g, x + 4, y, 8, 6, "#3a3a4a"); rect(g, x + 5, y + 1, 6, 4, "#f8e8a0");
+  }
+  function dibujarBanco(g, x, y) {
+    rect(g, x + 1, y + 3, 30, 3, C.madera2); rect(g, x + 1, y + 7, 30, 4, C.madera); rect(g, x + 1, y + 10, 30, 1, C.madera2);
+    rect(g, x + 3, y + 11, 2, 4, "#3a3a4a"); rect(g, x + 27, y + 11, 2, 4, "#3a3a4a");
+  }
+  function dibujarCasaSimple(g, x, y, techo, opciones) {
+    var o = opciones || {}, gris = o.gris;
+    rect(g, x + 3, y + 14, 42, 18, C.borde);
+    rect(g, x + 4, y + 15, 40, 16, gris ? "#ddd8cc" : C.pared);
+    rect(g, x + 4, y + 29, 40, 2, "#c8bca8");
+    [8, 32].forEach(function (vx) {
+      rect(g, x + vx - 1, y + 17, 10, 8, C.borde);
+      rect(g, x + vx, y + 18, 8, 6, gris ? "#8a8a96" : C.vidrio);
+      rect(g, x + vx + 1, y + 19, 2, 2, gris ? "#8a8a96" : "#ffffff");
+      if (gris) rect(g, x + vx - 1, y + 19, 10, 2, C.madera);
+    });
+    rect(g, x + 18, y + 18, 12, 14, C.borde); rect(g, x + 19, y + 19, 10, 13, C.puerta); rect(g, x + 26, y + 25, 2, 2, "#f0d060");
+    if (gris) { rect(g, x + 17, y + 22, 14, 2, C.madera); rect(g, x + 17, y + 27, 14, 2, C.madera); }
+    rect(g, x + 1, y + 2, 46, 14, C.borde); rect(g, x + 2, y + 3, 44, 12, techo[0]);
+    for (var k = 0; k < 4; k++) rect(g, x + 2, y + 5 + k * 3, 44, 1, techo[1]);
+    rect(g, x, y + 14, 48, 3, C.borde); rect(g, x + 1, y + 15, 46, 1, techo[1]);
+    rect(g, x + 35, y - 2, 6, 6, C.borde); rect(g, x + 36, y - 1, 4, 5, "#b85a3a");
+    if (o.engranaje) { // cartelito con un engranaje
+      rect(g, x + 8, y + 4, 12, 10, C.borde); rect(g, x + 9, y + 5, 10, 8, "#fbfaf2");
+      rect(g, x + 12, y + 6, 4, 6, "#6a6a78"); rect(g, x + 11, y + 7, 6, 4, "#6a6a78"); rect(g, x + 13, y + 8, 2, 2, "#fbfaf2");
+    }
+  }
+  // Tu casa: dos pisos, techo verde, buzón propio y un cantero con flores.
+  var VENTANAS_HOGAR = [[6, 19, 12, 8], [46, 19, 12, 8], [6, 35, 12, 8], [46, 35, 12, 8]];
+  function dibujarHogarFuera(g, e) {
+    var x = e.x * T, y = e.y * T;
+    rect(g, x + 3, y + 16, 58, 32, C.borde); rect(g, x + 4, y + 17, 56, 30, "#f6efe0");
+    rect(g, x + 4, y + 31, 56, 2, "#d8ccb4");                                    // línea entre los dos pisos
+    for (var k = 0; k < 4; k++) rect(g, x + 4, y + 18 + k * 3, 56, 1, "#efe4cc");
+    VENTANAS_HOGAR.forEach(function (v) {
+      rect(g, x + v[0] - 1, y + v[1] - 1, v[2] + 2, v[3] + 2, C.borde); rect(g, x + v[0], y + v[1], v[2], v[3], C.vidrio);
+      rect(g, x + v[0] + v[2] / 2, y + v[1], 1, v[3], C.borde); rect(g, x + v[0], y + v[1] + v[3] / 2, v[2], 1, C.borde);
+      rect(g, x + v[0] + 1, y + v[1] + 1, 2, 2, "#fff");
+      rect(g, x + v[0] - 1, y + v[1] + v[3] + 1, v[2] + 2, 2, "#2e7a4a");          // jardinera
+      rect(g, x + v[0] + 1, y + v[1] + v[3] + 1, 2, 1, "#f07888"); rect(g, x + v[0] + 7, y + v[1] + v[3] + 1, 2, 1, "#f8d040");
+    });
+    rect(g, x + 24, y + 19, 16, 9, C.borde); rect(g, x + 25, y + 20, 14, 7, "#fbfaf2"); // cartel con un corazón
+    rect(g, x + 29, y + 21, 2, 2, "#d8403a"); rect(g, x + 33, y + 21, 2, 2, "#d8403a"); rect(g, x + 29, y + 23, 6, 1, "#d8403a"); rect(g, x + 30, y + 24, 4, 1, "#d8403a"); rect(g, x + 31, y + 25, 2, 1, "#d8403a");
+    rect(g, x + 18, y + 34, 12, 14, C.borde); rect(g, x + 19, y + 35, 10, 13, "#2e7a4a"); rect(g, x + 26, y + 41, 2, 2, "#f0d060");
+    rect(g, x + 17, y + 33, 14, 2, C.borde);                                       // alero de la puerta
+    rect(g, x + 33, y + 37, 8, 6, C.borde); rect(g, x + 34, y + 38, 6, 4, "#d03a30");  // buzón propio
+    rect(g, x, y + 2, 64, 16, C.borde); rect(g, x + 1, y + 3, 62, 13, "#4aa86a");
+    for (var t = 0; t < 4; t++) rect(g, x + 1, y + 5 + t * 3, 62, 1, "#2e7a4a");
+    rect(g, x + 26, y - 4, 12, 7, C.borde); rect(g, x + 27, y - 3, 10, 6, "#4aa86a");   // buhardilla
+    rect(g, x + 30, y - 2, 4, 4, C.vidrio);
+    rect(g, x + 50, y - 3, 6, 7, C.borde); rect(g, x + 51, y - 2, 4, 6, "#b85a3a");    // chimenea
+  }
+  function dibujarCasa(g, casa) {
+    var techo = ZONAS[casa.zona].techo;
+    if (casa.zona === "cerrada" && /^oferta/.test(casa.p.resultado || "")) techo = ["#e8c440", "#b08a18"];
+    dibujarCasaSimple(g, casa.x * T, casa.y * T, techo, { gris: casa.zona === "cerrada" });
+  }
+  function dibujarUniversidad(g, e) {
+    var x = e.x * T, y = e.y * T, w = e.w * T;
+    rect(g, x + 4, y + 18, w - 8, 30, C.borde); rect(g, x + 5, y + 19, w - 10, 28, "#efe6f6");
+    for (var c = 0; c < 4; c++) rect(g, x + 10 + c * 18, y + 19, 2, 28, "#d8cce6");
+    [10, 56].forEach(function (vx) {
+      rect(g, x + vx - 1, y + 24, 16, 12, C.borde); rect(g, x + vx, y + 25, 14, 10, C.vidrio);
+      rect(g, x + vx + 6, y + 25, 2, 10, C.borde); rect(g, x + vx + 2, y + 27, 2, 2, "#fff");
+    });
+    rect(g, x + 32, y + 28, 16, 20, C.borde); rect(g, x + 33, y + 29, 14, 19, "#6a4a9a"); rect(g, x + 39, y + 29, 2, 19, C.borde);
+    rect(g, x, y + 2, w, 18, C.borde); rect(g, x + 1, y + 3, w - 2, 16, "#8a5ad0");
+    for (var k = 0; k < 5; k++) rect(g, x + 1, y + 5 + k * 3, w - 2, 1, "#5e3a9a");
+    rect(g, x + 28, y + 6, 24, 12, C.borde); rect(g, x + 29, y + 7, 22, 10, "#fbfaf2");
+    rect(g, x + 33, y + 9, 14, 3, "#2a2a4a"); rect(g, x + 39, y + 12, 2, 3, "#2a2a4a"); rect(g, x + 44, y + 11, 1, 4, "#e0a000"); // birrete
+    rect(g, x + 38, y - 6, 2, 9, "#3a3a4a"); rect(g, x + 40, y - 6, 8, 5, "#3e6fb0");                              // bandera
+  }
+  function dibujarFaro(g, e) {
+    var x = e.x * T, y = e.y * T;
+    rect(g, x + 2, y + 72, 44, 8, C.piedra2); rect(g, x + 6, y + 70, 36, 3, C.piedra);
+    for (var yy = 20; yy < 72; yy += 2) {
+      var w = 2 * Math.round((20 + (yy - 20) / 52 * 12) / 2), cx = x + 24;
+      rect(g, cx - w / 2 - 1, y + yy, w + 2, 2, C.borde);
+      rect(g, cx - w / 2, y + yy, w, 2, Math.floor((yy - 20) / 10) % 2 ? "#d8403a" : "#fbfaf2");
+    }
+    rect(g, x + 10, y + 16, 28, 4, C.borde); rect(g, x + 11, y + 17, 26, 2, "#6a6a78");
+    rect(g, x + 15, y + 6, 18, 10, C.borde); rect(g, x + 16, y + 7, 16, 8, "#a8dcff");
+    rect(g, x + 14, y + 3, 20, 3, "#b0302a"); rect(g, x + 18, y + 1, 12, 2, "#b0302a"); rect(g, x + 23, y - 1, 2, 2, C.borde);
+    rect(g, x + 19, y + 58, 10, 14, C.borde); rect(g, x + 20, y + 59, 8, 13, C.puerta);
+    rect(g, x + 21, y + 36, 6, 6, C.borde); rect(g, x + 22, y + 37, 4, 4, C.vidrio);
+  }
+
+  function dibujarCapa(m) {
+    var cv = document.createElement("canvas");
+    cv.width = m.ancho * T; cv.height = m.alto * T;
+    var g = cv.getContext("2d");
+    var r = azar(1987);
+    for (var j = 0; j < m.alto; j++) for (var i = 0; i < m.ancho; i++) {
+      var x = i * T, y = j * T, s = m.suelo[j][i];
+      if (s === "camino") dibujarCamino(g, x, y, r, i, j, m);
+      else if (s === "piedra") dibujarPiedra(g, x, y);
+      else if (s === "pasto" || s === "pastoGris") dibujarPasto(g, x, y, r, s === "pastoGris");
+    }
+    if (m.tipo === "casa") { dibujarInterior(g, m); return cv; }
+    if (m.tipo === "hogar") { dibujarHogar(g, m); return cv; }
+    for (var j2 = 0; j2 < m.alto; j2++) for (var i2 = 0; i2 < m.ancho; i2++) {
+      var c = m.cosa[j2][i2];
+      if (!c) continue;
+      if (c.tipo === "arbol") dibujarArbol(g, i2 * T, j2 * T);
+      else if (c.tipo === "cerca") dibujarCerca(g, i2 * T, j2 * T);
+      else if (c.tipo === "cartel") dibujarCartel(g, i2 * T, j2 * T);
+    }
+    var pz = m.plaza;
+    dibujarFuente(g, pz.fuente.x * T, pz.fuente.y * T);
+    dibujarTablon(g, pz.tablon.x * T, pz.tablon.y * T);
+    dibujarBuzon(g, pz.buzon.x * T, pz.buzon.y * T);
+    dibujarCalendario(g, pz.calendario.x * T, pz.calendario.y * T);
+    dibujarMudanza(g, pz.mudanza.x * T, pz.mudanza.y * T);
+    pz.faroles.forEach(function (f) { dibujarFarol(g, f[0] * T, f[1] * T); });
+    pz.bancos.forEach(function (b) { dibujarBanco(g, b[0] * T, b[1] * T); });
+    dibujarUniversidad(g, m.universidad);
+    dibujarFaro(g, m.faro);
+    dibujarHogarFuera(g, m.miCasa);
+    m.casas.forEach(function (c2) { dibujarCasa(g, c2); });
+    return cv;
+  }
+
+  // Ventanas y faroles que se prenden de noche (coordenadas del mundo).
+  function lucesDe(m) {
+    var luces = { ventanas: [], faroles: [] };
+    m.casas.forEach(function (c) {
+      if (c.zona === "cerrada") return;
+      luces.ventanas.push([c.x * T + 8, c.y * T + 18, 8, 6], [c.x * T + 32, c.y * T + 18, 8, 6]);
+    });
+    VENTANAS_HOGAR.forEach(function (v) { luces.ventanas.push([m.miCasa.x * T + v[0], m.miCasa.y * T + v[1], v[2], v[3]]); });
+    luces.ventanas.push([m.universidad.x * T + 10, m.universidad.y * T + 25, 14, 10], [m.universidad.x * T + 56, m.universidad.y * T + 25, 14, 10]);
+    luces.ventanas.push([m.faro.x * T + 22, m.faro.y * T + 37, 4, 4]);
+    m.plaza.faroles.forEach(function (f) { luces.faroles.push([f[0] * T + 8, f[1] * T + 3]); });
+    return luces;
+  }
+
+  // ---------- minimapa ----------
+  function armarMinimapa(m) {
+    var cv = document.createElement("canvas");
+    cv.width = m.ancho; cv.height = m.alto;
+    var g = cv.getContext("2d");
+    var COL = { universidad: "#8a5ad0", faro: "#fbfaf2", hogar: "#4aa86a", fuente: C.agua, arbol: C.arbol1,
+      cerca: C.madera, tablon: C.madera, buzon: "#d03a30", calendario: "#fbfaf2", mudanza: "#e07a2a", farol: "#3a3a4a", banco: C.madera, cartel: C.madera };
+    var SUELO = { camino: C.camino2, piedra: C.piedra2, pastoGris: C.pastoGris2, pasto: "#7cc06c" };
+    for (var j = 0; j < m.alto; j++) for (var i = 0; i < m.ancho; i++) {
+      var c = m.cosa[j][i];
+      var col = c ? (c.tipo === "casa" ? ZONAS[c.ent.zona].techo[0] : COL[c.tipo]) : SUELO[m.suelo[j][i]];
+      rect(g, i, j, 1, 1, col || "#7cc06c");
+    }
+    return cv;
+  }
+
+  // ---------- el interior de una casa ----------
+  var IN_W = 13, IN_H = 10;
+  function armarInterior(casa) {
+    var g = nuevaGrilla(IN_W, IN_H, "piso");
+    function poner(i, j, tipo, clave) { g.cosa[j][i] = { tipo: tipo, clave: clave, ent: casa }; g.solido[j][i] = true; }
+    for (var i = 0; i < IN_W; i++) for (var j = 0; j < 3; j++) { g.suelo[j][i] = "pared"; g.solido[j][i] = true; }
+    for (var j2 = 0; j2 < IN_H; j2++) { g.solido[j2][0] = true; g.solido[j2][IN_W - 1] = true; g.suelo[j2][0] = g.suelo[j2][IN_W - 1] = "muro"; }
+    for (var i2 = 0; i2 < IN_W; i2++) { g.solido[IN_H - 1][i2] = true; g.suelo[IN_H - 1][i2] = "muro"; }
+    g.solido[IN_H - 1][6] = false; g.suelo[IN_H - 1][6] = "salida"; g.cosa[IN_H - 1][6] = { tipo: "salida" };
+    poner(1, 2, "info", "empresa"); poner(2, 2, "info", "empresa");
+    poner(4, 2, "info", "rol"); poner(5, 2, "info", "rol"); poner(6, 2, "info", "rol");
+    poner(8, 2, "info", "encaje"); poner(9, 2, "info", "encaje");
+    poner(10, 2, "info", "historial"); poner(11, 2, "info", "historial"); poner(10, 3, "info", "historial"); poner(11, 3, "info", "historial");
+    poner(5, 5, "info", "escritorio"); poner(6, 5, "info", "escritorio"); poner(7, 5, "info", "escritorio");
+    poner(1, 8, "planta"); poner(11, 8, "planta");
+    return { tipo: "casa", casa: casa, ancho: IN_W, alto: IN_H, suelo: g.suelo, solido: g.solido, cosa: g.cosa, inicio: { x: 6, y: 8 } };
+  }
+
+  // ---------- tu casa por dentro: planta baja (configuración) y planta alta (tu cuarto) ----------
+  function armarHogar(piso) {
+    var g = nuevaGrilla(IN_W, IN_H, "piso");
+    function poner(i, j, tipo, clave) { g.cosa[j][i] = { tipo: tipo, clave: clave }; g.solido[j][i] = true; }
+    function pasar(i, j, tipo) { g.cosa[j][i] = { tipo: tipo }; g.solido[j][i] = false; }
+    for (var i = 0; i < IN_W; i++) for (var j = 0; j < 3; j++) g.solido[j][i] = true;
+    for (var j2 = 0; j2 < IN_H; j2++) { g.solido[j2][0] = true; g.solido[j2][IN_W - 1] = true; }
+    for (var i2 = 0; i2 < IN_W; i2++) g.solido[IN_H - 1][i2] = true;
+    var etiquetas;
+    if (piso === 1) {
+      pasar(6, IN_H - 1, "salida");
+      poner(2, 2, "opcion", "velocidad");                              // casco colgado
+      poner(7, 2, "opcion", "musica"); poner(8, 2, "opcion", "musica"); // radiograbador en su estante
+      poner(1, 4, "opcion", "dia");                                    // lámpara de pie
+      poner(1, 6, "sillon"); poner(1, 7, "sillon");
+      poner(5, 6, "opcion", "efectos"); poner(6, 6, "opcion", "efectos"); // mesa ratona con el timbre
+      poner(9, 6, "opcion", "minimapa");                               // globo terráqueo
+      poner(11, 8, "planta");
+      pasar(10, 3, "subir"); pasar(11, 3, "subir");
+      etiquetas = [["Casco", 2.5, 3], ["Radio", 8, 3], ["Lámpara", 1.5, 5], ["Timbre", 6, 7.05], ["Globo", 9.5, 7.05], ["Escalera", 11, 2.1]];
+    } else {
+      poner(1, 3, "cama"); poner(2, 3, "cama"); poner(1, 4, "cama"); poner(2, 4, "cama");
+      poner(3, 3, "mesaluz");
+      poner(5, 2, "trofeos"); poner(6, 2, "trofeos"); poner(7, 2, "trofeos");
+      poner(9, 2, "espejo");
+      poner(8, 5, "practicar"); poner(9, 5, "practicar"); poner(10, 5, "practicar");
+      poner(4, 8, "tv"); poner(5, 8, "tv");
+      poner(1, 8, "planta");
+      pasar(10, 8, "bajar"); pasar(11, 8, "bajar");
+      etiquetas = [["Cama", 1.5, 5.2], ["Trofeos", 6.5, 3], ["Espejo", 9.5, 3], ["Escritorio · practicar", 9.5, 4.15],
+        ["TV y consola", 5, 7.2], ["Escalera", 11, 9.05]];
+    }
+    return { tipo: "hogar", piso: piso, ancho: IN_W, alto: IN_H, suelo: g.suelo, solido: g.solido, cosa: g.cosa, etiquetas: etiquetas,
+      inicio: piso === 1 ? { x: 6, y: 8 } : { x: 10, y: 8 } };
+  }
+
+  function dibujarHogar(g, m) {
+    var piso = m.piso;
+    for (var j = 3; j < IN_H - 1; j++) for (var i = 1; i < IN_W - 1; i++) {
+      var x = i * T, y = j * T;
+      rect(g, x, y, T, T, piso === 1 ? C.piso : "#b88a6a");
+      rect(g, x, y + 7, T, 1, piso === 1 ? C.piso2 : "#9a6e52"); rect(g, x, y + 15, T, 1, piso === 1 ? C.piso2 : "#9a6e52");
+      rect(g, x + ((i + j) % 2 ? 4 : 11), y, 1, 7, piso === 1 ? C.piso2 : "#9a6e52");
+    }
+    var papel = piso === 1 ? ["#d8ecd8", "#c4e0c4"] : ["#dcd4f0", "#ccc2e6"];
+    rect(g, 0, 0, IN_W * T, T, "#4a5a48");
+    rect(g, T, T, (IN_W - 2) * T, 2 * T, papel[0]);
+    for (var s = 0; s < (IN_W - 2) * 4; s++) if (s % 2) rect(g, T + s * 4, T, 2, 2 * T, papel[1]);
+    rect(g, T, 3 * T - 3, (IN_W - 2) * T, 3, C.madera2);
+    rect(g, 0, 0, T, IN_H * T, "#4a5a48"); rect(g, (IN_W - 1) * T, 0, T, IN_H * T, "#4a5a48");
+    rect(g, 0, (IN_H - 1) * T, IN_W * T, T, "#4a5a48");
+    if (piso === 2) { // alfombra
+      rect(g, 4 * T - 2, 6 * T, 5 * T + 4, 2 * T + 6, "#8a5ad0");
+      rect(g, 4 * T + 2, 6 * T + 4, 5 * T - 4, 2 * T - 2, "#a87ae0");
+    }
+    if (piso === 1) {
+      rect(g, 6 * T, (IN_H - 1) * T, T, T, C.piso2);
+      rect(g, 6 * T + 1, (IN_H - 1) * T + 3, T - 2, 10, "#6a8a4a");
+      // casco colgado de un perchero
+      rect(g, 2 * T + 7, T + 4, 2, 6, C.madera2);
+      rect(g, 2 * T + 2, T + 10, 12, 8, C.borde); rect(g, 2 * T + 3, T + 11, 10, 6, "#e07a2a"); rect(g, 2 * T + 3, T + 13, 10, 1, "#fbfaf2");
+      rect(g, 2 * T + 5, T + 18, 6, 1, "#3a3a4a");
+      // cuadro en la pared
+      rect(g, 4 * T + 4, T + 6, 24, 16, C.madera2); rect(g, 4 * T + 6, T + 8, 20, 12, "#a8dcf4");
+      rect(g, 4 * T + 6, T + 15, 20, 5, "#7ac06a"); rect(g, 4 * T + 18, T + 10, 4, 4, "#f8d040");
+      // estante con el radiograbador de los noventa
+      rect(g, 7 * T, 2 * T + 6, 2 * T, 3, C.madera2);
+      rect(g, 7 * T + 1, T + 9, 30, 13, "#2a2a34"); rect(g, 7 * T + 2, T + 10, 28, 11, "#4a4a58");
+      rect(g, 7 * T + 3, T + 12, 8, 8, "#1a1a22"); rect(g, 7 * T + 21, T + 12, 8, 8, "#1a1a22");
+      rect(g, 7 * T + 5, T + 14, 4, 4, "#6a6a78"); rect(g, 7 * T + 23, T + 14, 4, 4, "#6a6a78");
+      rect(g, 7 * T + 12, T + 12, 8, 5, "#a8dcf4"); rect(g, 7 * T + 13, T + 18, 6, 2, "#d8403a");
+      rect(g, 7 * T + 6, T + 6, 20, 2, "#3a3a4a");
+      // lámpara de pie
+      rect(g, T + 7, 4 * T + 2, 2, 13, "#3a3a4a"); rect(g, T + 4, 5 * T - 1, 8, 2, "#3a3a4a");
+      rect(g, T + 2, 3 * T + 8, 12, 7, C.borde); rect(g, T + 3, 3 * T + 9, 10, 5, momentoDelDia() === "noche" ? C.luz : "#f8e8c0");
+      // sillón de dos cuerpos, mirando a la sala
+      rect(g, T, 6 * T, 14, 2 * T, "#8a3a32"); rect(g, T + 2, 6 * T + 2, 12, 2 * T - 4, "#c85a50"); rect(g, T + 2, 7 * T - 1, 12, 2, "#a8443e");
+      // alfombra con la mesa ratona y el timbre de mostrador
+      rect(g, 4 * T, 5 * T + 4, 4 * T, 3 * T - 6, "#3e6fb0"); rect(g, 4 * T + 3, 5 * T + 7, 4 * T - 6, 3 * T - 12, "#5a8ad0");
+      rect(g, 5 * T, 6 * T + 3, 2 * T, 8, C.madera); rect(g, 5 * T, 6 * T + 11, 2 * T, 2, C.madera2);
+      rect(g, 5 * T + 2, 6 * T + 13, 2, 3, C.madera2); rect(g, 7 * T - 4, 6 * T + 13, 2, 3, C.madera2);
+      rect(g, 5 * T + 11, 6 * T - 1, 10, 4, "#e0b040"); rect(g, 5 * T + 13, 6 * T - 3, 6, 2, "#f0d060"); rect(g, 5 * T + 15, 6 * T - 5, 2, 2, "#3a3a4a");
+      rect(g, 5 * T + 9, 6 * T + 2, 14, 2, "#6a6a78");
+      // globo terráqueo
+      rect(g, 9 * T + 7, 6 * T + 10, 2, 5, C.madera2); rect(g, 9 * T + 4, 6 * T + 14, 8, 2, C.madera2);
+      rect(g, 9 * T + 3, 6 * T, 10, 10, "#3e6fb0"); rect(g, 9 * T + 2, 6 * T + 2, 12, 6, "#3e6fb0");
+      rect(g, 9 * T + 4, 6 * T + 2, 4, 3, "#4a9a4a"); rect(g, 9 * T + 9, 6 * T + 5, 3, 3, "#4a9a4a"); rect(g, 9 * T + 5, 6 * T + 7, 2, 2, "#4a9a4a");
+      rect(g, 9 * T + 1, 6 * T + 4, 1, 4, "#c8a040"); rect(g, 9 * T + 14, 6 * T + 4, 1, 4, "#c8a040");
+      // escalera de dos cuadros que sube por la pared derecha
+      for (var e = 0; e < 5; e++) { rect(g, 10 * T, T + e * 9, 2 * T, 9, e % 2 ? "#8a5a32" : "#a8743c"); rect(g, 10 * T, T + e * 9 + 8, 2 * T, 1, C.madera2); }
+      rect(g, 10 * T - 2, T, 2, 3 * T + 4, C.madera2);
+    } else {
+      // ventana con cortinas
+      rect(g, 2 * T + 4, T + 3, 22, 18, C.borde); rect(g, 2 * T + 5, T + 4, 20, 16, momentoDelDia() === "noche" ? "#1a2a5a" : "#a8dcf4");
+      rect(g, 2 * T + 3, T + 2, 6, 21, "#d8403a"); rect(g, 2 * T + 21, T + 2, 6, 21, "#d8403a");
+      // cama
+      rect(g, T, 3 * T, 2 * T, 2 * T, C.madera2); rect(g, T + 2, 3 * T + 2, 2 * T - 4, 2 * T - 2, "#fbfaf2");
+      rect(g, T + 3, 3 * T + 3, 2 * T - 6, 7, "#ffffff"); rect(g, T + 2, 3 * T + 12, 2 * T - 4, 2 * T - 12, "#3e6fb0");
+      rect(g, T + 2, 3 * T + 12, 2 * T - 4, 2, "#5a8ad0");
+      // mesa de luz con portarretratos
+      rect(g, 3 * T + 2, 3 * T + 4, 12, 11, C.madera); rect(g, 3 * T + 2, 3 * T + 9, 12, 1, C.madera2); rect(g, 3 * T + 7, 3 * T + 6, 2, 1, "#f0d060");
+      rect(g, 3 * T + 4, 3 * T - 4, 8, 8, "#c8a040"); rect(g, 3 * T + 5, 3 * T - 3, 6, 6, "#a8dcf4"); rect(g, 3 * T + 6, 3 * T, 2, 2, "#f2c79a"); rect(g, 3 * T + 8, 3 * T, 2, 2, "#f2c79a");
+      // vitrina de trofeos
+      rect(g, 5 * T, T + 2, 3 * T, 2 * T - 2, C.madera2); rect(g, 5 * T + 2, T + 4, 3 * T - 4, 2 * T - 8, "#e8f0f8");
+      rect(g, 5 * T + 2, T + 17, 3 * T - 4, 2, C.madera);
+      [[5, "#e0b040"], [15, "#c8c8d4"], [25, "#e0b040"], [35, "#c88a50"]].forEach(function (tr) {
+        var tx = 5 * T + tr[0];
+        rect(g, tx, T + 7, 6, 5, tr[1]); rect(g, tx + 2, T + 12, 2, 3, tr[1]); rect(g, tx + 1, T + 15, 4, 2, C.borde);
+        rect(g, tx - 1, T + 8, 1, 2, tr[1]); rect(g, tx + 6, T + 8, 1, 2, tr[1]);
+      });
+      // espejo
+      rect(g, 9 * T + 2, T + 2, 12, 2 * T - 4, "#c8a040"); rect(g, 9 * T + 3, T + 3, 10, 2 * T - 6, "#cfe8f4"); rect(g, 9 * T + 5, T + 5, 2, 8, "#ffffff");
+      // escritorio para practicar, con notebook y silla
+      var dx = 8 * T, dy = 5 * T;
+      rect(g, dx - 1, dy + 2, 3 * T + 2, 13, C.borde); rect(g, dx, dy + 3, 3 * T, 6, C.madera); rect(g, dx, dy + 9, 3 * T, 5, C.madera2);
+      rect(g, dx + 16, dy - 5, 16, 9, "#3a3a4a"); rect(g, dx + 17, dy - 4, 14, 7, "#5ab0e8"); rect(g, dx + 14, dy + 3, 20, 2, "#6a6a78");
+      rect(g, dx + 4, dy - 1, 8, 5, "#fbfaf2"); rect(g, dx + 38, dy - 3, 4, 7, "#d8403a");
+      rect(g, 9 * T + 3, 6 * T + 2, 10, 8, C.madera2); rect(g, 9 * T + 4, 6 * T + 3, 8, 6, "#8a5ad0");
+      // TV de tubo sobre un mueble, con la consola y su joystick
+      rect(g, 4 * T, 8 * T + 8, 2 * T, 8, C.madera2); rect(g, 4 * T + 1, 8 * T + 9, 2 * T - 2, 6, C.madera);
+      rect(g, 4 * T + 4, 8 * T - 8, 24, 17, "#3a3a4a"); rect(g, 4 * T + 6, 8 * T - 6, 16, 12, "#4ab0a0"); rect(g, 4 * T + 24, 8 * T - 4, 2, 2, "#d8403a");
+      rect(g, 4 * T + 8, 8 * T + 10, 10, 4, "#9a9aa8"); rect(g, 4 * T + 9, 8 * T + 11, 3, 1, "#3a3a4a");
+      rect(g, 6 * T + 1, 8 * T + 6, 6, 4, "#2a2a34"); rect(g, 6 * T + 3, 8 * T + 3, 2, 3, "#d8403a");
+      // escalera de dos cuadros que baja
+      rect(g, 10 * T - 1, 8 * T, 2 * T + 1, T, C.borde);
+      for (var b = 0; b < 4; b++) rect(g, 10 * T, 8 * T + b * 4, 2 * T, 4, ["#a8743c", "#8a5a32", "#6a4a2a", "#4a3020"][b]);
+      rect(g, 10 * T - 2, 7 * T, 2, 2 * T, C.madera2);
+    }
+    // planta
+    var pl = piso === 1 ? [11, 8] : [1, 8], px = pl[0] * T, py = pl[1] * T;
+    rect(g, px + 4, py + 9, 8, 6, "#b85a3a"); rect(g, px + 3, py + 8, 10, 2, "#8a3a22");
+    rect(g, px + 3, py + 1, 4, 7, C.arbol2); rect(g, px + 8, py, 5, 8, C.arbol3); rect(g, px + 6, py + 3, 4, 5, C.arbol1);
+  }
+
+  function dibujarInterior(g, m) {
+    var casa = m.casa, papel = ZONAS[casa.zona].papel, p = casa.p;
+    for (var j = 3; j < IN_H - 1; j++) for (var i = 1; i < IN_W - 1; i++) {
+      var x = i * T, y = j * T;
+      rect(g, x, y, T, T, C.piso);
+      rect(g, x, y + 7, T, 1, C.piso2); rect(g, x, y + 15, T, 1, C.piso2);
+      rect(g, x + ((i + j) % 2 ? 4 : 11), y, 1, 7, C.piso2); rect(g, x + ((i + j) % 2 ? 12 : 2), y + 8, 1, 7, C.piso2);
+      rect(g, x + 2, y + 2, 3, 1, C.piso3);
+    }
+    rect(g, 4 * T - 4, 6 * T + 2, 5 * T + 8, 2 * T + 10, "#e0c070");
+    rect(g, 4 * T - 2, 6 * T + 4, 5 * T + 4, 2 * T + 6, "#a8443e");
+    for (var a = 0; a < 10; a++) rect(g, 4 * T + 2 + a * 8, 6 * T + 8, 3, 3, "#e0c070");
+    rect(g, 0, 0, IN_W * T, T, "#5a4038");
+    rect(g, T, T, (IN_W - 2) * T, 2 * T, papel[0]);
+    for (var s = 0; s < (IN_W - 2) * 4; s++) if (s % 2) rect(g, T + s * 4, T, 2, 2 * T, papel[1]);
+    rect(g, T, 3 * T - 3, (IN_W - 2) * T, 3, C.madera2);
+    rect(g, 0, 0, T, IN_H * T, "#5a4038"); rect(g, (IN_W - 1) * T, 0, T, IN_H * T, "#5a4038");
+    rect(g, 0, (IN_H - 1) * T, IN_W * T, T, "#5a4038");
+    rect(g, 6 * T, (IN_H - 1) * T, T, T, C.piso2);
+    rect(g, 6 * T + 1, (IN_H - 1) * T + 3, T - 2, 10, "#6a8a4a"); rect(g, 6 * T + 3, (IN_H - 1) * T + 5, T - 6, 1, "#8aaa6a");
+    var cx = T + 2, cy = T + 3;
+    rect(g, cx, cy, 2 * T - 4, 2 * T - 8, C.madera2); rect(g, cx + 2, cy + 2, 2 * T - 8, 2 * T - 12, "#a8dcf4");
+    rect(g, cx + 8, cy + 6, 12, 14, "#7a7a8a"); rect(g, cx + 12, cy + 3, 4, 3, "#7a7a8a");
+    for (var v = 0; v < 3; v++) { rect(g, cx + 10, cy + 8 + v * 4, 2, 2, "#f8e08a"); rect(g, cx + 16, cy + 8 + v * 4, 2, 2, "#f8e08a"); }
+    rect(g, cx + 2, cy + 18, 2 * T - 8, 2, "#7ac06a");
+    var rx = 4 * T + 2, ry = T + 2;
+    rect(g, rx, ry, 3 * T - 4, 2 * T - 6, C.madera2); rect(g, rx + 2, ry + 2, 3 * T - 8, 2 * T - 10, "#c8945a");
+    [[4, 3, "#fbfaf2", 10, 12], [16, 4, "#f8e08a", 9, 9], [27, 3, "#fbfaf2", 10, 14], [16, 15, "#c8e4fa", 9, 6]].forEach(function (h) {
+      rect(g, rx + h[0], ry + h[1], h[3], h[4], h[2]); rect(g, rx + h[0] + 4, ry + h[1], 2, 2, "#c0302a");
+      for (var l = 0; l < Math.floor(h[4] / 3) - 1; l++) rect(g, rx + h[0] + 2, ry + h[1] + 4 + l * 3, h[3] - 4, 1, "#9a9aa8");
+    });
+    var mx = 8 * T + 2, my = T + 3;
+    rect(g, mx, my, 2 * T - 4, 2 * T - 8, "#c8a040"); rect(g, mx + 2, my + 2, 2 * T - 8, 2 * T - 12, "#fbfaf2");
+    var enc = typeof p.encaje === "number" ? Math.max(0, Math.min(100, p.encaje)) : null;
+    rect(g, mx + 4, my + 10, 2 * T - 12, 6, "#d8d8e0");
+    if (enc != null) rect(g, mx + 4, my + 10, Math.round((2 * T - 12) * enc / 100), 6, enc >= 70 ? "#3e9f4a" : enc >= 50 ? "#e0a000" : "#d8503a");
+    else { rect(g, mx + 13, my + 4, 4, 1, "#7a86b8"); rect(g, mx + 16, my + 5, 1, 2, "#7a86b8"); rect(g, mx + 14, my + 7, 2, 1, "#7a86b8"); }
+    rect(g, mx + 4, my + 5, 4, 2, "#7a86b8");
+    var bx = 10 * T, by = T + 4;
+    rect(g, bx, by, 2 * T, 3 * T - 4, C.madera2); rect(g, bx + 2, by + 2, 2 * T - 4, 3 * T - 8, "#5a3a22");
+    var libros = ["#c0302a", "#3e6fb0", "#e0a000", "#3e8f6e", "#8a5ad0", "#d8503a", "#4a7ad0"];
+    for (var e = 0; e < 3; e++) {
+      var ey = by + 4 + e * 13;
+      for (var lb = 0; lb < 7; lb++) rect(g, bx + 3 + lb * 4, ey + (lb % 3 === 1 ? 2 : 0), 3, 10 - (lb % 3 === 1 ? 2 : 0), libros[(lb + e * 2) % libros.length]);
+      rect(g, bx + 2, ey + 10, 2 * T - 4, 2, C.madera);
+    }
+    var dx = 5 * T, dy = 5 * T;
+    rect(g, dx - 1, dy + 2, 3 * T + 2, 13, C.borde); rect(g, dx, dy + 3, 3 * T, 6, C.madera); rect(g, dx, dy + 9, 3 * T, 5, C.madera2);
+    rect(g, dx + 2, dy + 14, 3, 2, C.borde); rect(g, dx + 3 * T - 5, dy + 14, 3, 2, C.borde);
+    rect(g, dx + 18, dy - 9, 14, 11, "#3a3a4a"); rect(g, dx + 19, dy - 8, 12, 8, "#5ab0e8"); rect(g, dx + 20, dy - 7, 5, 1, "#c8ecff");
+    rect(g, dx + 23, dy + 2, 4, 2, "#3a3a4a");
+    rect(g, dx + 5, dy, 9, 4, "#fbfaf2"); rect(g, dx + 36, dy - 1, 6, 5, "#c0302a"); rect(g, dx + 37, dy - 2, 4, 1, "#fbfaf2");
+    rect(g, 6 * T + 3, 6 * T + 2, 10, 8, C.madera2); rect(g, 6 * T + 4, 6 * T + 3, 8, 6, "#3e6fb0");
+    [[1, 8], [11, 8]].forEach(function (pl) {
+      var px = pl[0] * T, py = pl[1] * T;
+      rect(g, px + 4, py + 9, 8, 6, "#b85a3a"); rect(g, px + 3, py + 8, 10, 2, "#8a3a22");
+      rect(g, px + 3, py + 1, 4, 7, C.arbol2); rect(g, px + 8, py, 5, 8, C.arbol3); rect(g, px + 6, py + 3, 4, 5, C.arbol1);
+    });
+  }
+
+  // ---------- el personaje ----------
+  var PALETA_PJ = { H: "#4a2f22", S: "#f2c79a", K: "#222034", W: "#ffffff", M: "#c8786a", J: "#3e8f6e", Y: "#f2d35a", P: "#3a4a7a" };
+  var FIGURAS = {
+    abajo: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHSSSSSSHH...",
+      "...HSSSSSSSSH...", "...SKKKSSKKKS...", "...SKWKKKKWKS...", "....SSSSSSSS....",
+      ".....SSMMSS.....", "....JJJJJJJJ....", "..SJJJJYYJJJJS..", "..SJJJJYYJJJJS..",
+      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
+    arriba: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...",
+      "...HHHHHHHHHH...", "...SHHHHHHHHS...", "...SHHHHHHHHS...", "....SSSSSSSS....",
+      ".....SSSSSS.....", "....JJJJJJJJ....", "..SJJJJJJJJJJS..", "..SJJJJJJJJJJS..",
+      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
+    derecha: [
+      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHSSSSH...",
+      "...HHHHSSSSSS...", "...HHHSSKKKKS...", "...HHHSSKWKKK...", "....HSSSSSSSS...",
+      ".....SSSSSMM....", ".....JJJJJJ.....", "....JJJJJJJS....", "....JJJJJJJS....",
+      "....JJJJJJJ.....", "....PPPPPPP.....", "....PPP..PPP....", "....KKK...KKK..."]
+  };
+  var PIERNAS_PASO = ["....PPP.PPPP....", "....KK...KKK...."];
+  var figuras = {};
+  function prepararFiguras() {
+    ["abajo", "arriba", "derecha"].forEach(function (nombre) {
+      [0, 1].forEach(function (paso) {
+        var filas = FIGURAS[nombre].slice();
+        if (paso) { filas[14] = PIERNAS_PASO[0]; filas[15] = PIERNAS_PASO[1]; }
+        var cv = document.createElement("canvas"); cv.width = 16; cv.height = 16;
+        var g = cv.getContext("2d");
+        filas.forEach(function (fila, y) {
+          fila = (fila + "................").slice(0, 16);
+          for (var x = 0; x < 16; x++) { var ch = fila[x]; if (PALETA_PJ[ch]) rect(g, x, y, 1, 1, PALETA_PJ[ch]); }
+        });
+        figuras[nombre + paso] = cv;
+      });
+    });
+  }
+  function dibujarBici(g, x, y, mira) {
+    var K = "#222034", R = "#c0302a";
+    if (mira === "abajo" || mira === "arriba") {
+      rect(g, x + 7, y + 9, 2, 7, K); rect(g, x + 7, y + 10, 2, 1, "#6a6a78");
+      rect(g, x + 3, y + (mira === "abajo" ? 9 : 8), 10, 1, "#6a6a78"); rect(g, x + 7, y + 7, 2, 2, R);
+      return;
+    }
+    [3, 12].forEach(function (cx) {
+      var cy = y + 12;
+      rect(g, x + cx - 3, cy - 1, 1, 3, K); rect(g, x + cx + 3, cy - 1, 1, 3, K);
+      rect(g, x + cx - 1, cy - 3, 3, 1, K); rect(g, x + cx - 1, cy + 3, 3, 1, K);
+      [[-2, -2], [2, -2], [-2, 2], [2, 2]].forEach(function (d) { rect(g, x + cx + d[0], cy + d[1], 1, 1, K); });
+    });
+    rect(g, x + 3, y + 11, 9, 1, R); rect(g, x + 7, y + 8, 1, 4, R);
+    var frente = mira === "derecha" ? 11 : 4;
+    rect(g, x + frente, y + 7, 1, 5, "#6a6a78"); rect(g, x + frente - 1, y + 7, 3, 1, "#6a6a78");
+  }
+
+  function dibujarBiciSola(g, x, y) {
+    dibujarBici(g, x, y, "derecha");
+    rect(g, x + 5, y + 7, 4, 2, "#3a3a4a");           // asiento
+    rect(g, x + 7, y + 12, 1, 4, "#6a6a78");          // pata de apoyo
+  }
+
+  var pj = { tx: 0, ty: 0, nx: 0, ny: 0, x: 0, y: 0, mira: "abajo", mueve: false, avance: 0, paso: 0, ruta: null, alLlegar: null };
+  var DIRS = { ArrowUp: [0, -1, "arriba"], ArrowDown: [0, 1, "abajo"], ArrowLeft: [-1, 0, "izquierda"], ArrowRight: [1, 0, "derecha"] };
+  var DELTA = { arriba: [0, -1], abajo: [0, 1], izquierda: [-1, 0], derecha: [1, 0] };
+  var apretadas = [];
+  var toque = null;
+
+  // La bicicleta: estacionada en `bici` ({x, y} del pueblo) o, si es null, con el personaje arriba.
+  var bici = null;
+  function enBici() { return escena === "pueblo" && config.velocidad === 2 && !bici && !pj.anim; }
+  // Afuera: caminando x1 o en bici x2,5. Cuando camina solo, al menos x2. Adentro de las casas, siempre camina.
+  function velocidad() {
+    if (escena !== "pueblo") return 1;
+    if (enBici()) return 2.5;
+    return pj.ruta ? 2 : 1;
+  }
+  function libre(i, j) {
+    if (i < 0 || j < 0 || i >= mapa.ancho || j >= mapa.alto || mapa.solido[j][i]) return false;
+    return !(escena === "pueblo" && bici && bici.x === i && bici.y === j);
+  }
+  function lugarParaBici(x, y) {
+    if (libre(x - 1, y)) return { x: x - 1, y: y };
+    if (libre(x + 1, y)) return { x: x + 1, y: y };
+    return { x: x, y: y + 1 };
+  }
+  // Animaciones cortas del personaje: bajarse de la bici antes de entrar y subirse al salir.
+  function animar(tipo, dur, datos, fin) { pj.anim = Object.assign({ tipo: tipo, t: 0, dur: dur, fin: fin }, datos); apretadas = []; toque = null; }
+  function bajarseYEntrar(entrada) {
+    if (!enBici()) return entrada();
+    var lugar = lugarParaBici(pj.tx, pj.ty);
+    sonar([330, 262]);
+    animar("bajar", 0.5, { desde: { x: pj.tx, y: pj.ty }, hasta: lugar }, function () { bici = lugar; entrada(); });
+  }
+  function subirseAlSalir() {
+    if (config.velocidad !== 2 || !bici) return;
+    var cerca = Math.abs(bici.x - pj.tx) + Math.abs(bici.y - pj.ty) <= 1;
+    if (!cerca) { bici = null; return; }
+    sonar([262, 330, 392]);
+    var hasta = { x: bici.x, y: bici.y };
+    animar("montar", 0.6, { desde: { x: pj.tx, y: pj.ty }, hasta: hasta }, function () {
+      bici = null; ubicar(hasta.x, hasta.y, hasta.x < pj.tx ? "izquierda" : hasta.x > pj.tx ? "derecha" : pj.mira);
+    });
+  }
+  function ubicar(x, y, mira) { pj.tx = pj.nx = x; pj.ty = pj.ny = y; pj.x = x * T; pj.y = y * T; pj.mueve = false; pj.avance = 0; if (mira) pj.mira = mira; }
+
+  // Chocar contra una puerta, subiendo, es entrar.
+  function puerta(i, j, mira) {
+    if (mira !== "arriba" || escena !== "pueblo") return false;
+    var c = mapa.cosa[j] && mapa.cosa[j][i];
+    if (!c || !c.ent) return false;
+    if (c.tipo === "casa" && i === c.ent.x + 1 && j === c.ent.y + 1) {
+      if (c.ent.zona === "cerrada") { sonar([110], "square", 0.05); return true; } // puerta tapiada: se entra con A
+      var casa = c.ent;
+      bajarseYEntrar(function () { entrar(casa); });
+      return true;
+    }
+    if (c.tipo === "hogar" && i === c.ent.puerta.x && j === c.ent.puerta.y) { bajarseYEntrar(function () { entrarHogar(1); }); return true; }
+    if (c.ent.puerta && i === c.ent.puerta.x && j === c.ent.puerta.y) { apretadas = []; sonar([392, 523]); abrirDialogo(c); return true; }
+    return false;
+  }
+
+  var guardarPosT = null;
+  function guardarPosicion() {
+    if (escena !== "pueblo") return;
+    clearTimeout(guardarPosT);
+    guardarPosT = setTimeout(function () { config.pos = { x: pj.tx, y: pj.ty, mira: pj.mira }; guardarConfig(); }, 400);
+  }
+
+  function actualizar(dt) {
+    if (dialogoAbierto || enTransicion) return;
+    if (pj.anim) {
+      pj.anim.t += dt / pj.anim.dur;
+      if (pj.anim.t >= 1) { var fin = pj.anim.fin; pj.anim = null; if (fin) fin(); }
+      return;
+    }
+    var paso = PASO / velocidad();
+    if (pj.mueve) {
+      pj.avance += dt / paso;
+      if (pj.avance >= 1) {
+        pj.tx = pj.nx; pj.ty = pj.ny; pj.mueve = false; pj.avance = 0; pj.paso ^= 1;
+        guardarPosicion();
+        var c = mapa.cosa[pj.ty] && mapa.cosa[pj.ty][pj.tx];
+        if (c && c.tipo === "salida") { if (escena === "hogar") salirHogar(); else salir(); return; }
+        if (c && c.tipo === "subir") { cambiarPiso(2, pj.tx); return; }
+        if (c && c.tipo === "bajar") { cambiarPiso(1, pj.tx); return; }
+      }
+    }
+    if (!pj.mueve && pj.ruta) {
+      if (pj.ruta.length) {
+        var s = pj.ruta.shift(), dx = s[0] - pj.tx, dy = s[1] - pj.ty;
+        pj.mira = dx > 0 ? "derecha" : dx < 0 ? "izquierda" : dy > 0 ? "abajo" : "arriba";
+        pj.nx = s[0]; pj.ny = s[1]; pj.mueve = true; pj.avance = 0;
+      } else {
+        var cb = pj.alLlegar; pj.ruta = null; pj.alLlegar = null;
+        if (cb) cb();
+      }
+    } else if (!pj.mueve) {
+      var tecla = apretadas.length ? apretadas[apretadas.length - 1] : toque;
+      if (tecla) {
+        toque = null;
+        var d = DIRS[tecla];
+        pj.mira = d[2];
+        var nx = pj.tx + d[0], ny = pj.ty + d[1];
+        if (libre(nx, ny)) { pj.nx = nx; pj.ny = ny; pj.mueve = true; pj.avance = 0; }
+        else puerta(nx, ny, d[2]);
+      }
+    }
+    var a = pj.mueve ? pj.avance : 0;
+    pj.x = (pj.tx + (pj.nx - pj.tx) * a) * T;
+    pj.y = (pj.ty + (pj.ny - pj.ty) * a) * T;
+  }
+
+  function camino(desde, hasta) {
+    var clave = function (x, y) { return y * mapa.ancho + x; };
+    var previo = {}, cola = [desde], visto = {};
+    visto[clave(desde[0], desde[1])] = true;
+    while (cola.length) {
+      var p = cola.shift();
+      if (p[0] === hasta[0] && p[1] === hasta[1]) {
+        var ruta = [], k = clave(p[0], p[1]);
+        while (k !== clave(desde[0], desde[1])) { ruta.unshift([k % mapa.ancho, Math.floor(k / mapa.ancho)]); k = previo[k]; }
+        return ruta;
+      }
+      [[1, 0], [-1, 0], [0, 1], [0, -1]].forEach(function (d) {
+        var x = p[0] + d[0], y = p[1] + d[1], kk = clave(x, y);
+        if (!visto[kk] && libre(x, y)) { visto[kk] = true; previo[kk] = clave(p[0], p[1]); cola.push([x, y]); }
+      });
+    }
+    return null;
+  }
+
+  // ---------- cambiar de escena ----------
+  var enTransicion = false;
+  var fundido = document.getElementById("fundido");
+  function transicion(cambio) {
+    enTransicion = true; apretadas = []; toque = null;
+    fundido.classList.add("negro");
+    setTimeout(function () {
+      cambio();
+      fundido.classList.remove("negro");
+      setTimeout(function () { enTransicion = false; }, 120);
+    }, 180);
+  }
+  function entrar(casa) {
+    sonar([392, 523]);
+    transicion(function () {
+      casaActual = casa;
+      escena = "casa";
+      mapa = armarInterior(casa);
+      capaFija = dibujarCapa(mapa);
+      ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+      actualizarAyuda();
+      cargarDetalles(casa.p.id, function () { if (dlg && dlg.cosa && dlg.cosa.tipo === "info") pintarDialogo(); });
+    });
+  }
+  // Vuelve al pueblo frente a la puerta. Con `animado`, si la bici quedó al lado, se sube con su animación.
+  function salirYa(animado) {
+    var casa = casaActual, eraHogar = escena === "hogar";
+    escena = "pueblo"; casaActual = null;
+    mapa = pueblo.mapa; capaFija = pueblo.capa;
+    if (eraHogar) ubicar(pueblo.mapa.miCasa.puerta.x, pueblo.mapa.miCasa.puerta.y + 1, "abajo");
+    else if (casa) ubicar(casa.x + 1, casa.y + 2, "abajo");
+    actualizarAyuda();
+    if (animado) subirseAlSalir();
+    else if (config.velocidad === 2) bici = null;
+  }
+  function salir() { sonar([523, 392]); transicion(function () { salirYa(true); }); }
+  function salirHogar() { sonar([523, 392]); transicion(function () { salirYa(true); }); }
+
+  var perfil = { estado: "nada" };
+  function cargarPerfil() {
+    if (perfil.estado !== "nada" || modoEjemplo) return;
+    perfil = { estado: "cargando" };
+    fetch("/api/perfil", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : {}; }).then(function (j) {
+      perfil = Object.assign({ estado: "listo" }, j);
+      if (dlg && dlg.cosa) pintarDialogo();
+    }, function () { perfil = { estado: "error" }; });
+  }
+  function entrarHogar(piso) {
+    sonar([392, 523]);
+    cargarPerfil();
+    transicion(function () {
+      escena = "hogar"; casaActual = null;
+      mapa = armarHogar(piso);
+      capaFija = dibujarCapa(mapa);
+      ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+      actualizarAyuda();
+    });
+  }
+  function cambiarPiso(piso, x) {
+    sonar(piso === 2 ? [392, 494, 587] : [587, 494, 392], "square", 0.06);
+    transicion(function () {
+      mapa = armarHogar(piso);
+      capaFija = dibujarCapa(mapa);
+      if (piso === 2) ubicar(x, 7, "arriba"); else ubicar(x, 4, "abajo");
+      actualizarAyuda();
+    });
+  }
+
+  // ---------- pantalla ----------
+  var pantalla = document.getElementById("pantalla");
+  var gp = pantalla.getContext("2d");
+  var base = document.createElement("canvas");
+  var gb = base.getContext("2d");
+  var escala = 3, vistaW = 0, vistaH = 0, dpr = 1, camX = 0, camY = 0;
+
+  function ajustar() {
+    dpr = window.devicePixelRatio || 1;
+    escala = Math.max(2, Math.min(5, Math.floor(Math.min(innerWidth / (20 * T), innerHeight / (13 * T)))));
+    vistaW = Math.ceil(innerWidth / escala); vistaH = Math.ceil(innerHeight / escala);
+    base.width = vistaW; base.height = vistaH;
+    pantalla.width = Math.round(vistaW * escala * dpr); pantalla.height = Math.round(vistaH * escala * dpr);
+    pantalla.style.width = vistaW * escala + "px"; pantalla.style.height = vistaH * escala + "px";
+  }
+  function camara() {
+    var mw = mapa.ancho * T, mh = mapa.alto * T;
+    camX = mw <= vistaW ? (mw - vistaW) / 2 : Math.max(0, Math.min(mw - vistaW, pj.x + 8 - vistaW / 2));
+    camY = mh <= vistaH ? (mh - vistaH) / 2 - (escena !== "pueblo" ? Math.min(40, (vistaH - mh) / 3) : 0) : Math.max(0, Math.min(mh - vistaH, pj.y + 8 - vistaH / 2));
+    camX = Math.round(camX); camY = Math.round(camY);
+  }
+
+  function dibujarAviso(g, x, y, color, tenue) {
+    g.globalAlpha = tenue ? 0.55 : 1;
+    rect(g, x, y, 9, 11, C.borde); rect(g, x + 1, y + 1, 7, 9, "#ffffff");
+    rect(g, x + 3, y + 11, 3, 1, C.borde); rect(g, x + 4, y + 12, 1, 1, C.borde);
+    rect(g, x + 3, y + 2, 3, 4, color); rect(g, x + 3, y + 7, 3, 2, color);
+    g.globalAlpha = 1;
+  }
+  function dibujarSobre(g, x, y, color) {
+    rect(g, x, y, 13, 10, color); rect(g, x + 1, y + 1, 11, 8, "#ffffff");
+    rect(g, x + 2, y + 2, 2, 1, color); rect(g, x + 4, y + 3, 2, 1, color); rect(g, x + 6, y + 4, 1, 1, color);
+    rect(g, x + 7, y + 3, 2, 1, color); rect(g, x + 9, y + 2, 2, 1, color);
+  }
+  function avisoDe(lista) {
+    if (!lista.length) return null;
+    var hoy = hoyISO();
+    return { color: COLOR_PRIORIDAD[lista[0].prioridad] || COLOR_PRIORIDAD.media, tenue: lista.every(function (x) { return x.fecha && x.fecha > hoy; }) };
+  }
+  function esViernes() { return new Date().getDay() === 5; }
+
+  function dibujar(t) {
+    if (vistaW !== Math.ceil(innerWidth / escala) || vistaH !== Math.ceil(innerHeight / escala)) ajustar();
+    if (!vistaW || !vistaH) return;
+    camara();
+    gb.fillStyle = escena !== "pueblo" ? "#120c0a" : "#1d3524"; gb.fillRect(0, 0, vistaW, vistaH);
+    gb.drawImage(capaFija, -camX, -camY);
+    var salto = Math.round(Math.sin(t / 220) * 1.5);
+    var momento = escena === "pueblo" ? momentoDelDia() : "dia";
+
+    if (escena === "pueblo") {
+      var f = mapa.plaza.fuente;
+      var brillos = Math.floor(t / 400) % 2 ? [[12, 14], [33, 11]] : [[16, 22], [27, 16]];
+      brillos.forEach(function (b) { rect(gb, f.x * T + b[0] - camX, f.y * T + b[1] - camY, 2, 1, "#ffffff"); });
+    }
+
+    // la bici estacionada
+    if (escena === "pueblo" && bici && !pj.anim) dibujarBiciSola(gb, bici.x * T - camX, bici.y * T - camY);
+    // personaje: caminando, corriendo (cuando camina solo) o en bici, y las animaciones de subirse y bajarse
+    var vel = velocidad(), conBici = enBici(), an = pj.anim, hop = 0, bx = null, by = null, dibX = pj.x, dibY = pj.y, mira = pj.mira;
+    if (an) {
+      var t2 = Math.min(1, an.t);
+      if (an.tipo === "bajar") {
+        if (t2 < 0.5) { hop = Math.round(Math.sin(t2 / 0.5 * Math.PI) * 5); bx = an.desde.x * T; by = an.desde.y * T; }
+        else { var u = (t2 - 0.5) / 0.5; bx = (an.desde.x + (an.hasta.x - an.desde.x) * u) * T; by = (an.desde.y + (an.hasta.y - an.desde.y) * u) * T; }
+      } else if (an.tipo === "montar") {
+        bx = an.hasta.x * T; by = an.hasta.y * T;
+        mira = an.hasta.x < an.desde.x ? "izquierda" : an.hasta.x > an.desde.x ? "derecha" : an.hasta.y < an.desde.y ? "arriba" : "abajo";
+        if (t2 < 0.6) { var u2 = t2 / 0.6; dibX = (an.desde.x + (an.hasta.x - an.desde.x) * u2) * T; dibY = (an.desde.y + (an.hasta.y - an.desde.y) * u2) * T; }
+        else { dibX = bx; dibY = by; hop = Math.round(Math.sin((t2 - 0.6) / 0.4 * Math.PI) * 5); }
+      }
+      conBici = false;
+    }
+    if (bx != null) dibujarBiciSola(gb, Math.round(bx - camX), Math.round(by - camY));
+    var caminando = pj.mueve || (an && an.tipo === "montar" && an.t < 0.6);
+    var ciclo = an ? (an.t * 4) % 1 : (vel >= 2 ? (pj.avance * 2) % 1 : pj.avance);
+    var dando = caminando && ciclo < 0.5 && !conBici;
+    var nombre = mira === "izquierda" ? "derecha" : mira;
+    var fig = figuras[nombre + (dando ? 1 : 0)];
+    var suelo = Math.round(dibY - camY), px = Math.round(dibX - camX);
+    var py = suelo - (dando ? 1 : 0) - 2 - (conBici ? 3 : 0) - hop - (vel === 2 && !conBici && pj.mueve ? 1 : 0);
+    gb.fillStyle = "rgba(0,0,0,.22)"; gb.fillRect(px + 3, suelo + 13, 10, 3);
+    if (mira === "izquierda" || (dando && pj.paso && nombre !== "derecha")) {
+      gb.save(); gb.translate(px + 16, py); gb.scale(-1, 1); gb.drawImage(fig, 0, 0); gb.restore();
+    } else gb.drawImage(fig, px, py);
+    if (conBici) dibujarBici(gb, px, suelo, mira);
+
+    // noche y atardecer
+    if (momento !== "dia") {
+      gb.fillStyle = momento === "noche" ? "rgba(14,22,70,.52)" : "rgba(255,120,40,.14)";
+      gb.fillRect(0, 0, vistaW, vistaH);
+      if (momento === "noche") {
+        var luces = pueblo.luces;
+        luces.ventanas.forEach(function (v) { rect(gb, v[0] - camX, v[1] - camY, v[2], v[3], C.luz); });
+        luces.faroles.forEach(function (l) {
+          var x = l[0] - camX, y = l[1] - camY;
+          gb.globalAlpha = 0.18; gb.fillStyle = C.luz;
+          gb.beginPath(); gb.arc(x, y + 10, 18, 0, Math.PI * 2); gb.fill();
+          gb.globalAlpha = 1; rect(gb, x - 3, y - 2, 6, 4, "#fff4c0");
+        });
+      }
+    }
+
+    if (escena === "pueblo") {
+      // el faro se prende los viernes (y de noche)
+      var fa = mapa.faro;
+      if (esViernes() || momento === "noche") {
+        var lx = fa.x * T + 24 - camX, ly = fa.y * T + 11 - camY, ang = t / 1400;
+        gb.globalAlpha = 0.22; gb.fillStyle = C.luz;
+        gb.beginPath(); gb.moveTo(lx, ly);
+        gb.lineTo(lx + Math.cos(ang - 0.12) * 120, ly + Math.sin(ang - 0.12) * 50);
+        gb.lineTo(lx + Math.cos(ang + 0.12) * 120, ly + Math.sin(ang + 0.12) * 50);
+        gb.closePath(); gb.fill(); gb.globalAlpha = 1;
+        rect(gb, fa.x * T + 16 - camX, fa.y * T + 7 - camY, 16, 8, C.luz);
+      }
+      mapa.casas.forEach(function (c) {
+        var av = avisoDe(c.pendientes);
+        if (av) dibujarAviso(gb, c.x * T + 20 - camX, c.y * T - 12 + salto - camY, av.color, av.tenue);
+      });
+      var tb = mapa.plaza.tablon, avt = avisoDe(tb.generales);
+      if (avt) dibujarAviso(gb, tb.x * T + 11 - camX, tb.y * T - 13 + salto - camY, avt.color, avt.tenue);
+      var es = estadoSync(), bz = mapa.plaza.buzon;
+      if (es.color) dibujarSobre(gb, bz.x * T + 1 - camX, bz.y * T - 12 + salto - camY, COLOR_SOBRE[es.color]);
+    } else if (escena === "casa") {
+      var avc = avisoDe(casaActual.pendientes);
+      if (avc) dibujarAviso(gb, 8 * T + 2 - camX, 5 * T - 10 + salto - camY, avc.color, avc.tenue);
+    }
+
+    gp.setTransform(1, 0, 0, 1, 0, 0);
+    gp.imageSmoothingEnabled = false;
+    gp.drawImage(base, 0, 0, pantalla.width, pantalla.height);
+    gp.setTransform(dpr, 0, 0, dpr, 0, 0);
+    dibujarTextos();
+    if (config.minimapa) dibujarMinimapa(t);
+  }
+
+  function fuente(tam) { gp.font = "bold " + tam + "px 'Courier New', ui-monospace, monospace"; }
+  function texto(s, x, y, tam, color, contorno) {
+    fuente(tam);
+    gp.textAlign = "center"; gp.textBaseline = "middle";
+    gp.lineJoin = "round"; gp.lineWidth = Math.max(3, tam / 3.5); gp.strokeStyle = contorno;
+    gp.strokeText(s, x, y); gp.fillStyle = color; gp.fillText(s, x, y);
+  }
+  function recortar(s, max) {
+    if (gp.measureText(s).width <= max) return s;
+    while (s.length > 1 && gp.measureText(s + "…").width > max) s = s.slice(0, -1);
+    return s + "…";
+  }
+  function placa(s, cx, cy, tam, max) {
+    fuente(tam);
+    s = recortar(s, max);
+    var w = gp.measureText(s).width + tam;
+    gp.fillStyle = "rgba(32,32,58,.62)";
+    gp.fillRect(cx - w / 2, cy - tam * 0.75, w, tam * 1.5);
+    gp.textAlign = "center"; gp.textBaseline = "middle"; gp.fillStyle = "#ffffff";
+    gp.fillText(s, cx, cy + 1);
+  }
+  function enPantalla(x, y) { return x > -160 && x < innerWidth + 160 && y > -40 && y < innerHeight + 40; }
+  function aPantalla(wx, wy) { return [(wx - camX) * escala, (wy - camY) * escala]; }
+
+  function dibujarTextos() {
+    var e = escala, tam = Math.max(10, Math.round(3.8 * e));
+    if (escena === "pueblo") {
+      mapa.zonas.forEach(function (z) {
+        var p = aPantalla(z.x * T + z.w * T / 2, z.y * T + 9);
+        if (enPantalla(p[0], p[1])) texto(ZONAS[z.id].nombre.toUpperCase() + "  ·  " + z.cantidad, p[0], p[1], Math.round(6 * e), "#fffbe8", "#2a2a4a");
+      });
+      var pz = mapa.plaza, pt = aPantalla((pz.x + pz.w / 2) * T, T + 8);
+      if (enPantalla(pt[0], pt[1])) texto("PLAZA", pt[0], pt[1], Math.round(6 * e), "#fffbe8", "#2a2a4a");
+      var placas = [
+        ["Tablón del pueblo", (pz.tablon.x + 1) * T, (pz.tablon.y + 1) * T + 7, 60],
+        ["Buzón", (pz.buzon.x + 0.5) * T, (pz.buzon.y + 1) * T + 7, 40],
+        ["Calendario", (pz.calendario.x + 1) * T, (pz.calendario.y + 1) * T + 7, 50],
+        ["Mudanzas", (pz.mudanza.x + 2) * T, (pz.mudanza.y + 2) * T + 7, 50],
+        ["Universidad", (mapa.universidad.x + 2.5) * T, (mapa.universidad.y + 3) * T + 8, 60],
+        ["Faro", (mapa.faro.x + 1.5) * T, (mapa.faro.y + 5) * T + 8, 40],
+        ["Tu casa · Configuración", (mapa.miCasa.x + 2) * T, (mapa.miCasa.y + 3) * T + 8, 80]
+      ];
+      placas.forEach(function (l) { var p = aPantalla(l[1], l[2]); if (enPantalla(p[0], p[1])) placa(l[0], p[0], p[1], tam, l[3] * e); });
+      mapa.casas.forEach(function (c) {
+        var p = aPantalla(c.x * T + 24, c.y * T + 40);
+        if (enPantalla(p[0], p[1])) placa(c.p.empresa || c.p.id, p[0], p[1], tam, 60 * e);
+      });
+    } else if (escena === "hogar") {
+      var th = aPantalla(IN_W * T / 2, 8);
+      texto(mapa.piso === 1 ? "TU CASA · PLANTA BAJA" : "TU CASA · PLANTA ALTA", th[0], th[1], Math.round(4.4 * e), "#fffbe8", "#2a2a4a");
+      mapa.etiquetas.forEach(function (l) { var q = aPantalla(l[1] * T, l[2] * T + 6); placa(l[0], q[0], q[1], tam, 60 * e); });
+    } else {
+      var p = casaActual.p, titulo = aPantalla(IN_W * T / 2, 8);
+      fuente(Math.round(4.4 * e));
+      texto(recortar((p.empresa || p.id) + (p.rol ? " · " + p.rol : ""), (IN_W * T - 4) * e), titulo[0], titulo[1], Math.round(4.4 * e), "#fffbe8", "#2a2a4a");
+      [["La empresa", 2, 3], ["El rol", 5.5, 3], ["Tu encaje", 9, 3], ["Historial", 11, 4], ["Escritorio", 6.5, 4.15]].forEach(function (l) {
+        var q = aPantalla(l[1] * T, l[2] * T + 6);
+        placa(l[0], q[0], q[1], tam, 40 * e);
+      });
+    }
+  }
+
+  function dibujarMinimapa(t) {
+    var m = pueblo.mapa, mini = pueblo.mini;
+    var s = Math.max(2, Math.min(5, Math.floor(Math.min(220 / m.ancho, (innerHeight - 140) / m.alto))));
+    var w = m.ancho * s, h = m.alto * s, x = innerWidth - w - 22, y = 40;
+    gp.fillStyle = "#2a2a4a"; gp.fillRect(x - 8, y - 28, w + 16, h + 36);
+    gp.fillStyle = "#fbfaf2"; gp.fillRect(x - 5, y - 25, w + 10, h + 30);
+    fuente(12); gp.textAlign = "left"; gp.textBaseline = "middle"; gp.fillStyle = "#20203a";
+    gp.fillText("Minimapa · M para cerrar", x, y - 13);
+    gp.imageSmoothingEnabled = false;
+    gp.drawImage(mini, x, y, w, h);
+    var parpadeo = Math.floor(t / 300) % 2;
+    m.casas.forEach(function (c) {
+      var av = avisoDe(c.pendientes);
+      if (av && (parpadeo || av.tenue)) { gp.fillStyle = av.color; gp.fillRect(x + (c.x + 1) * s, y + c.y * s - s, s, s * 2); }
+    });
+    var tx = pj.tx, ty = pj.ty;
+    if (escena === "casa") { tx = casaActual.x + 1; ty = casaActual.y + 2; }
+    if (escena === "hogar") { tx = m.miCasa.puerta.x; ty = m.miCasa.puerta.y + 1; }
+    gp.fillStyle = parpadeo ? "#ffffff" : "#222034";
+    gp.fillRect(x + tx * s - 1, y + ty * s - 1, s + 2, s + 2);
+  }
+
+  // ---------- diálogos ----------
+  var dialogo = document.getElementById("dialogo");
+  var dialogoAbierto = false;
+  var dlg = null;          // { tipo: cosa|prioridades|calendario|mudanza|config, cosa, items, sel, confirmar, post }
+  var datosActuales = null;
+  var guardando = false;
+
+  function postDe(id) { return (datosActuales.postulaciones || []).filter(function (x) { return x.id === id; })[0] || null; }
+  function lineaAccion(a, opciones) {
+    var o = opciones || {};
+    var cuando = [o.fechaAdelante ? null : a.fecha, a.condicion].filter(Boolean).join(", ");
+    var vencida = a.fecha && a.fecha < hoyISO();
+    var empresa = "";
+    if (o.conEmpresa) { var p = a.postulacion ? postDe(a.postulacion) : null; empresa = "<b>" + esc(p ? p.empresa : "Tablón") + ":</b> "; }
+    return (o.fechaAdelante ? '<span class="' + (vencida ? "rojo" : "valor") + '">' + esc(fechaCorta(a.fecha)) + "</span> " : "") +
+      '<span class="p-' + esc(a.prioridad || "media") + '">■</span> ' + empresa + esc(a.texto) +
+      (cuando || vencida ? ' <span class="tenue">(' + (vencida ? "vencida" + (cuando ? " · " : "") : "") + esc(cuando) + ")</span>" : "");
+  }
+
+  function pedidoDeAccion(a) {
+    var p = a.postulacion ? postDe(a.postulacion) : null;
+    var base = a.pedido && a.pedido.trim() ? a.pedido.trim() : "Ayudame con esta tarea de mi búsqueda.";
+    return base + "\n\nTarea del tablero: «" + a.texto + "» (id " + a.id + ")" +
+      (a.fecha ? ", para el " + a.fecha : "") + (a.condicion ? ", " + a.condicion : "") + "." +
+      (p ? "\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." : "") +
+      "\nCuando terminemos, marcala como hecha en el tablero.";
+  }
+  function pedidoPreparar(p) {
+    return "/preparar-entrevista " + p.id +
+      "\n\nPostulación: " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/)." +
+      (p.estado ? "\nEstado: " + p.estado + "." : "") +
+      "\nArmá también la práctica en el navegador (entrevistas/<empresa>/practica.json), así la practico desde 🎯 Práctica.";
+  }
+  function pedidoAnalizar(p) {
+    return "/analizar-oferta " + (p.link || "postulaciones/" + p.id + "/rol.md") +
+      "\n\nEs la postulación " + p.empresa + " · " + p.rol + " (carpeta postulaciones/" + p.id + "/). Guardá el encaje en el tablero.";
+  }
+  function pedidoAprender(p) {
+    return "/aprendizajes-busqueda Quiero registrar lo que aprendí de la postulación " + p.empresa + " · " + p.rol +
+      " (postulaciones/" + p.id + "/" + (p.resultado ? ", resultado: " + (RESULTADOS[p.resultado] || p.resultado) : "") + ").\n" +
+      "Juntá lo que haya en su carpeta y en el historial, preguntame lo que falte y guardalo para que aparezca en el tablero.";
+  }
+  function pedidoCerrar(p) {
+    return "/actualizar Cerrá la postulación " + p.empresa + " · " + p.rol + " (postulaciones/" + p.id + "/).\n" +
+      "Resultado: (descartada, descartada por mí, me retiré, sin respuesta, oferta aceptada u oferta rechazada)\nQué pasó: ";
+  }
+
+  function fechaDe(p) {
+    var h = (p.historial || []).filter(function (x) { return x && x.fecha; });
+    return p.ultimaNovedad || (h.length ? h[h.length - 1].fecha : null) || p.enviada || p.creada || "";
+  }
+  function aprendizajes() {
+    var posts = datosActuales.postulaciones || [];
+    var rechazos = posts.filter(function (p) { return p.columna === "cerrada" && p.resultado === "descartada"; })
+      .sort(function (a, b) { return fechaDe(b).localeCompare(fechaDe(a)); });
+    var recientes = rechazos.filter(function (p) { return fechaDe(p) >= haceDias(45); });
+    if (!recientes.length) recientes = rechazos.slice(0, 4);
+    var charlas = posts.filter(function (p) { return p.columna === "conversacion"; });
+    return { rechazos: recientes.slice(0, 8), charlas: charlas, practicas: practicas.slice(0, 6) };
+  }
+  function pedidoPerfil() {
+    var ap = aprendizajes();
+    var t = "/mejorar-perfil Quiero ajustar mi CV y mi perfil de LinkedIn con lo que aprendí en las últimas postulaciones.\n\nAntes de proponer cambios, leé:\n" +
+      "- El informe de aprendizajes más reciente en investigacion/. Si no hay uno de las últimas dos semanas, corré primero /aprendizajes-busqueda.\n";
+    if (ap.rechazos.length) {
+      t += "- Los rechazos recientes:\n" + ap.rechazos.map(function (p) {
+        return "  - " + p.empresa + " · " + p.rol + " (postulaciones/" + p.id + "/" + (fechaDe(p) ? ", " + fechaDe(p) : "") + ")";
+      }).join("\n") + "\n";
+    }
+    if (ap.practicas.length || ap.charlas.length) {
+      t += "- Lo que conté en entrevistas y prácticas recientes:\n" +
+        ap.practicas.map(function (x) { return "  - " + (x.empresa || x.carpeta) + ": práctica en entrevistas/" + x.carpeta + "/"; })
+          .concat(ap.charlas.map(function (p) { return "  - " + p.empresa + ": notas de las charlas en postulaciones/" + p.id + "/"; })).join("\n") + "\n";
+    }
+    return t + "\nUsá solo datos que estén en contexto/perfil.md o en esos archivos. Si aparece un dato nuevo sobre mí, preguntame antes de sumarlo.";
+  }
+
+  // ---- lo que muestra cada cosa del mapa ----
+  function contenido(c) {
+    var r = { titulo: "", html: "", items: [], grande: false };
+    if (c.tipo === "casa") {
+      var p = c.ent.p;
+      r.titulo = p.empresa;
+      r.html = "<p>" + esc(p.rol || "") + "</p>" +
+        (p.resultado ? "<p><b>Resultado:</b> " + esc(RESULTADOS[p.resultado] || p.resultado) + "</p>" : "") +
+        (p.estado ? "<p><b>Estado:</b> " + esc(p.estado) + "</p>" : "") +
+        (p.proximo ? "<p><b>Próximo paso:</b> " + esc(p.proximo) + "</p>" : "") +
+        (c.ent.pendientes.length ? "<p><b>Pendiente:</b></p>" : '<p class="tenue">Nada pendiente acá.</p>') +
+        (c.ent.zona === "cerrada" ? '<p class="rojo">Postulación cerrada. <span class="tecla">A</span> entrar igual</p>'
+          : '<p class="tenue">Subí por la puerta para entrar a la casa.</p>');
+      r.items = c.ent.pendientes.map(function (a) { return { tipo: "accion", a: a }; });
+    } else if (c.tipo === "tablon") {
+      r.titulo = "Tablón del pueblo";
+      r.html = c.ent.generales.length ? "<p>Tareas que no son de ninguna postulación:</p>" : '<p class="tenue">No hay tareas sueltas.</p>';
+      r.items = c.ent.generales.map(function (a) { return { tipo: "accion", a: a }; });
+    } else if (c.tipo === "buzon") {
+      var es = estadoSync(), s = datosActuales.sync || {};
+      var revisar = Array.isArray(s.porRevisar) ? s.porRevisar.length : +s.porRevisar || 0;
+      r.titulo = "Buzón";
+      r.html = '<p class="' + (es.color || "verde") + '">' + esc(es.texto) + "</p>" +
+        (s.programada ? "<p>La sincronización automática está prendida" + (s.horario ? " (" + esc(s.horario) + ")" : "") + ".</p>"
+          : '<p class="tenue">La sincronización automática está apagada.</p>') +
+        (revisar ? "<p><b>" + revisar + "</b> " + (revisar === 1 ? "novedad espera" : "novedades esperan") + " tu revisión.</p>" : "") +
+        (s.error ? '<p class="rojo">Último error: ' + esc(s.error) + "</p>" : "") +
+        '<p class="tenue">El sobre se pone gris a las 2 h sin sincronizar, amarillo a las 6 h y rojo a las 20 h.</p>';
+      r.items = [{ tipo: "sync", etiqueta: "Revisar el correo y el calendario" }];
+    } else if (c.tipo === "faro") {
+      r.titulo = "Faro del repaso semanal";
+      r.html = "<p>Desde acá se mira la semana entera: qué se movió, qué quedó vencido y qué priorizar la que viene.</p>" +
+        (esViernes() ? '<p class="verde">Hoy es viernes: el faro está prendido. Buen día para el repaso.</p>' : '<p class="tenue">El faro se prende los viernes.</p>');
+      r.items = [{ tipo: "repaso", etiqueta: "Hacer el repaso semanal" }];
+    } else if (c.tipo === "universidad") {
+      var ap = aprendizajes();
+      r.titulo = "Universidad";
+      r.grande = true;
+      r.html = "<p>Acá se pulen tu CV y tu LinkedIn con lo que vas aprendiendo en la búsqueda.</p>" +
+        "<h3>Rechazos recientes</h3>" + (ap.rechazos.length ? "<ul>" + ap.rechazos.map(function (p) {
+          return "<li>" + esc(p.empresa) + " · " + esc(p.rol) + ' <span class="tenue">(' + esc(fechaDe(p) || "sin fecha") + ")</span></li>";
+        }).join("") + "</ul>" : '<p class="tenue">No hay rechazos registrados.</p>') +
+        "<h3>Entrevistas y prácticas</h3>" + (ap.practicas.length || ap.charlas.length ? "<ul>" +
+          ap.practicas.map(function (x) { return "<li>Práctica: " + esc(x.empresa || x.carpeta) + "</li>"; }).join("") +
+          ap.charlas.map(function (p) { return "<li>En conversación: " + esc(p.empresa) + "</li>"; }).join("") + "</ul>"
+          : '<p class="tenue">Todavía no hay entrevistas ni prácticas.</p>');
+      r.items = [{ tipo: "perfil", etiqueta: "Mejorar mi perfil con estos aprendizajes" }];
+    } else if (c.tipo === "cartel") {
+      r.titulo = ZONAS[c.ent.id].nombre;
+      r.html = "<p>" + (c.ent.cantidad === 1 ? "1 postulación vive en este barrio." : c.ent.cantidad + " postulaciones viven en este barrio.") + "</p>";
+    } else if (c.tipo === "fuente") {
+      r.html = "<p>El agua está fresca. Buen lugar para respirar antes de la próxima entrevista.</p>";
+    } else if (c.tipo === "cerca") {
+      r.html = "<p>Del otro lado están las postulaciones cerradas. La entrada está en el medio.</p>";
+    } else if (c.tipo === "hogar") {
+      r.titulo = "Tu casa";
+      r.html = "<p>Ingresá para ajustar tu configuración y recorrer tu hogar.</p>" +
+        '<p class="tenue">Subí por la puerta para entrar. Arriba están tu cuarto, tus trofeos y el escritorio para practicar.</p>';
+    } else if (c.tipo === "bici") {
+      r.titulo = "Bicicleta";
+      r.html = "<p>La más veloz del condado.</p>" + (config.velocidad === 1
+        ? '<p class="tenue">Para usarla, ponete el casco que está en tu casa (velocidad «En bicicleta»).</p>'
+        : '<p class="tenue">Te subís cuando salís de la casa que tenés al lado.</p>');
+    } else if (c.tipo === "sillon") {
+      r.html = "<p>Tu sillón. Acá se leen los mails largos.</p>";
+    } else if (c.tipo === "cama") {
+      r.titulo = "Cama";
+      r.html = "<p>La búsqueda también se hace descansando. Mañana seguimos.</p>";
+    } else if (c.tipo === "mesaluz") {
+      r.titulo = "Mesa de luz";
+      r.html = "<p>Un portarretratos con la gente que te acompaña en esta búsqueda, y el despertador listo para la próxima entrevista.</p>";
+    } else if (c.tipo === "trofeos") {
+      contenidoTrofeos(r);
+    } else if (c.tipo === "espejo") {
+      r.titulo = "Espejo";
+      r.grande = true;
+      if (perfil.estado === "cargando" || perfil.estado === "nada") r.html = '<p class="tenue">Mirándote…</p>';
+      else if (perfil.posicionamiento) r.html = "<p>Así te presentás hoy, según <code>contexto/posicionamiento.md</code>:</p>" + md(perfil.posicionamiento);
+      else {
+        r.html = '<p class="tenue">❓ Todavía no hay <code>contexto/posicionamiento.md</code>: el espejo no sabe cómo te presentás.</p>';
+        r.items = [{ tipo: "posicionamiento", etiqueta: "Armar mi posicionamiento con Claude" }];
+      }
+    } else if (c.tipo === "tv") {
+      contenidoTv(r);
+    } else if (c.tipo === "practicar") {
+      r.titulo = "Escritorio · practicar entrevistas";
+      r.grande = true;
+      r.html = practicas.length ? "<p>Las prácticas armadas. Elegí una y se abre en otra pestaña.</p>" : '<p class="tenue">Todavía no hay prácticas armadas.</p>';
+      r.items = practicas.map(function (x) { return { tipo: "practica", carpeta: x.carpeta, etiqueta: "🎯 " + (x.empresa || x.carpeta) + (x.rol ? " · " + x.rol : "") }; });
+      r.items.push({ tipo: "nuevaPractica", etiqueta: "Armar una práctica nueva con Claude" });
+    } else if (c.tipo === "planta") {
+      r.html = "<p>Una planta. Alguien la riega todos los días.</p>";
+    } else if (c.tipo === "farol") {
+      r.html = momentoDelDia() === "noche" ? "<p>El farol ilumina la plaza.</p>" : "<p>Un farol. Se prende cuando cae la noche.</p>";
+    } else if (c.tipo === "banco") {
+      r.html = "<p>Un banco de plaza. Ideal para releer tus notas antes de una charla.</p>";
+    } else if (c.tipo === "info") {
+      contenidoInterior(c.clave, c.ent, r);
+    }
+    return r;
+  }
+
+  // Los trofeos salen tal cual de contexto/perfil.md: cada cargo con sus logros y las historias para entrevistas.
+  function contenidoTrofeos(r) {
+    r.titulo = "Trofeos";
+    r.grande = true;
+    if (perfil.estado !== "listo") { r.html = '<p class="tenue">Sacándoles el polvo…</p>'; return; }
+    if (!perfil.perfil) { r.html = '<p class="tenue">❓ No encontré <code>contexto/perfil.md</code>.</p>'; return; }
+    var cargos = [], historias = [], seccion = "";
+    perfil.perfil.replace(/\r/g, "").split("\n").forEach(function (l) {
+      var m;
+      if ((m = /^##\s+(.*)/.exec(l))) seccion = m[1];
+      else if (/historias/i.test(seccion) && (m = /^###\s+(.*)/.exec(l))) historias.push(m[1]);
+      else if (/experiencia/i.test(seccion) && (m = /^\s*-\s+\*\*([^*]+)\*\*\s*\(([^)]*)\):\s*(.+)$/.exec(l)) && /(19|20)\d\d/.test(m[2]) && !/confirmad|aprob/i.test(m[2])) cargos.push(m); // solo cargos con su período
+    });
+    r.html = '<p class="tenue">Salen tal cual de <code>contexto/perfil.md</code>.</p>' +
+      (cargos.length ? "<h3>🏆 Logros por cargo</h3><ul>" + cargos.map(function (m) {
+        return "<li><b>" + esc(m[1]) + "</b> " + '<span class="tenue">(' + esc(m[2]) + ")</span>: " + esc(m[3]) + "</li>"; }).join("") + "</ul>" : "") +
+      (historias.length ? "<h3>🥇 Historias para entrevistas</h3><ul>" + historias.map(function (h) { return "<li>" + esc(h) + "</li>"; }).join("") + "</ul>" : "") +
+      (!cargos.length && !historias.length ? '<p class="tenue">❓ El perfil no tiene logros con el formato que leen los trofeos.</p>' : "");
+  }
+  // La TV muestra los números de la temporada, sacados del tablero.
+  function contenidoTv(r) {
+    var posts = datosActuales.postulaciones || [], acc = datosActuales.acciones || [], semana = haceDias(7);
+    var cuenta = function (f) { return posts.filter(f).length; };
+    var enviadas = cuenta(function (p) { return p.enviada; });
+    var respuestas = cuenta(function (p) { return p.columna === "conversacion" || (p.columna === "cerrada" && p.resultado && p.resultado !== "sin-respuesta" && p.resultado !== "descartada-por-mi" && p.resultado !== "retirada"); });
+    r.titulo = "TV · la temporada en números";
+    r.grande = true;
+    r.html = "<ul>" +
+      "<li>Postulaciones en el pueblo: <b>" + posts.length + "</b> (por enviar " + cuenta(function (p) { return p.columna === "por-enviar"; }) +
+      " · esperando " + cuenta(function (p) { return p.columna === "esperando"; }) + " · en conversación " + cuenta(function (p) { return p.columna === "conversacion"; }) +
+      " · cerradas " + cuenta(function (p) { return p.columna === "cerrada"; }) + ")</li>" +
+      "<li>Enviadas: <b>" + enviadas + "</b>, " + cuenta(function (p) { return p.enviada && p.enviada >= semana; }) + " en los últimos 7 días</li>" +
+      "<li>Con respuesta de la empresa: <b>" + respuestas + "</b>" + (enviadas ? " (" + Math.round(respuestas / enviadas * 100) + "% de las enviadas)" : "") + "</li>" +
+      "<li>Tareas hechas en los últimos 7 días: <b>" + acc.filter(function (a) { return a.hecha && a.hechaEl && a.hechaEl >= semana; }).length + "</b></li>" +
+      "<li>Prácticas de entrevista armadas: <b>" + practicas.length + "</b></li></ul>" +
+      '<p class="tenue">La consola está enchufada: ya estás jugando.</p>';
+  }
+
+  function contenidoInterior(clave, casa, r) {
+    var p = casa.p, det = detalles[p.id] || { estado: "cargando" };
+    r.grande = true;
+    if (clave === "escritorio" && casa.zona === "cerrada") {
+      r.titulo = "Escritorio · Aprendizajes";
+      var notas = (p.historial || []).filter(function (x) { return /rechaz|descart|feedback|devoluci|motivo|aprend|no avanz|no sigu|sin respuesta|cerr/i.test(x.texto || ""); });
+      var aps = det.estado === "listo" ? det.aprendizajes || [] : [];
+      r.html = (det.estado === "cargando" ? '<p class="tenue">Leyendo la carpeta…</p>' : "") +
+        (aps.length ? aps.map(function (a) { return "<h3>" + esc(a.fuente) + "</h3>" + md(a.texto); }).join("") : "") +
+        (notas.length ? "<h3>Lo que quedó anotado en el historial</h3><ul>" + notas.slice().reverse().map(function (x) {
+          return '<li><span class="tenue">' + esc(x.fecha || "") + "</span> " + esc(x.texto) + "</li>"; }).join("") + "</ul>" : "") +
+        (!aps.length && !notas.length && det.estado !== "cargando" ? '<p class="tenue">❓ No hay aprendizajes registrados para esta postulación.</p>' : "") +
+        (casa.pendientes.length ? "<h3>Pendiente</h3>" : "<h3>¿Algo más para registrar?</h3>");
+      r.items = casa.pendientes.map(function (a) { return { tipo: "accion", a: a }; });
+      r.items.push({ tipo: "aprender", etiqueta: "Pedirle a Claude que registre lo aprendido" });
+      return;
+    }
+    if (clave === "escritorio") {
+      r.titulo = "Escritorio";
+      r.html = casa.pendientes.length ? "<p>Lo que hay para hacer con " + esc(p.empresa) + ":</p>" : '<p class="tenue">No hay tareas pendientes para esta postulación.</p>';
+      r.items = casa.pendientes.map(function (a) { return { tipo: "accion", a: a }; });
+      if (p.columna !== "cerrada") r.items.push({ tipo: "preparar", etiqueta: practicaDe[p.id] ? "🎯 Practicar la entrevista" : "🎯 Preparar la entrevista" });
+      return;
+    }
+    if (clave === "historial") {
+      r.titulo = "Historial";
+      var h = (p.historial || []).slice().reverse();
+      r.html = (h.length ? "<ul>" + h.map(function (x) { return '<li><span class="tenue">' + esc(x.fecha || "") + "</span> " + esc(x.texto || "") + "</li>"; }).join("") + "</ul>"
+        : '<p class="tenue">Todavía no hay novedades anotadas.</p>') +
+        (det.estado === "listo" && det.archivos && det.archivos.length ? "<h3>Documentos en la carpeta</h3><ul>" +
+          det.archivos.map(function (n) { return "<li><code>" + esc(n) + "</code></li>"; }).join("") + "</ul>" : "");
+      return;
+    }
+    if (det.estado === "cargando") { r.titulo = "…"; r.html = '<p class="tenue">Leyendo la carpeta de la postulación…</p>'; return; }
+    if (det.estado === "error") { r.titulo = "Sin datos"; r.html = '<p class="tenue">' + esc(det.error) + "</p>"; return; }
+    var partes = partesDeRol(det.rol);
+    if (clave === "empresa") {
+      r.titulo = p.empresa;
+      var emp = det.empresa ? md(det.empresa) : partes.empresa.length ? md(mdSecciones(partes.empresa)) : "";
+      r.html = emp || '<p class="tenue">❓ La carpeta todavía no tiene la ficha de la empresa (<code>empresa.md</code>).</p>';
+      if (!det.empresa) r.items = [{ tipo: "ficha", etiqueta: "Pedirle a Claude que arme la ficha de la empresa" }];
+    } else if (clave === "rol") {
+      r.titulo = p.rol || "El rol";
+      r.html = (p.link ? '<p><a href="' + esc(p.link) + '" target="_blank" rel="noopener">Ver el aviso original ↗</a></p>' : "") +
+        (partes.rol.length ? md(mdSecciones(partes.rol)) : '<p class="tenue">❓ La carpeta no tiene la descripción del rol.</p>');
+    } else if (clave === "encaje") {
+      r.titulo = "Tu encaje con el rol";
+      var enc = typeof p.encaje === "number" ? p.encaje : null;
+      r.html = enc != null ? '<p><b>Encaje: ' + enc + '/100</b> <span class="barra">' + "■".repeat(Math.round(enc / 10)) +
+        '<span class="vacia">' + "■".repeat(10 - Math.round(enc / 10)) + "</span></span></p>" : "";
+      if (partes.encaje.length) r.html += md(mdSecciones(partes.encaje));
+      else {
+        r.html += '<p class="tenue">❓ Todavía no hay un análisis de encaje para esta postulación.</p>';
+        r.items = [{ tipo: "analizar", etiqueta: "Pedirle a Claude que analice el encaje" }];
+      }
+    }
+  }
+
+  // ---- listas: prioridades, calendario, mudanzas y configuración ----
+  function accionesPrioritarias() { return ordenarAcciones((datosActuales.acciones || []).filter(function (a) { return !a.hecha; })); }
+  function accionesConFecha() {
+    return (datosActuales.acciones || []).filter(function (a) { return !a.hecha && a.fecha; }).sort(function (a, b) {
+      return String(a.fecha).localeCompare(String(b.fecha)) || (PRIORIDAD[a.prioridad] || 1) - (PRIORIDAD[b.prioridad] || 1);
+    });
+  }
+  var OPCIONES = [
+    { clave: "dia", nombre: "Día y noche", valores: ["auto", "dia", "noche"], textos: { auto: "Según la hora de esta computadora", dia: "Siempre de día", noche: "Siempre de noche" } },
+    { clave: "velocidad", nombre: "Velocidad afuera", valores: [1, 2], textos: { 1: "Caminando", 2: "En bicicleta" } },
+    { clave: "musica", nombre: "Música", valores: [true, false], textos: { "true": "Prendida", "false": "Apagada" } },
+    { clave: "efectos", nombre: "Efectos de sonido", valores: [true, false], textos: { "true": "Prendidos", "false": "Apagados" } },
+    { clave: "minimapa", nombre: "Minimapa (tecla M)", valores: [false, true], textos: { "true": "Visible", "false": "Oculto" } }
+  ];
+  function contenidoLista() {
+    var r = { titulo: "", html: "", items: [], grande: true };
+    var hoy = new Date();
+    if (dlg.tipo === "prioridades") {
+      r.titulo = "Prioridades";
+      r.items = accionesPrioritarias().map(function (a) { return { tipo: "accion", a: a }; });
+      r.html = r.items.length ? '<p class="tenue">Ordenadas de la más importante a la menos.</p>' : "<p>No hay acciones pendientes. ¡Todo al día!</p>";
+    } else if (dlg.tipo === "calendario") {
+      r.titulo = "Calendario";
+      r.items = accionesConFecha().map(function (a) { return { tipo: "accion", a: a, fechaAdelante: true }; });
+      r.html = "<p>Hoy es " + DIAS_LARGOS[hoy.getDay()] + " " + hoy.getDate() + " de " + MESES[hoy.getMonth()] + ".</p>" +
+        (r.items.length ? '<p class="tenue">Lo que tiene fecha, de lo más viejo a lo más nuevo. Elegí una y el personaje corre hasta ahí.</p>'
+          : '<p class="tenue">No hay acciones con fecha.</p>');
+    } else if (dlg.tipo === "mudanza") {
+      if (!dlg.post) {
+        r.titulo = "Mudanzas";
+        r.html = "<p>¿Qué postulación se muda de barrio?</p>";
+        var orden = { "por-enviar": 0, "esperando": 1, "conversacion": 2 };
+        r.items = (datosActuales.postulaciones || []).filter(function (p) { return p.columna !== "cerrada"; })
+          .sort(function (a, b) { return (orden[a.columna] - orden[b.columna]) || String(a.empresa).localeCompare(String(b.empresa)); })
+          .map(function (p) { return { tipo: "post", p: p, etiqueta: p.empresa + " · ahora en «" + ZONAS[p.columna].nombre + "»" }; });
+      } else {
+        var p = dlg.post;
+        r.titulo = "Mudanza de " + p.empresa;
+        r.html = "<p>¿A qué barrio va?</p>" + (p.columna === "por-enviar" ? '<p class="tenue">Pasar a «Esperando respuesta» anota hoy como fecha de envío.</p>' : "");
+        r.items = MUDABLES.filter(function (z) { return z !== p.columna; }).map(function (z) { return { tipo: "destino", destino: z, etiqueta: ZONAS[z].nombre }; });
+        r.items.push({ tipo: "cerrar", etiqueta: "Cerradas (lo resuelve Claude: copia el pedido)" });
+      }
+    } else if (dlg.tipo === "config") {
+      var OBJETOS = { dia: ["Lámpara", "Prendela, apagala o dejala que siga la hora de la computadora."],
+        velocidad: ["Casco de bicicleta", "Con el casco puesto, al salir te subís a la bici que está al lado de la puerta."],
+        musica: ["Radiograbador", "Un clásico de los noventa. Pasa una melodía tranquila que se compone sola."],
+        efectos: ["Timbre de mostrador", "Los sonidos cortos: pasos de menú, pedidos copiados, tareas hechas."],
+        minimapa: ["Globo terráqueo", "El minimapa también se prende y se apaga con la M."] };
+      var ob = OBJETOS[dlg.solo] || ["Configuración", ""];
+      r.titulo = ob[0];
+      r.html = "<p>" + esc(ob[1]) + '</p><p class="tenue">Lo que elijas queda guardado en este navegador.</p>';
+      r.items = OPCIONES.filter(function (o) { return !dlg.solo || o.clave === dlg.solo; }).map(function (o) { return { tipo: "opcion", o: o }; });
+    }
+    return r;
+  }
+
+  function teclasDe(item, varios) {
+    var t = varios ? '<span class="tecla">↑↓</span> elegir · ' : "";
+    var lista = dlg.tipo === "prioridades" || dlg.tipo === "calendario";
+    if (dlg.tipo === "config") return (varios ? '<span class="tecla">↑↓</span> elegir · ' : "") + '<span class="tecla">←→</span> o <span class="tecla">A</span> cambiar · <span class="tecla">Esc</span> cerrar';
+    if (dlg.tipo === "mudanza") return t + (dlg.post ? '<span class="tecla">A</span> mudarla · <span class="tecla">Esc</span> volver' : '<span class="tecla">A</span> elegir · <span class="tecla">Esc</span> cerrar');
+    if (dlg.tipo === "cosa" && dlg.cosa.tipo === "casa" && dlg.cosa.ent.zona === "cerrada")
+      return t + (item && item.tipo === "accion" ? '<span class="tecla">S</span> copiar pedido · <span class="tecla">D</span> dar por hecha · ' : "") +
+        '<span class="tecla">A</span> entrar igual · <span class="tecla">Esc</span> cerrar';
+    if (item && item.tipo === "practica") return t + '<span class="tecla">A</span> abrir la práctica · <span class="tecla">Esc</span> cerrar';
+    if (!item) return t ? t + '<span class="tecla">A</span> cerrar' : "";
+    if (item.tipo === "accion") return t + '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">D</span> dar por hecha' +
+      (lista ? ' · <span class="tecla">A</span> ' + (dlg.tipo === "calendario" ? "correr" : "ir") + " hasta ahí" : ' · <span class="tecla">A</span> cerrar');
+    if (item.tipo === "preparar") return t + (practicaDe[casaActual.p.id] ? '<span class="tecla">A</span> abrir la práctica · ' : "") +
+      '<span class="tecla">S</span> copiar pedido para Claude';
+    return t + '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">A</span> cerrar';
+  }
+
+  function pintarDialogo() {
+    var r = dlg.tipo === "cosa" ? contenido(dlg.cosa) : contenidoLista();
+    var items = dlg.items = r.items, varios = items.length > 1;
+    dlg.sel = Math.min(dlg.sel, Math.max(0, items.length - 1));
+    dialogo.classList.toggle("grande", !!r.grande);
+    var html = (r.titulo ? "<h2>" + esc(r.titulo) + "</h2>" : "") + r.html;
+    var conEmpresa = dlg.tipo === "prioridades" || dlg.tipo === "calendario";
+    if (items.length) {
+      html += "<ul>" + items.map(function (it, i) {
+        var elegida = i === dlg.sel && (varios || it.tipo !== "accion");
+        var cuerpo;
+        if (it.tipo === "accion") cuerpo = lineaAccion(it.a, { conEmpresa: conEmpresa, fechaAdelante: it.fechaAdelante });
+        else if (it.tipo === "opcion") cuerpo = esc(it.o.nombre) + ': <span class="valor">◀ ' + esc(it.o.textos[String(config[it.o.clave])]) + " ▶</span>";
+        else cuerpo = "<b>" + esc(it.etiqueta) + "</b>";
+        return '<li class="' + (elegida ? "elegida" : "") + '"><span class="cursor">' + (elegida ? "▶" : "") + "</span>" + cuerpo + "</li>";
+      }).join("") + "</ul>";
+    }
+    if (r.htmlDespues) html += r.htmlDespues;
+    if (dlg.confirmar) {
+      html += '<p class="pregunta">¿Das por hecha «' + esc(items[dlg.sel].a.texto) + '»?<br>' +
+        '<span class="tecla">D</span> sí, está hecha · <span class="tecla">Esc</span> no</p>';
+    } else {
+      var tec = teclasDe(items[dlg.sel], varios);
+      if (tec) html += '<p class="teclas">' + tec + "</p>";
+    }
+    dialogo.innerHTML = html + '<span class="sigue">▼</span>';
+    var el = dialogo.querySelector(".elegida");
+    if (el && el.scrollIntoView && varios) el.scrollIntoView({ block: "nearest" });
+  }
+
+  function mostrar(nuevo) {
+    dlg = nuevo;
+    dialogoAbierto = true;
+    pintarDialogo();
+    dialogo.classList.add("abierto");
+    dialogo.scrollTop = 0;
+  }
+  function abrirDialogo(c, sel) {
+    if (c.tipo === "calendario") return abrirLista("calendario", sel);
+    if (c.tipo === "mudanza") return abrirLista("mudanza", sel);
+    if (c.tipo === "opcion") { sonar([523, 784]); return mostrar({ tipo: "config", solo: c.clave, items: [], sel: 0, confirmar: false }); }
+    mostrar({ tipo: "cosa", cosa: c, items: [], sel: sel || 0, confirmar: false });
+    if (c.tipo === "info" && (!detalles[c.ent.p.id] || detalles[c.ent.p.id].estado === "cargando")) {
+      cargarDetalles(c.ent.p.id, function () { if (dlg && dlg.cosa === c) pintarDialogo(); });
+    }
+  }
+  function abrirLista(tipo, sel) {
+    sonar([523, 784]);
+    mostrar({ tipo: tipo, cosa: null, items: [], sel: sel || 0, confirmar: false, post: null });
+  }
+
+  function delante() {
+    var d = DELTA[pj.mira];
+    var i = pj.tx + d[0], j = pj.ty + d[1];
+    if (escena === "pueblo" && bici && bici.x === i && bici.y === j) return { tipo: "bici" };
+    return mapa.cosa[j] && mapa.cosa[j][i];
+  }
+  function mirar() {
+    var c = delante();
+    if (c && c.tipo !== "arbol" && c.tipo !== "salida" && c.tipo !== "subir" && c.tipo !== "bajar") abrirDialogo(c);
+    else nada();
+  }
+  function cerrar() { dialogo.classList.remove("abierto"); dialogo.classList.remove("grande"); dialogoAbierto = false; dlg = null; }
+
+  // ---------- caminar (o correr) solo hasta una acción ----------
+  function irA(a) {
+    cerrar();
+    if (escena !== "pueblo") salirYa();
+    var m = pueblo.mapa, destino, alLlegar;
+    var casa = a.postulacion ? m.casas.filter(function (c) { return c.p.id === a.postulacion; })[0] : null;
+    if (casa) {
+      destino = [casa.x + 1, casa.y + 2];
+      alLlegar = function () { pj.mira = "arriba"; abrirDialogo({ tipo: "casa", ent: casa }, Math.max(0, casa.pendientes.indexOf(a))); };
+    } else {
+      var tb = m.plaza.tablon;
+      destino = [tb.x, tb.y + 1];
+      alLlegar = function () { pj.mira = "arriba"; abrirDialogo({ tipo: "tablon", ent: tb }, Math.max(0, tb.generales.indexOf(a))); };
+    }
+    var ruta = camino([pj.tx, pj.ty], destino);
+    if (!ruta) { nada(); avisar("No encontré cómo llegar hasta ahí."); return; }
+    sonar([659, 784]);
+    pj.ruta = ruta; pj.alLlegar = alLlegar;
+  }
+
+  // ---------- avisos, sonidos y música ----------
+  var aviso = document.getElementById("aviso");
+  function avisar(texto) {
+    aviso.textContent = texto;
+    aviso.classList.add("visible");
+    clearTimeout(avisar._t);
+    avisar._t = setTimeout(function () { aviso.classList.remove("visible"); }, 2600);
+  }
+  var audio = null;
+  var primerGesto = true;
+  function contexto() {
+    try { audio = audio || new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { audio = null; }
+    if (audio && audio.state === "suspended") audio.resume();
+    return audio;
+  }
+  function sonar(notas, forma, largo) {
+    if (!config.efectos) return;
+    var ac = contexto();
+    if (!ac) return;
+    var t = ac.currentTime, d = largo || 0.09;
+    notas.forEach(function (n, i) {
+      var o = ac.createOscillator(), g = ac.createGain();
+      o.type = forma || "square"; o.frequency.value = n;
+      g.gain.setValueAtTime(0.05, t + i * d); g.gain.exponentialRampToValueAtTime(0.0001, t + i * d + d + 0.03);
+      o.connect(g); g.connect(ac.destination);
+      o.start(t + i * d); o.stop(t + i * d + d + 0.04);
+    });
+  }
+  function nada() { sonar([156, 117], "square", 0.07); }
+
+  // Música: una melodía suave que se compone sola compás a compás, así nunca se repite igual.
+  var musica = { sonando: false, timer: null, compas: 0, proximo: 0, salida: null, voces: [] };
+  var ACORDES = { I: [0, 4, 7], ii: [2, 5, 9], iii: [4, 7, 11], IV: [5, 9, 12], V: [7, 11, 14], vi: [9, 12, 16] };
+  var PROGRESIONES = [["I", "vi", "IV", "V"], ["I", "iii", "IV", "I"], ["vi", "IV", "I", "V"], ["IV", "V", "iii", "vi"], ["ii", "V", "I", "I"], ["I", "IV", "vi", "V"]];
+  var RITMOS = [[[2, 1], [2, 1], [4, 1]], [[3, 1], [1, 1], [2, 1], [2, 0]], [[1, 1], [1, 1], [2, 1], [4, 1]], [[4, 1], [4, 0]],
+    [[2, 1], [1, 1], [1, 1], [4, 1]], [[6, 1], [2, 0]], [[2, 0], [2, 1], [2, 1], [2, 1]], [[8, 0]]];
+  var PENTA = [0, 2, 4, 7, 9, 12, 14, 16, 19, 21];
+  function hz(midi) { return 440 * Math.pow(2, (midi - 69) / 12); }
+  function nota(ac, midi, t, dur, forma, vol, ataque) {
+    var o = ac.createOscillator(), g = ac.createGain();
+    o.type = forma; o.frequency.value = hz(midi);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + (ataque || 0.02));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(musica.salida);
+    o.start(t); o.stop(t + dur + 0.05);
+    musica.voces.push(o);
+    o.onended = function () { var i = musica.voces.indexOf(o); if (i >= 0) musica.voces.splice(i, 1); };
+  }
+  function programarCompas(ac, t) {
+    var corchea = 60 / 72 / 2;
+    var seccion = Math.floor(musica.compas / 8);
+    var r = azar(seccion * 7919 + 13), prog = PROGRESIONES[Math.floor(r() * PROGRESIONES.length)];
+    var acorde = ACORDES[prog[musica.compas % 4]], raiz = 48 + acorde[0];
+    var rc = azar(musica.compas * 104729 + 7);
+    nota(ac, raiz - 12, t, corchea * 3.6, "triangle", 0.05, 0.03);
+    nota(ac, raiz - 12 + 7, t + corchea * 4, corchea * 3.6, "triangle", 0.04, 0.03);
+    acorde.forEach(function (n) { nota(ac, 60 + n, t, corchea * 8, "sine", 0.012, 0.4); });
+    if (musica.compas % 16 >= 14) return; // cada 16 compases, dos de descanso sin melodía
+    var ritmo = RITMOS[Math.floor(rc() * RITMOS.length)], pos = 0, previa = 72 + acorde[0];
+    ritmo.forEach(function (paso, k) {
+      if (paso[1]) {
+        var m;
+        if (k === 0) m = 72 + acorde[Math.floor(rc() * 3)];
+        else {
+          var idx = PENTA.indexOf(((previa - 72) % 24 + 24) % 24);
+          idx = Math.max(0, Math.min(PENTA.length - 1, (idx < 0 ? 2 : idx) + Math.floor(rc() * 5) - 2));
+          m = 72 + PENTA[idx];
+        }
+        previa = m;
+        nota(ac, m, t + pos * corchea, corchea * paso[0] * 0.95, "triangle", 0.035, 0.02);
+      }
+      pos += paso[0];
+    });
+  }
+  function prenderMusica() {
+    if (!config.musica || document.hidden) return;
+    var ac = contexto();
+    if (!ac || musica.sonando) return;
+    musica.sonando = true;
+    musica.salida = ac.createGain(); musica.salida.gain.value = 0.9; musica.salida.connect(ac.destination);
+    musica.proximo = ac.currentTime + 0.2;
+    musica.timer = setInterval(function () {
+      while (musica.proximo < ac.currentTime + 0.6) {
+        programarCompas(ac, musica.proximo);
+        musica.proximo += 60 / 72 * 4;
+        musica.compas++;
+      }
+    }, 150);
+  }
+  function apagarMusica() {
+    clearInterval(musica.timer); musica.timer = null;
+    musica.sonando = false;
+    var ac = audio, ahora = ac ? ac.currentTime : 0;
+    musica.voces.splice(0).forEach(function (o) { try { o.stop(ahora); } catch (e) {} });
+    if (musica.salida) { try { musica.salida.gain.value = 0; musica.salida.disconnect(); } catch (e) {} musica.salida = null; }
+  }
+  document.addEventListener("visibilitychange", function () {
+    if (document.hidden) apagarMusica();
+    else if (config.musica && !primerGesto) prenderMusica();
+  });
+  addEventListener("storage", function (ev) {
+    if (ev.key !== CLAVE_CONFIG) return;
+    var pos = config.pos;
+    leerConfig(); config.pos = pos;
+    if (!config.musica) apagarMusica(); else if (!primerGesto && !document.hidden) prenderMusica();
+  });
+
+  function copiar(texto) {
+    function hecho() { sonar([660, 880]); avisar("Pedido copiado. Pegalo en Claude Code."); }
+    function planB() {
+      var ta = document.createElement("textarea");
+      ta.value = texto; ta.style.position = "fixed"; ta.style.opacity = "0";
+      document.body.appendChild(ta); ta.select();
+      var ok = false;
+      try { ok = document.execCommand("copy"); } catch (e) { ok = false; }
+      document.body.removeChild(ta);
+      if (ok) hecho(); else window.prompt("Copiá este texto:", texto);
+    }
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(texto).then(hecho, planB);
+    else planB();
+  }
+
+  // Cambios que pasan por el servidor del tablero (los mismos que hace tablero.html).
+  function enviarCambio(cambio, exito) {
+    if (guardando) return;
+    if (modoEjemplo) { nada(); avisar("En el pueblo de prueba no se guardan cambios."); return; }
+    guardando = true;
+    fetch("/api/cambios", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ cambios: [Object.assign({ fecha: hoyISO() }, cambio)] })
+    }).then(function (r) {
+      return r.json().then(function (j) { return { ok: r.ok, j: j }; }, function () { return { ok: false, j: {} }; });
+    }).then(function (res) {
+      guardando = false;
+      var r0 = res.ok && res.j.resultados && res.j.resultados[0];
+      if (!r0 || !r0.ok) {
+        nada();
+        avisar("No pude guardarlo: " + ((r0 && r0.motivo) || res.j.error || "el servidor no respondió bien") + ".");
+        return;
+      }
+      exito();
+      cargarDatos(reconstruir);
+    }, function () {
+      guardando = false;
+      nada();
+      avisar("Se cortó el servidor del tablero. No se guardó nada.");
+    });
+  }
+  function darPorHecha(a) {
+    enviarCambio({ tipo: "hecha", id: a.id }, function () { sonar([523, 659, 784, 1047]); avisar("¡Hecha! Quedó guardada en el tablero."); });
+  }
+  function mudar(p, destino) {
+    cerrar();
+    enviarCambio({ tipo: "mover", id: p.id, destino: destino }, function () {
+      sonar([392, 494, 587, 784]);
+      avisar("Mudanza lista: " + p.empresa + " ahora vive en «" + ZONAS[destino].nombre + "».");
+    });
+  }
+
+  function reconstruir(datos) {
+    var antes = dlg ? { tipo: dlg.tipo, sel: dlg.sel } : null;
+    datosActuales = datos;
+    armarTodoElPueblo();
+    if (escena === "casa") {
+      var id = casaActual.p.id;
+      var nueva = pueblo.mapa.casas.filter(function (c) { return c.p.id === id; })[0];
+      if (!nueva) salirYa();
+      else {
+        casaActual = nueva;
+        var x = pj.tx, y = pj.ty, mira = pj.mira;
+        mapa = armarInterior(nueva); capaFija = dibujarCapa(mapa);
+        ubicar(x, y, mira);
+      }
+    }
+    if (escena === "pueblo") {
+      mapa = pueblo.mapa; capaFija = pueblo.capa;
+      if (!libre(pj.tx, pj.ty)) ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+    }
+    actualizarHud();
+    if (!antes) return;
+    if (antes.tipo === "prioridades" || antes.tipo === "calendario" || antes.tipo === "config") { mostrar({ tipo: antes.tipo, items: [], sel: antes.sel, confirmar: false }); return; }
+    if (antes.tipo === "mudanza") { cerrar(); return; }
+    var c = delante();
+    if (!c) { cerrar(); return; }
+    abrirDialogo(c, antes.sel);
+  }
+  function armarTodoElPueblo() {
+    var m = armarPueblo(datosActuales);
+    pueblo = { mapa: m, capa: dibujarCapa(m), mini: armarMinimapa(m), luces: lucesDe(m) };
+  }
+
+  function actualizarHud() {
+    var pend = (datosActuales.acciones || []).filter(function (a) { return !a.hecha; }).length;
+    var activas = (datosActuales.postulaciones || []).filter(function (p) { return p.columna !== "cerrada"; }).length;
+    document.getElementById("hud").innerHTML = "Pueblo de " + esc(datosActuales.persona || "la búsqueda") +
+      " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes" + (modoEjemplo ? " · <i>prueba</i>" : "");
+  }
+  function actualizarAyuda() {
+    document.getElementById("ayuda").innerHTML = "← ↑ → ↓ moverse · A mirar · Enter prioridades · <span class=\"m\">M minimapa</span>" +
+      (escena === "casa" || (escena === "hogar" && mapa.piso === 1) ? " · ↓ por la puerta: salir" : escena === "hogar" ? " · la escalera baja" : "");
+  }
+
+  // ---------- teclado ----------
+  function cambiarOpcion(o, paso) {
+    var i = o.valores.indexOf(config[o.clave]);
+    config[o.clave] = o.valores[((i < 0 ? 0 : i) + paso + o.valores.length) % o.valores.length];
+    guardarConfig();
+    if (o.clave === "musica") { if (config.musica) prenderMusica(); else apagarMusica(); }
+    if (o.clave === "velocidad" && config.velocidad === 1) bici = { x: pueblo.mapa.miCasa.bici.x, y: pueblo.mapa.miCasa.bici.y };
+    if (o.clave === "velocidad" && config.velocidad === 2 && !bici) bici = { x: pueblo.mapa.miCasa.bici.x, y: pueblo.mapa.miCasa.bici.y };
+    if (o.clave === "dia" && escena === "hogar") capaFija = dibujarCapa(mapa);
+    sonar([587], "square", 0.05);
+    pintarDialogo();
+  }
+
+  function teclaEnDialogo(ev, k) {
+    var items = dlg.items, it = items[dlg.sel];
+    if (ev.key.length > 1 && !DIRS[ev.key] && k !== "enter" && k !== "escape") return;
+    ev.preventDefault();
+    if (dlg.confirmar) {
+      if (k === "d" || k === "a" || k === "enter") { dlg.confirmar = false; darPorHecha(it.a); pintarDialogo(); }
+      else if (k === "escape" || k === "s") { dlg.confirmar = false; pintarDialogo(); }
+      else nada();
+      return;
+    }
+    if (ev.key === "ArrowUp" || ev.key === "ArrowDown") {
+      if (items.length > 1) {
+        dlg.sel = (dlg.sel + (ev.key === "ArrowUp" ? -1 : 1) + items.length) % items.length;
+        sonar([440], "square", 0.05); pintarDialogo();
+      } else dialogo.scrollTop += ev.key === "ArrowUp" ? -60 : 60;
+      return;
+    }
+    if (dlg.tipo === "config") {
+      if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") return cambiarOpcion(it.o, ev.key === "ArrowLeft" ? -1 : 1);
+      if (k === "a" || k === " ") return cambiarOpcion(it.o, 1);
+      if (k === "escape" || k === "enter") return cerrar();
+      if (k === "m") { config.minimapa = !config.minimapa; guardarConfig(); return pintarDialogo(); }
+      return nada();
+    }
+    if (dlg.tipo === "mudanza") {
+      if (k === "a" || k === "enter" || k === " ") {
+        if (!it) return nada();
+        if (it.tipo === "post") { dlg.post = it.p; dlg.sel = 0; sonar([523], "square", 0.06); return pintarDialogo(); }
+        if (it.tipo === "destino") return mudar(dlg.post, it.destino);
+        if (it.tipo === "cerrar") { copiar(pedidoCerrar(dlg.post)); return; }
+      }
+      if (k === "escape") { if (dlg.post) { dlg.post = null; dlg.sel = 0; return pintarDialogo(); } return cerrar(); }
+      if (DIRS[ev.key]) return;
+      return nada();
+    }
+    if (DIRS[ev.key]) return;
+    if (k === "s") {
+      if (!it) return nada();
+      if (it.tipo === "accion") return copiar(pedidoDeAccion(it.a));
+      if (it.tipo === "preparar") return copiar(pedidoPreparar(casaActual.p));
+      if (it.tipo === "perfil") return copiar(pedidoPerfil());
+      if (it.tipo === "analizar") return copiar(pedidoAnalizar(casaActual.p));
+      if (it.tipo === "sync") return copiar("/sincronizar-correo");
+      if (it.tipo === "repaso") return copiar("/repaso-semanal");
+      if (it.tipo === "aprender") return copiar(pedidoAprender(casaActual.p));
+      if (it.tipo === "ficha") return copiar("Armá la ficha de la empresa de la postulación " + casaActual.p.empresa + " (postulaciones/" + casaActual.p.id +
+        "/empresa.md), como dice «La ficha de la empresa» en .claude/skills/analizar-oferta/SKILL.md, con plantillas/empresa.md.");
+      if (it.tipo === "nuevaPractica") return copiar("/preparar-entrevista Quiero practicar una entrevista. Preguntame para qué empresa y qué instancia es, y armá la práctica en el navegador (entrevistas/<empresa>/practica.json) para practicarla desde el tablero.");
+      if (it.tipo === "posicionamiento") return copiar("/posicionamiento");
+      return nada();
+    }
+    if (k === "d") {
+      if (!it || it.tipo !== "accion") return nada();
+      dlg.confirmar = true; sonar([440], "square", 0.05); pintarDialogo();
+      return;
+    }
+    if (k === "m") { config.minimapa = !config.minimapa; guardarConfig(); return; }
+    if (k === "a" || k === "enter" || k === " ") {
+      if ((dlg.tipo === "prioridades" || dlg.tipo === "calendario") && it) return irA(it.a);
+      if (dlg.tipo === "cosa" && dlg.cosa.tipo === "casa" && dlg.cosa.ent.zona === "cerrada") {
+        var cerrada = dlg.cosa.ent; cerrar();
+        return bajarseYEntrar(function () { entrar(cerrada); });
+      }
+      if (it && it.tipo === "practica") { sonar([523, 659]); window.open("practica.html?e=" + encodeURIComponent(it.carpeta), "_blank"); return; }
+      if (it && it.tipo === "preparar" && practicaDe[casaActual.p.id]) {
+        sonar([523, 659]);
+        window.open("practica.html?e=" + encodeURIComponent(practicaDe[casaActual.p.id]), "_blank");
+        return;
+      }
+      cerrar();
+      return;
+    }
+    if (k === "escape") cerrar();
+  }
+
+  addEventListener("keydown", function (ev) {
+    if (ev.ctrlKey || ev.metaKey || ev.altKey || !mapa) return;
+    if (primerGesto) { primerGesto = false; if (config.musica) prenderMusica(); } // el navegador pide un gesto antes de sonar
+    var k = ev.key.toLowerCase();
+    if (enTransicion) { ev.preventDefault(); return; }
+    if (dialogoAbierto) { if (!ev.repeat || DIRS[ev.key]) teclaEnDialogo(ev, k); else ev.preventDefault(); return; }
+    if (DIRS[ev.key]) {
+      ev.preventDefault();
+      if (pj.ruta) { pj.ruta = null; pj.alLlegar = null; }
+      if (apretadas.indexOf(ev.key) < 0) apretadas.push(ev.key);
+      if (!ev.repeat) toque = ev.key;
+      return;
+    }
+    if (ev.repeat) return;
+    if (k === "m") { ev.preventDefault(); config.minimapa = !config.minimapa; guardarConfig(); sonar([523], "square", 0.05); return; }
+    if (k === "enter") { ev.preventDefault(); if (!pj.mueve || pj.ruta) { pj.ruta = null; pj.alLlegar = null; abrirLista("prioridades", 0); } return; }
+    if (k === "a" || k === " ") { ev.preventDefault(); if (!pj.mueve) mirar(); return; }
+    if (k === "s" || k === "d") { ev.preventDefault(); nada(); }
+  });
+  addEventListener("keyup", function (ev) {
+    var i = apretadas.indexOf(ev.key);
+    if (i >= 0) apretadas.splice(i, 1);
+  });
+  addEventListener("blur", function () { apretadas = []; });
+  addEventListener("resize", ajustar);
+
+  // ---------- arranque ----------
+  cargarDatos(function (datos) {
+    prepararFiguras();
+    datosActuales = datos;
+    armarTodoElPueblo();
+    mapa = pueblo.mapa; capaFija = pueblo.capa;
+    if (config.velocidad === 1) bici = { x: mapa.miCasa.bici.x, y: mapa.miCasa.bici.y };
+    var pos = config.pos;
+    if (pos && libre(pos.x, pos.y)) ubicar(pos.x, pos.y, pos.mira || "abajo");
+    else ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+    actualizarHud();
+    actualizarAyuda();
+    cargarPracticas();
+    ajustar();
+    var antes = performance.now();
+    (function cuadro(ahora) {
+      actualizar(Math.min(0.05, (ahora - antes) / 1000));
+      antes = ahora;
+      dibujar(ahora);
+      requestAnimationFrame(cuadro);
+    })(antes);
+  });
+})();
+</script>
+</body>
+</html>

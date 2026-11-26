@@ -92,6 +92,8 @@ If you open it with a double click instead, your changes stay pending: click **C
 
 With the server running, the **🎯 Práctica** button opens the practice for the interviews you prepared with `/preparar-entrevista`. You answer each question by typing or out loud (dictation is optional: if you have [uv](https://docs.astral.sh/uv/) installed, your voice is transcribed on your computer with Whisper and the audio never leaves it; the first time it downloads about 480 MB. Without uv, it uses the browser's speech recognition, which processes the audio in the cloud). The page times your answers, saves them in the interview folder and gives you a one-line request so Claude can give you feedback and update your preparation score.
 
+**Retro dashboard.** If you'd rather have something more playful, open `tablero/abrir-tablero-retro.bat` on Windows or `tablero/abrir-tablero-retro.command` on Mac: your applications become a pixel-art town you walk around with the keyboard (the town is in Spanish). Each status is a neighborhood and each application a house, with a «!» when something is pending; inside each house you find the company, the role, your fit, the history and a desk with its tasks. **A** looks and enters, **S** copies the request for Claude, **D** marks a task as done, **Enter** shows your priorities and the character walks to the one you pick, and **M** opens the minimap. The square has the notice board, the sync mailbox, the calendar and the moving truck; the University, the lighthouse and your home cover improving your profile, the weekly review and the settings (day or night, walking or biking, music and sounds). It uses the same data and the same local server as the kanban, on another port (8766), so you can keep both open: what you mark is saved the same way.
+
 To see it with sample data before loading your own, open the dashboard and click **Ver el tablero con datos de ejemplo** (see the dashboard with sample data).
 
 ### Updates from Gmail and Google Calendar (optional)
@@ -131,8 +133,8 @@ busqueda-laboral-os/
 |---|---|
 | `empezar` | Setup: brings in what you already have (CV, LinkedIn, notes, the context from another AI), loads your profile, what you're looking for and your voice, and gets the dashboard ready |
 | `mejorar-perfil` | Reads your LinkedIn PDF, your CV or both, compares what each one has, interviews you and gives you ready-to-paste texts, plus the CV. Also in English or Brazilian Portuguese, written the way a native speaker would |
-| `analizar-oferta` | How well a job post fits your profile (0 to 100), requirement by requirement, and whether it's worth it |
-| `nueva-postulacion` | Folder, tailored CV, form answers and a card on the dashboard |
+| `analizar-oferta` | How well a job post fits your profile (0 to 100), requirement by requirement, whether it's worth it, and a profile of the company |
+| `nueva-postulacion` | Folder with the company profile, tailored CV, form answers and a card on the dashboard |
 | `actualizar` | Takes every update to the dashboard and creates the next actions |
 | `sincronizar-correo` | Brings updates from Gmail and Google Calendar to the dashboard, on demand (🔄 SYNC) or every 2 hours from 8 am to 10 pm |
 | `redactar-mensaje` | Messages to recruiters, referrals, follow-ups and thank-you notes in your voice |
