@@ -288,7 +288,53 @@ def leer_postulacion(raiz, carpeta):
             with open(ruta, encoding="utf-8", errors="replace") as f:
                 textos[clave] = f.read(MAX_DETALLE)
     archivos = sorted(n for n in os.listdir(base) if n.lower().endswith(".md"))
-    return 200, {"carpeta": carpeta, "rol": textos.get("rol"), "empresa": textos.get("empresa"), "archivos": archivos}
+    return 200, {"carpeta": carpeta, "rol": textos.get("rol"), "empresa": textos.get("empresa"), "archivos": archivos,
+                 "aprendizajes": aprendizajes_de(raiz, base, empresa_de(raiz, carpeta))}
+
+
+APRENDIZAJE = re.compile(r"aprend|feedback|devoluci|rechazo", re.I)
+
+
+def empresa_de(raiz, carpeta):
+    try:
+        with open(os.path.join(raiz, "postulaciones", "postulaciones.json"), encoding="utf-8") as f:
+            datos = json.load(f)
+        return next((p.get("empresa") for p in datos.get("postulaciones", []) if isinstance(p, dict) and p.get("id") == carpeta), None)
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def aprendizajes_de(raiz, base, empresa):
+    """Aprendizajes registrados de una postulación: documentos de su carpeta con ese tema y las secciones
+    de los informes de aprendizajes de investigacion/ que nombran a la empresa. Se devuelven tal cual."""
+    lista = []
+    for n in sorted(os.listdir(base)):
+        if n.lower().endswith(".md") and APRENDIZAJE.search(n):
+            with open(os.path.join(base, n), encoding="utf-8", errors="replace") as f:
+                lista.append({"fuente": "postulaciones/" + os.path.basename(base) + "/" + n, "texto": f.read(MAX_DETALLE)})
+    inv = os.path.join(raiz, "investigacion")
+    nombre = (empresa or "").split("(")[0].strip().lower()
+    if nombre and os.path.isdir(inv):
+        for n in sorted(os.listdir(inv)):
+            if not (n.lower().endswith(".md") and "aprendizaje" in n.lower()):
+                continue
+            with open(os.path.join(inv, n), encoding="utf-8", errors="replace") as f:
+                texto = f.read(MAX_DETALLE)
+            for sec in re.split(r"\n(?=#{2,3} )", texto):
+                if nombre in sec.lower():
+                    lista.append({"fuente": "investigacion/" + n, "texto": sec.strip()})
+    return lista
+
+
+def leer_perfil(raiz):
+    """Lo que muestra tu casa en el tablero retro: el perfil (para los trofeos) y el posicionamiento (el espejo)."""
+    textos = {}
+    for clave, nombre in (("perfil", "perfil.md"), ("posicionamiento", "posicionamiento.md")):
+        ruta = os.path.join(raiz, "contexto", nombre)
+        if os.path.isfile(ruta):
+            with open(ruta, encoding="utf-8", errors="replace") as f:
+                textos[clave] = f.read(MAX_DETALLE)
+    return 200, {"perfil": textos.get("perfil"), "posicionamiento": textos.get("posicionamiento")}
 
 
 def listar_practicas(raiz):
@@ -471,6 +517,9 @@ class Manejador(SimpleHTTPRequestHandler):
             return
         if ruta == "/api/practicas":
             self.responder(*listar_practicas(self.raiz))
+            return
+        if ruta == "/api/perfil":
+            self.responder(*leer_perfil(self.raiz))
             return
         if ruta == "/api/postulacion":
             carpeta = (urllib.parse.parse_qs(consulta).get("id") or [""])[0]
