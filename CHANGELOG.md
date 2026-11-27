@@ -12,6 +12,8 @@ Cómo se lleva:
 
 ## Sin publicar
 
+## 0.14.0 — 2026-11-26 · El placard del tablero retro
+
 ### Nuevo
 
 - Tablero retro: **el placard**, al lado del espejo en la planta alta de tu casa. Con A se elige el personaje (varón, mujer o neutro), con o sin anteojos, una de seis ropas (una azul y oro, por Boca), el tono de piel y el color de pelo. El espejo del placard muestra el cambio antes de ponértelo, y el espejo del cuarto te refleja cuando estás enfrente.
