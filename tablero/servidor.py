@@ -329,14 +329,99 @@ def aprendizajes_de(raiz, base, empresa):
 
 
 def leer_perfil(raiz):
-    """Lo que muestra tu casa en el tablero retro: el perfil (para los trofeos) y el posicionamiento (el espejo)."""
+    """Lo que muestra tu casa en el tablero retro: el perfil (para los trofeos), el posicionamiento (el espejo),
+    el personaje que Claude armó desde tu foto (contexto/avatar.json) y si hay foto."""
     textos = {}
     for clave, nombre in (("perfil", "perfil.md"), ("posicionamiento", "posicionamiento.md")):
         ruta = os.path.join(raiz, "contexto", nombre)
         if os.path.isfile(ruta):
             with open(ruta, encoding="utf-8", errors="replace") as f:
                 textos[clave] = f.read(MAX_DETALLE)
-    return 200, {"perfil": textos.get("perfil"), "posicionamiento": textos.get("posicionamiento")}
+    return 200, {"perfil": textos.get("perfil"), "posicionamiento": textos.get("posicionamiento"),
+                 "avatar": leer_avatar(raiz), "foto": ruta_foto(raiz) is not None}
+
+
+# ---------- el personaje del tablero retro ----------
+FOTOS = {"foto.jpg": "image/jpeg", "foto.jpeg": "image/jpeg", "foto.png": "image/png", "foto.webp": "image/webp"}
+MAX_FOTO = 8 * 1024 * 1024
+HEX = re.compile(r"^#[0-9a-fA-F]{6}$")
+FIGURAS = {"varon", "mujer", "neutro"}
+ROPAS = {"boca", "verde", "roja", "celeste", "violeta", "blanca", "traje", "festejo"}
+RUTA_PREFERENCIAS = ("tablero", "preferencias-retro.json")
+
+
+def ruta_foto(raiz):
+    for nombre in FOTOS:
+        ruta = os.path.join(raiz, "contexto", nombre)
+        if os.path.isfile(ruta):
+            return ruta
+    return None
+
+
+def leer_avatar(raiz):
+    """contexto/avatar.json, el personaje que Claude armó mirando tu foto. Si falta o está mal, None."""
+    ruta = os.path.join(raiz, "contexto", "avatar.json")
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            a = json.load(f)
+    except (OSError, ValueError):
+        return None
+    if not isinstance(a, dict) or a.get("base") not in FIGURAS:
+        return None
+    if not HEX.match(str(a.get("piel", ""))) or not HEX.match(str(a.get("pelo", ""))):
+        return None
+    return {"base": a["base"], "piel": a["piel"], "pelo": a["pelo"], "barba": a.get("barba") is True,
+            "anteojos": a.get("anteojos") is True, "nota": str(a.get("nota") or "")[:200]}
+
+
+def limpiar_preferencias(p):
+    """Solo pasan las claves y valores que entiende el tablero retro. Lo demás se descarta."""
+    if not isinstance(p, dict):
+        raise Rechazo("preferencias mal formadas")
+    out = {}
+    if p.get("dia") in ("auto", "dia", "noche"):
+        out["dia"] = p["dia"]
+    if p.get("velocidad") in (1, 2):
+        out["velocidad"] = p["velocidad"]
+    for clave in ("musica", "efectos", "minimapa"):
+        if isinstance(p.get(clave), bool):
+            out[clave] = p[clave]
+    a = p.get("avatar")
+    if isinstance(a, dict) and (a.get("figura") in FIGURAS or a.get("figura") == "foto"):
+        out["avatar"] = {
+            "figura": a["figura"],
+            "anteojos": a.get("anteojos") is True,
+            "ropa": a.get("ropa") if a.get("ropa") in ROPAS else "boca",
+            "piel": a.get("piel") if HEX.match(str(a.get("piel", ""))) else "#f2c79a",
+            "pelo": a.get("pelo") if HEX.match(str(a.get("pelo", ""))) else "#4a2f22",
+        }
+    g = p.get("ganadas")
+    if isinstance(g, list):
+        out["ganadas"] = sorted({x for x in g if x in ("traje", "festejo")})
+    return out
+
+
+def leer_preferencias(raiz):
+    ruta = os.path.join(raiz, *RUTA_PREFERENCIAS)
+    if not os.path.isfile(ruta):
+        return 200, {"preferencias": None}
+    try:
+        with open(ruta, encoding="utf-8") as f:
+            return 200, {"preferencias": limpiar_preferencias(json.load(f))}
+    except (OSError, ValueError, Rechazo):
+        return 200, {"preferencias": None}
+
+
+def guardar_preferencias(raiz, pedido):
+    try:
+        pref = limpiar_preferencias(pedido.get("preferencias") if isinstance(pedido, dict) else None)
+    except Rechazo as e:
+        return 400, {"error": str(e)}
+    ruta = os.path.join(raiz, *RUTA_PREFERENCIAS)
+    with candado:
+        os.makedirs(os.path.dirname(ruta), exist_ok=True)
+        escribir_atomico(ruta, json.dumps(pref, ensure_ascii=False, indent=2) + "\n")
+    return 200, {"ok": True}
 
 
 def listar_practicas(raiz):
@@ -524,6 +609,23 @@ class Manejador(SimpleHTTPRequestHandler):
         if ruta == "/api/perfil":
             self.responder(*leer_perfil(self.raiz))
             return
+        if ruta == "/api/preferencias":
+            self.responder(*leer_preferencias(self.raiz))
+            return
+        if ruta == "/api/foto":
+            # Tu foto, para el placard del tablero retro. Solo se sirve acá, en 127.0.0.1 (límite L8).
+            foto = ruta_foto(self.raiz)
+            if not foto or os.path.getsize(foto) > MAX_FOTO:
+                self.send_error(404)
+                return
+            with open(foto, "rb") as f:
+                cuerpo = f.read()
+            self.send_response(200)
+            self.send_header("Content-Type", FOTOS[os.path.basename(foto)])
+            self.send_header("Content-Length", str(len(cuerpo)))
+            self.end_headers()
+            self.wfile.write(cuerpo)
+            return
         if ruta == "/api/postulacion":
             carpeta = (urllib.parse.parse_qs(consulta).get("id") or [""])[0]
             self.responder(*leer_postulacion(self.raiz, carpeta))
@@ -578,7 +680,7 @@ class Manejador(SimpleHTTPRequestHandler):
         if ruta == "/api/transcribir":
             self.recibir_audio(consulta)
             return
-        if self.path not in ("/api/cambios", "/api/practica/respuestas"):
+        if self.path not in ("/api/cambios", "/api/practica/respuestas", "/api/preferencias"):
             self.send_error(404)
             return
         if "application/json" not in (self.headers.get("Content-Type") or ""):
@@ -595,6 +697,9 @@ class Manejador(SimpleHTTPRequestHandler):
             pedido = json.loads(self.rfile.read(largo).decode("utf-8"))
         except Exception:
             self.responder(400, {"error": "Pedido mal formado."})
+            return
+        if self.path == "/api/preferencias":
+            self.responder(*guardar_preferencias(self.raiz, pedido))
             return
         if self.path == "/api/practica/respuestas":
             if not isinstance(pedido, dict):

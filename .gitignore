@@ -27,3 +27,6 @@ taller/
 
 # Resultados de los evals (salen de cada corrida)
 evals/resultados/
+
+# Preferencias del tablero retro (las escribe el servidor)
+tablero/preferencias-retro.json
