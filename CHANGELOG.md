@@ -12,6 +12,18 @@ Cómo se lleva:
 
 ## Sin publicar
 
+### Nuevo
+
+- Tablero retro: **el placard**, al lado del espejo en la planta alta de tu casa. Con A se elige el personaje (varón, mujer o neutro), con o sin anteojos, una de seis ropas (una azul y oro, por Boca), el tono de piel y el color de pelo. El espejo del placard muestra el cambio antes de ponértelo, y el espejo del cuarto te refleja cuando estás enfrente.
+- Personaje **«Desde tu foto»**: si hay una foto en `contexto/` (`foto.jpg`, `.png` o `.webp`), el placard ofrece el pedido para que Claude la mire y escriba `contexto/avatar.json` (figura, piel, pelo, barba y anteojos). La figura se le pregunta a la persona. La foto se ve en el placard y no sale de la computadora. Sin foto, el primer personaje sale al azar, con la ropa al azar entre las seis.
+- **Ropa ganada**: el traje de entrevista aparece en el placard cuando hay una entrevista agendada y la remera de festejo cuando se acepta una oferta. Se avisa una vez y queda para siempre.
+- El menú de **Enter** empieza con «🏠 Ir a Tu casa», que te lleva directo a la planta baja (si andabas en bici, queda en la puerta).
+- Servidor del tablero: `/api/preferencias` lee y guarda las preferencias del tablero retro en `tablero/preferencias-retro.json` de la carpeta de datos (solo claves y valores conocidos), `/api/foto` sirve la foto de `contexto/` y `/api/perfil` suma el personaje de `avatar.json`.
+
+### Cambios
+
+- Las preferencias del tablero retro (día o noche, velocidad, música, sonidos, minimapa, personaje y ropa ganada) ya no viven solo en el navegador: el servidor las guarda en un archivo y mandan al abrir. La posición del personaje sigue solo en el navegador.
+
 ## 0.13.0 — 2026-11-26 · Tablero retro
 
 ### Nuevo

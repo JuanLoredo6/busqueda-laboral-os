@@ -49,6 +49,9 @@
   #aviso { top: 14px; left: 50%; transform: translate(-50%, -90px); padding: 8px 14px; transition: transform .2s; z-index: 5; }
   #aviso.visible { transform: translate(-50%, 0); }
   #error { top: 40%; left: 50%; transform: translateX(-50%); padding: 16px 20px; display: none; max-width: 520px; }
+  #dialogo .probador { float: right; margin: 0 0 8px 14px; display: flex; gap: 10px; align-items: flex-end; text-align: center; font-size: 12px; font-weight: normal; }
+  #dialogo .probador canvas { image-rendering: pixelated; width: 110px; height: 130px; display: block; }
+  #dialogo .probador img { width: 96px; height: 96px; object-fit: cover; border: 3px solid #2a2a4a; border-radius: 4px; display: block; }
   #fundido { position: fixed; inset: 0; background: #000; opacity: 0; pointer-events: none; transition: opacity .18s; z-index: 4; }
   #fundido.negro { opacity: 1; }
 </style>
@@ -99,15 +102,52 @@
     piso: "#c88c50", piso2: "#a8703c", piso3: "#d89c60"
   };
 
-  // ---------- configuración (queda guardada en este navegador) ----------
+  // ---------- configuración ----------
+  // Queda en este navegador y, con el servidor, también en tablero/preferencias-retro.json de la carpeta de datos:
+  // así el personaje y lo demás sobreviven a otro navegador o a borrar sus datos. La posición queda solo en el navegador.
   var CLAVE_CONFIG = "tablero-retro-config";
-  var config = { dia: "auto", velocidad: 1, musica: true, efectos: true, minimapa: false, pos: null };
+  var config = { dia: "auto", velocidad: 1, musica: true, efectos: true, minimapa: false, pos: null, avatar: null, ganadas: [] };
+  var CLAVES_ARCHIVO = ["dia", "velocidad", "musica", "efectos", "minimapa", "avatar", "ganadas"];
+  function normalizarConfig() {
+    config.velocidad = +config.velocidad >= 2 ? 2 : 1; // dos opciones: caminando (1) o en bicicleta (2)
+    if (!Array.isArray(config.ganadas)) config.ganadas = [];
+  }
   function leerConfig() {
     try { Object.assign(config, JSON.parse(localStorage.getItem(CLAVE_CONFIG) || "{}")); } catch (e) {}
-    config.velocidad = +config.velocidad >= 2 ? 2 : 1; // dos opciones: caminando (1) o en bicicleta (2)
+    normalizarConfig();
   }
   leerConfig();
-  function guardarConfig() { try { localStorage.setItem(CLAVE_CONFIG, JSON.stringify(config)); } catch (e) {} }
+  var conArchivo = false, guardarArchivoT = null;
+  function guardarConfig(soloNavegador) {
+    try { localStorage.setItem(CLAVE_CONFIG, JSON.stringify(config)); } catch (e) {}
+    if (soloNavegador || !conArchivo || modoEjemplo) return;
+    clearTimeout(guardarArchivoT);
+    guardarArchivoT = setTimeout(function () {
+      var pref = {};
+      CLAVES_ARCHIVO.forEach(function (k) { pref[k] = config[k]; });
+      fetch("/api/preferencias", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ preferencias: pref }) })
+        .then(function (r) { if (!r.ok) avisar("No pude guardar tus preferencias en el archivo: quedaron en este navegador."); },
+          function () { avisar("El servidor del tablero no respondió: tus preferencias quedaron en este navegador."); });
+    }, 500);
+  }
+  // Al abrir: lo del archivo manda sobre lo del navegador. Si el archivo todavía no existe, se crea con lo del navegador.
+  function cargarPreferencias(listo) {
+    if (modoEjemplo || location.protocol === "file:") return listo();
+    var hecho = false;
+    function fin() { if (!hecho) { hecho = true; listo(); } }
+    setTimeout(fin, 2500);
+    var pPref = fetch("/api/preferencias", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; });
+    var pPerfil = fetch("/api/perfil", { cache: "no-store" }).then(function (r) { return r.ok ? r.json() : null; });
+    Promise.all([pPref.catch(function () { return null; }), pPerfil.catch(function () { return null; })]).then(function (res) {
+      if (res[1]) perfil = Object.assign({ estado: "listo" }, res[1]);
+      if (res[0]) {
+        conArchivo = true;
+        if (res[0].preferencias) { CLAVES_ARCHIVO.forEach(function (k) { if (k in res[0].preferencias) config[k] = res[0].preferencias[k]; }); normalizarConfig(); }
+        else guardarConfig();
+      }
+      fin();
+    });
+  }
 
   // ---------- utilidades ----------
   function esc(s) {
@@ -226,6 +266,7 @@
       practicas = ((j && j.practicas) || []).filter(function (p) { return !p.error; });
       practicaDe = {};
       practicas.forEach(function (p) { if (p.postulacion) practicaDe[p.postulacion] = p.carpeta; });
+      revisarRopaGanada();
     }, function () {});
   }
   var detalles = {};
@@ -649,11 +690,12 @@
       poner(3, 3, "mesaluz");
       poner(5, 2, "trofeos"); poner(6, 2, "trofeos"); poner(7, 2, "trofeos");
       poner(9, 2, "espejo");
+      poner(10, 2, "placard"); poner(11, 2, "placard");
       poner(8, 5, "practicar"); poner(9, 5, "practicar"); poner(10, 5, "practicar");
       poner(4, 8, "tv"); poner(5, 8, "tv");
       poner(1, 8, "planta");
       pasar(10, 8, "bajar"); pasar(11, 8, "bajar");
-      etiquetas = [["Cama", 1.5, 5.2], ["Trofeos", 6.5, 3], ["Espejo", 9.5, 3], ["Escritorio · practicar", 9.5, 4.15],
+      etiquetas = [["Cama", 1.5, 5.2], ["Trofeos", 6.5, 3], ["Espejo", 9.3, 3], ["Placard", 11.2, 3], ["Escritorio · practicar", 9.5, 4.15],
         ["TV y consola", 5, 7.2], ["Escalera", 11, 9.05]];
     }
     return { tipo: "hogar", piso: piso, ancho: IN_W, alto: IN_H, suelo: g.suelo, solido: g.solido, cosa: g.cosa, etiquetas: etiquetas,
@@ -734,6 +776,15 @@
         rect(g, tx, T + 7, 6, 5, tr[1]); rect(g, tx + 2, T + 12, 2, 3, tr[1]); rect(g, tx + 1, T + 15, 4, 2, C.borde);
         rect(g, tx - 1, T + 8, 1, 2, tr[1]); rect(g, tx + 6, T + 8, 1, 2, tr[1]);
       });
+      // placard, al lado del espejo
+      var qx = 10 * T + 1, qy = T - 3;
+      rect(g, qx - 1, qy, 2 * T, 2 * T + 3, C.borde); rect(g, qx, qy + 1, 2 * T - 2, 2 * T + 1, "#b07840");
+      rect(g, qx, qy + 1, 2 * T - 2, 3, "#8a5a32");
+      rect(g, qx + 2, qy + 5, 12, 2 * T - 6, "#c88c50"); rect(g, qx + 16, qy + 5, 12, 2 * T - 6, "#c88c50");
+      rect(g, qx + 14, qy + 4, 2, 2 * T - 4, C.borde);
+      rect(g, qx + 4, qy + 8, 8, 9, "#d8a060"); rect(g, qx + 18, qy + 8, 8, 9, "#d8a060");
+      rect(g, qx + 11, qy + 18, 2, 3, "#f0d060"); rect(g, qx + 17, qy + 18, 2, 3, "#f0d060");
+      rect(g, qx + 1, qy + 2 * T + 1, 3, 2, C.borde); rect(g, qx + 2 * T - 6, qy + 2 * T + 1, 3, 2, C.borde);
       // espejo
       rect(g, 9 * T + 2, T + 2, 12, 2 * T - 4, "#c8a040"); rect(g, 9 * T + 3, T + 3, 10, 2 * T - 6, "#cfe8f4"); rect(g, 9 * T + 5, T + 5, 2, 8, "#ffffff");
       // escritorio para practicar, con notebook y silla
@@ -819,41 +870,151 @@
   }
 
   // ---------- el personaje ----------
-  var PALETA_PJ = { H: "#4a2f22", S: "#f2c79a", K: "#222034", W: "#ffffff", M: "#c8786a", J: "#3e8f6e", Y: "#f2d35a", P: "#3a4a7a" };
+  // Tres figuras (varón, mujer, neutra) en tres direcciones, sin anteojos. Los anteojos, la barba y los colores
+  // (piel, pelo, ropa) se aplican encima. «Desde tu foto» es una de las tres figuras con lo que Claude anotó
+  // en contexto/avatar.json al mirar contexto/foto.jpg.
+  // Letras: H pelo · S piel · M boca · K oscuro (ojos y zapatos) · W blanco · J remera · Y detalle · P pantalón.
+  var CUERPO_ABAJO = ["..SJJJJYYJJJJS..", "..SJJJJYYJJJJS..", "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."];
+  var CUERPO_ARRIBA = ["..SJJJJJJJJJJS..", "..SJJJJJJJJJJS..", "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."];
+  var CUERPO_DERECHA = ["....JJJJJJJS....", "....JJJJJJJS....", "....JJJJJJJ.....", "....PPPPPPP.....", "....PPP..PPP....", "....KKK...KKK..."];
   var FIGURAS = {
-    abajo: [
-      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHSSSSSSHH...",
-      "...HSSSSSSSSH...", "...SKKKSSKKKS...", "...SKWKKKKWKS...", "....SSSSSSSS....",
-      ".....SSMMSS.....", "....JJJJJJJJ....", "..SJJJJYYJJJJS..", "..SJJJJYYJJJJS..",
-      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
-    arriba: [
-      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...",
-      "...HHHHHHHHHH...", "...SHHHHHHHHS...", "...SHHHHHHHHS...", "....SSSSSSSS....",
-      ".....SSSSSS.....", "....JJJJJJJJ....", "..SJJJJJJJJJJS..", "..SJJJJJJJJJJS..",
-      "...JJJJJJJJJJ...", "...PPPPPPPPPP...", "...PPPP..PPPP...", "...KKK....KKK..."],
-    derecha: [
-      "......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHSSSSH...",
-      "...HHHHSSSSSS...", "...HHHSSKKKKS...", "...HHHSSKWKKK...", "....HSSSSSSSS...",
-      ".....SSSSSMM....", ".....JJJJJJ.....", "....JJJJJJJS....", "....JJJJJJJS....",
-      "....JJJJJJJ.....", "....PPPPPPP.....", "....PPP..PPP....", "....KKK...KKK..."]
+    varon: {
+      abajo: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHSSSSSSHH...", "...HSSSSSSSSH...", "...SSSSSSSSSS...",
+        "...SSKSSSSKSS...", "....SSSSSSSS....", ".....SSMMSS.....", "....JJJJJJJJ...."].concat(CUERPO_ABAJO),
+      arriba: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "...SHHHHHHHHS...",
+        "...SHHHHHHHHS...", "....SSSSSSSS....", ".....SSSSSS.....", "....JJJJJJJJ...."].concat(CUERPO_ARRIBA),
+      derecha: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHSSSSH...", "...HHHHSSSSSS...", "...HHHSSSSSSS...",
+        "...HHHSSSSKSS...", "....HSSSSSSSS...", ".....SSSSSMM....", ".....JJJJJJ....."].concat(CUERPO_DERECHA)
+    },
+    mujer: {
+      abajo: [".....HHHHHH.....", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHSSSSSSHH...", "..HHSSSSSSSSHH..", "..HSSSSSSSSSSH..",
+        "..HSSKSSSSKSSH..", "..HHSSSSSSSSHH..", "..HHHSSMMSSHHH..", "..HHJJJJJJJJHH.."].concat(CUERPO_ABAJO),
+      arriba: [".....HHHHHH.....", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "..HHHHHHHHHHHH..", "..HHHHHHHHHHHH..",
+        "..HHHHHHHHHHHH..", "..HHHHHHHHHHHH..", "..HHHHHHHHHHHH..", "...HHHHHHHHHH..."].concat(CUERPO_ARRIBA),
+      derecha: [".....HHHHHH.....", "....HHHHHHHH....", "...HHHHHHHHHH...", "..HHHHHHSSSSH...", "..HHHHHSSSSSS...", "..HHHHSSSSSSS...",
+        "..HHHHSSSSKSS...", "..HHHHSSSSSSS...", "..HHHHSSSSMM....", "..HHHJJJJJJ....."].concat(CUERPO_DERECHA)
+    },
+    neutro: {
+      abajo: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "...HSSSSSSSSH...", "...HSSSSSSSSH...",
+        "...HSKSSSSKSH...", "...HSSSSSSSSH...", "...HHSSMMSSHH...", "....JJJJJJJJ...."].concat(CUERPO_ABAJO),
+      arriba: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "...HHHHHHHHHH...", "...HHHHHHHHHH...",
+        "...HHHHHHHHHH...", "...HHHHHHHHHH...", "....HHHHHHHH....", "....JJJJJJJJ...."].concat(CUERPO_ARRIBA),
+      derecha: ["......HHHH......", "....HHHHHHHH....", "...HHHHHHHHHH...", "...HHHHHHHHHHH..", "...HHHHSSSSSS...", "...HHHSSSSSSS...",
+        "...HHHSSSSKSS...", "...HHHSSSSSSS...", "...HHHSSSSMM....", ".....JJJJJJ....."].concat(CUERPO_DERECHA)
+    }
   };
-  var PIERNAS_PASO = ["....PPP.PPPP....", "....KK...KKK...."];
-  var figuras = {};
-  function prepararFiguras() {
+  // [columna, fila, letra] que se pintan encima de la figura
+  var ANTEOJOS = {
+    abajo: [[4, 5, "K"], [5, 5, "K"], [6, 5, "K"], [9, 5, "K"], [10, 5, "K"], [11, 5, "K"],
+      [4, 6, "K"], [5, 6, "W"], [6, 6, "K"], [7, 6, "K"], [8, 6, "K"], [9, 6, "K"], [10, 6, "W"], [11, 6, "K"]],
+    arriba: [[3, 5, "K"], [12, 5, "K"]],
+    derecha: [[8, 5, "K"], [9, 5, "K"], [10, 5, "K"], [11, 5, "K"], [8, 6, "K"], [9, 6, "W"], [10, 6, "K"], [11, 6, "K"], [12, 6, "K"]]
+  };
+  var BARBA = {
+    abajo: [[4, 7, "H"], [11, 7, "H"], [5, 8, "H"], [6, 8, "H"], [9, 8, "H"], [10, 8, "H"]],
+    arriba: [],
+    derecha: [[11, 7, "H"], [12, 7, "H"], [6, 8, "H"], [7, 8, "H"], [8, 8, "H"], [9, 8, "H"]]
+  };
+  var PIERNAS_PASO = { abajo: ["....PPP.PPPP....", "....KK...KKK...."], arriba: ["....PPP.PPPP....", "....KK...KKK...."],
+    derecha: ["....PPP.PPPP....", "....KK...KKK...."] };
+
+  var FIGURA_NOMBRE = { foto: "Desde tu foto", varon: "Varón", mujer: "Mujer", neutro: "Neutro" };
+  // Seis combinaciones para elegir. La primera, en honor al Club Atlético Boca Juniors.
+  var ROPAS = [
+    { id: "boca", nombre: "Azul y oro (Boca)", J: "#f2c230", Y: "#1a3a8a", P: "#1a3a8a" },
+    { id: "verde", nombre: "Verde y azul", J: "#3e8f6e", Y: "#f2d35a", P: "#3a4a7a" },
+    { id: "roja", nombre: "Roja y jean", J: "#c8403a", Y: "#fbfaf2", P: "#4a6aa0" },
+    { id: "celeste", nombre: "Celeste y gris", J: "#6ab0e0", Y: "#fbfaf2", P: "#5a5a6a" },
+    { id: "violeta", nombre: "Violeta y negro", J: "#8a5ad0", Y: "#f2d35a", P: "#2a2a34" },
+    { id: "blanca", nombre: "Blanca y caqui", J: "#f4f0e6", Y: "#c0302a", P: "#8a6a3a" }
+  ];
+  // Ropa que se gana con la búsqueda. Una vez ganada, queda en el placard.
+  var ROPAS_GANADAS = [
+    { id: "traje", nombre: "Traje de entrevista", J: "#3a3a4a", Y: "#c0302a", P: "#2a2a34",
+      gana: "cuando tengas una entrevista agendada", aviso: "👔 Ganaste el traje de entrevista. Está en el placard de tu casa." },
+    { id: "festejo", nombre: "Remera de festejo", J: "#e0b040", Y: "#fbfaf2", P: "#3a4a7a",
+      gana: "cuando aceptes una oferta", aviso: "🏆 ¡Ganaste la remera de festejo! Está en el placard de tu casa." }
+  ];
+  var PIELES = [["Tono 1", "#f6d2b0"], ["Tono 2", "#f2c79a"], ["Tono 3", "#d8a070"], ["Tono 4", "#b07a4a"], ["Tono 5", "#7a4a2a"]];
+  var PELOS = [["Negro", "#2a1e1a"], ["Castaño oscuro", "#4a2f22"], ["Castaño", "#7a4a2a"], ["Rubio", "#e0b860"], ["Pelirrojo", "#b8502a"], ["Canoso", "#b8b8c0"]];
+  var HEX = /^#[0-9a-f]{6}$/i;
+
+  function oscurecer(hex, f) {
+    var n = parseInt(hex.slice(1), 16), r = (n >> 16) & 255, g = (n >> 8) & 255, b = n & 255;
+    function c(v) { return ("0" + Math.round(v * f).toString(16)).slice(-2); }
+    return "#" + c(r) + c(g) + c(b);
+  }
+  function ropaDe(id) { return ROPAS.concat(ROPAS_GANADAS).filter(function (r) { return r.id === id; })[0] || ROPAS[0]; }
+  // Lo que Claude anotó de la foto (contexto/avatar.json), si hay.
+  function avatarDeFoto() { return !modoEjemplo && perfil && perfil.avatar ? perfil.avatar : null; }
+  function al(lista) { return lista[Math.floor(Math.random() * lista.length)]; }
+  // El primer personaje: el de la foto si Claude ya lo armó; si no, uno al azar. La ropa empieza al azar entre las seis.
+  function avatarInicial() {
+    var f = avatarDeFoto();
+    if (f) return { figura: "foto", anteojos: !!f.anteojos, ropa: al(ROPAS).id, piel: f.piel, pelo: f.pelo };
+    return { figura: al(["varon", "mujer", "neutro"]), anteojos: Math.random() < 0.5, ropa: al(ROPAS).id, piel: al(PIELES)[1], pelo: al(PELOS)[1] };
+  }
+  // Corrige lo guardado si algo ya no existe (por ejemplo, «Desde tu foto» sin avatar.json).
+  function avatarValido(a) {
+    if (!a || typeof a !== "object") return null;
+    var f = avatarDeFoto(), b = {
+      figura: FIGURA_NOMBRE[a.figura] ? a.figura : "varon",
+      anteojos: !!a.anteojos,
+      ropa: ropaDe(a.ropa).id,
+      piel: HEX.test(a.piel || "") ? a.piel : PIELES[1][1],
+      pelo: HEX.test(a.pelo || "") ? a.pelo : PELOS[1][1]
+    };
+    if (b.figura === "foto" && !f) b.figura = "varon";
+    return b;
+  }
+  function armarFiguras(av) {
+    var f = av.figura === "foto" ? avatarDeFoto() : null;
+    var base = FIGURAS[f ? f.base : av.figura] || FIGURAS.varon, ropa = ropaDe(av.ropa);
+    var paleta = { H: av.pelo, S: av.piel, M: oscurecer(av.piel, 0.72), K: "#222034", W: "#ffffff", J: ropa.J, Y: ropa.Y, P: ropa.P };
+    var res = {};
     ["abajo", "arriba", "derecha"].forEach(function (nombre) {
       [0, 1].forEach(function (paso) {
-        var filas = FIGURAS[nombre].slice();
-        if (paso) { filas[14] = PIERNAS_PASO[0]; filas[15] = PIERNAS_PASO[1]; }
+        var filas = base[nombre].map(function (fila) { return (fila + "................").slice(0, 16).split(""); });
+        if (paso) { filas[14] = PIERNAS_PASO[nombre][0].split(""); filas[15] = PIERNAS_PASO[nombre][1].split(""); }
+        if (f && f.barba) BARBA[nombre].forEach(function (p) { if (filas[p[1]][p[0]] === "S") filas[p[1]][p[0]] = p[2]; });
+        if (av.anteojos) ANTEOJOS[nombre].forEach(function (p) { if (filas[p[1]][p[0]] !== ".") filas[p[1]][p[0]] = p[2]; });
         var cv = document.createElement("canvas"); cv.width = 16; cv.height = 16;
         var g = cv.getContext("2d");
-        filas.forEach(function (fila, y) {
-          fila = (fila + "................").slice(0, 16);
-          for (var x = 0; x < 16; x++) { var ch = fila[x]; if (PALETA_PJ[ch]) rect(g, x, y, 1, 1, PALETA_PJ[ch]); }
-        });
-        figuras[nombre + paso] = cv;
+        filas.forEach(function (fila, y) { fila.forEach(function (ch, x) { if (paleta[ch]) rect(g, x, y, 1, 1, paleta[ch]); }); });
+        res[nombre + paso] = cv;
       });
     });
+    return res;
   }
+  // La ropa ganada: el traje con una entrevista agendada (una acción de preparar la entrevista sin hacer,
+  // o una práctica armada de una postulación abierta), la remera de festejo con una oferta aceptada.
+  function hayEntrevista(d) {
+    var abiertas = {};
+    (d.postulaciones || []).forEach(function (p) { if (p.columna !== "cerrada") abiertas[p.id] = true; });
+    return (d.acciones || []).some(function (a) {
+      return !a.hecha && (/^\/preparar-entrevista\b/.test((a.pedido || "").trim()) || /^prepar\w*\s+(la\s+)?(entrevista|charla)/i.test(a.texto || ""));
+    }) || practicas.some(function (p) { return p.postulacion && abiertas[p.postulacion]; });
+  }
+  function ropaDisponible(d) {
+    var ok = {};
+    config.ganadas.forEach(function (id) { ok[id] = true; });
+    if (d && hayEntrevista(d)) ok.traje = true;
+    if (d && (d.postulaciones || []).some(function (p) { return p.resultado === "oferta-aceptada"; })) ok.festejo = true;
+    return ok;
+  }
+  // Lo que se gana queda guardado (en la prueba con ?ejemplo, no) y se avisa una sola vez.
+  function revisarRopaGanada() {
+    if (!datosActuales) return;
+    var ok = ropaDisponible(datosActuales);
+    ROPAS_GANADAS.forEach(function (r) {
+      if (ok[r.id] && config.ganadas.indexOf(r.id) < 0 && !modoEjemplo) {
+        config.ganadas.push(r.id); guardarConfig();
+        sonar([523, 659, 784, 1047]); avisar(r.aviso);
+      }
+    });
+  }
+  var figuras = {};
+  function prepararFiguras() { config.avatar = avatarValido(config.avatar) || avatarInicial(); figuras = armarFiguras(config.avatar); }
   function dibujarBici(g, x, y, mira) {
     var K = "#222034", R = "#c0302a";
     if (mira === "abajo" || mira === "arriba") {
@@ -942,7 +1103,7 @@
   function guardarPosicion() {
     if (escena !== "pueblo") return;
     clearTimeout(guardarPosT);
-    guardarPosT = setTimeout(function () { config.pos = { x: pj.tx, y: pj.ty, mira: pj.mira }; guardarConfig(); }, 400);
+    guardarPosT = setTimeout(function () { config.pos = { x: pj.tx, y: pj.ty, mira: pj.mira }; guardarConfig(true); }, 400);
   }
 
   function actualizar(dt) {
@@ -1055,15 +1216,28 @@
       if (dlg && dlg.cosa) pintarDialogo();
     }, function () { perfil = { estado: "error" }; });
   }
+  function ponerHogar(piso) {
+    escena = "hogar"; casaActual = null;
+    mapa = armarHogar(piso);
+    capaFija = dibujarCapa(mapa);
+    ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
+    actualizarAyuda();
+  }
   function entrarHogar(piso) {
     sonar([392, 523]);
     cargarPerfil();
+    transicion(function () { ponerHogar(piso); });
+  }
+  // Desde el menú de Enter: directo a la planta baja de tu casa. Si andabas en bici, queda estacionada en la puerta.
+  function irACasa() {
+    cerrar(); pj.ruta = null; pj.alLlegar = null;
+    sonar([659, 784, 988]);
+    cargarPerfil();
     transicion(function () {
-      escena = "hogar"; casaActual = null;
-      mapa = armarHogar(piso);
-      capaFija = dibujarCapa(mapa);
-      ubicar(mapa.inicio.x, mapa.inicio.y, "arriba");
-      actualizarAyuda();
+      if (escena !== "pueblo") salirYa();
+      var pu = pueblo.mapa.miCasa.puerta;
+      if (config.velocidad === 2 && !bici) bici = lugarParaBici(pu.x, pu.y + 1);
+      ponerHogar(1);
     });
   }
   function cambiarPiso(piso, x) {
@@ -1132,6 +1306,9 @@
       brillos.forEach(function (b) { rect(gb, f.x * T + b[0] - camX, f.y * T + b[1] - camY, 2, 1, "#ffffff"); });
     }
 
+    // el espejo de tu cuarto te refleja cuando estás enfrente
+    if (escena === "hogar" && mapa.piso === 2 && pj.tx >= 8 && pj.tx <= 10 && pj.ty <= 4)
+      gb.drawImage(figuras.abajo0, 3, 0, 10, 16, 9 * T + 3 - camX, T + 6 - camY, 10, 16);
     // la bici estacionada
     if (escena === "pueblo" && bici && !pj.anim) dibujarBiciSola(gb, bici.x * T - camX, bici.y * T - camY);
     // personaje: caminando, corriendo (cuando camina solo) o en bici, y las animaciones de subirse y bajarse
@@ -1449,6 +1626,7 @@
     } else if (c.tipo === "espejo") {
       r.titulo = "Espejo";
       r.grande = true;
+      r.htmlDespues = '<p class="tenue">El placard de al lado cambia tu personaje y tu ropa.</p>';
       if (perfil.estado === "cargando" || perfil.estado === "nada") r.html = '<p class="tenue">Mirándote…</p>';
       else if (perfil.posicionamiento) r.html = "<p>Así te presentás hoy, según <code>contexto/posicionamiento.md</code>:</p>" + md(perfil.posicionamiento);
       else {
@@ -1592,6 +1770,7 @@
       r.titulo = "Prioridades";
       r.items = accionesPrioritarias().map(function (a) { return { tipo: "accion", a: a }; });
       r.html = r.items.length ? '<p class="tenue">Ordenadas de la más importante a la menos.</p>' : "<p>No hay acciones pendientes. ¡Todo al día!</p>";
+      r.items.unshift({ tipo: "irCasa", etiqueta: "🏠 Ir a Tu casa" });
     } else if (dlg.tipo === "calendario") {
       r.titulo = "Calendario";
       r.items = accionesConFecha().map(function (a) { return { tipo: "accion", a: a, fechaAdelante: true }; });
@@ -1613,6 +1792,8 @@
         r.items = MUDABLES.filter(function (z) { return z !== p.columna; }).map(function (z) { return { tipo: "destino", destino: z, etiqueta: ZONAS[z].nombre }; });
         r.items.push({ tipo: "cerrar", etiqueta: "Cerradas (lo resuelve Claude: copia el pedido)" });
       }
+    } else if (dlg.tipo === "placard") {
+      contenidoPlacard(r);
     } else if (dlg.tipo === "config") {
       var OBJETOS = { dia: ["Lámpara", "Prendela, apagala o dejala que siga la hora de la computadora."],
         velocidad: ["Casco de bicicleta", "Con el casco puesto, al salir te subís a la bici que está al lado de la puerta."],
@@ -1627,9 +1808,81 @@
     return r;
   }
 
+  // ---- el placard: el personaje, los anteojos, la ropa, la piel y el pelo ----
+  function nombreDe(lista, v) { var x = lista.filter(function (p) { return p[1] === v; })[0]; return x ? x[0] : "El de antes"; }
+  function opcionesPlacard(b) {
+    var f = avatarDeFoto(), disp = ropaDisponible(datosActuales);
+    var pieles = (f ? [["Como en tu foto", f.piel]] : []).concat(PIELES), pelos = (f ? [["Como en tu foto", f.pelo]] : []).concat(PELOS);
+    function valores(lista, actual) { var v = lista.map(function (p) { return p[1]; }); if (v.indexOf(actual) < 0) v.unshift(actual); return v; }
+    return [
+      { clave: "figura", nombre: "Personaje", valores: (f ? ["foto"] : []).concat(["varon", "mujer", "neutro"]), texto: function (v) { return FIGURA_NOMBRE[v]; } },
+      { clave: "anteojos", nombre: "Anteojos", valores: [false, true], texto: function (v) { return v ? "Con anteojos" : "Sin anteojos"; } },
+      { clave: "ropa", nombre: "Ropa", valores: ROPAS.concat(ROPAS_GANADAS.filter(function (x) { return disp[x.id]; })).map(function (x) { return x.id; }),
+        texto: function (v) { return ropaDe(v).nombre; } },
+      { clave: "piel", nombre: "Piel", valores: valores(pieles, b.piel), texto: function (v) { return nombreDe(pieles, v); } },
+      { clave: "pelo", nombre: "Pelo", valores: valores(pelos, b.pelo), texto: function (v) { return nombreDe(pelos, v); } }
+    ];
+  }
+  function contenidoPlacard(r) {
+    var b = dlg.borrador, f = avatarDeFoto(), disp = ropaDisponible(datosActuales), conFoto = perfil.foto && !modoEjemplo;
+    r.titulo = "Placard";
+    r.grande = true;
+    r.html = '<div class="probador"><div><canvas id="probador" width="22" height="26"></canvas>En el espejo</div>' +
+      (conFoto ? '<div><img src="/api/foto" alt="Tu foto">Tu foto</div>' : "") + "</div>" +
+      "<p>Elegí cómo salís a la calle. El espejo te muestra el cambio antes de ponértelo.</p>";
+    if (f) r.html += '<p class="tenue">«Desde tu foto» lo armó Claude mirando tu foto' + (f.nota ? ": " + esc(f.nota) : ".") + "</p>";
+    else if (conFoto) r.html += '<p class="tenue">Hay una foto en <code>contexto/</code>. Pedile a Claude que arme un personaje parecido a vos.</p>';
+    else r.html += '<p class="tenue">Si dejás tu foto en <code>contexto/foto.jpg</code> (o .png), Claude puede armar un personaje parecido a vos.</p>';
+    var bloqueadas = ROPAS_GANADAS.filter(function (x) { return !disp[x.id]; });
+    if (bloqueadas.length) r.html += '<p class="tenue">' + bloqueadas.map(function (x) { return "🔒 " + esc(x.nombre) + ": se gana " + esc(x.gana) + "."; }).join("<br>") + "</p>";
+    r.items = opcionesPlacard(b).map(function (o) { return { tipo: "avatarOpcion", o: o }; });
+    r.items.push({ tipo: "ponerme", etiqueta: "✅ Ponérmelo" });
+    if (conFoto) r.items.push({ tipo: "avatarFoto", etiqueta: f ? "Pedirle a Claude que vuelva a mirar mi foto" : "Pedirle a Claude que arme mi personaje desde mi foto" });
+    r.htmlDespues = '<p class="tenue">Lo que elijas queda guardado ' + (conArchivo ? "en <code>tablero/preferencias-retro.json</code> y en este navegador." : "en este navegador.") + "</p>";
+  }
+  function dibujarProbador() {
+    var cv = document.getElementById("probador");
+    if (!cv) return;
+    var g = cv.getContext("2d");
+    rect(g, 0, 0, 22, 26, "#c8a040"); rect(g, 2, 2, 18, 22, "#cfe8f4"); rect(g, 2, 20, 18, 4, "#b8d8e8");
+    g.drawImage(armarFiguras(dlg.borrador).abajo0, 3, 6);
+    rect(g, 4, 4, 1, 4, "#ffffff");
+  }
+  function cambiarAvatar(o, paso) {
+    var b = dlg.borrador, i = o.valores.indexOf(b[o.clave]);
+    b[o.clave] = o.valores[((i < 0 ? 0 : i) + paso + o.valores.length) % o.valores.length];
+    var f = avatarDeFoto();
+    if (o.clave === "figura" && b.figura === "foto" && f) { b.piel = f.piel; b.pelo = f.pelo; }
+    sonar([587], "square", 0.05);
+    pintarDialogo();
+  }
+  function ponerme() {
+    config.avatar = avatarValido(dlg.borrador) || config.avatar;
+    figuras = armarFiguras(config.avatar);
+    guardarConfig();
+    cerrar();
+    sonar([523, 659, 784]);
+    avisar("¡Listo! Así salís a la calle.");
+  }
+  function pedidoAvatar() {
+    return "Armá mi personaje del tablero retro desde mi foto. Mirá la foto que está en contexto/ (foto.jpg, foto.png o foto.webp) " +
+      "y escribí contexto/avatar.json con este formato:\n" +
+      '{"base": "varon | mujer | neutro", "piel": "#rrggbb", "pelo": "#rrggbb", "barba": false, "anteojos": false, "nota": "una línea con lo que tomaste de la foto", "fecha": "AAAA-MM-DD"}\n' +
+      "La base es la figura del personaje (varón, mujer o neutro): preguntame cuál prefiero, no la deduzcas de la foto. " +
+      "Para la piel y el pelo elegí los colores más parecidos a la foto; si algo no se distingue, preguntame. " +
+      "No describas la foto en ningún otro archivo y no la subas a ningún lado.";
+  }
+
   function teclasDe(item, varios) {
     var t = varios ? '<span class="tecla">↑↓</span> elegir · ' : "";
     var lista = dlg.tipo === "prioridades" || dlg.tipo === "calendario";
+    if (dlg.tipo === "placard") {
+      var cerrarSin = ' · <span class="tecla">Esc</span> cerrar sin cambiar';
+      if (item && item.tipo === "avatarOpcion") return t + '<span class="tecla">←→</span> o <span class="tecla">A</span> cambiar · <span class="tecla">Enter</span> ponérmelo' + cerrarSin;
+      if (item && item.tipo === "avatarFoto") return t + '<span class="tecla">S</span> copiar pedido para Claude · <span class="tecla">Enter</span> ponérmelo' + cerrarSin;
+      return t + '<span class="tecla">A</span> ponérmelo' + cerrarSin;
+    }
+    if (item && item.tipo === "irCasa") return t + '<span class="tecla">A</span> ir ahora · <span class="tecla">Esc</span> cerrar';
     if (dlg.tipo === "config") return (varios ? '<span class="tecla">↑↓</span> elegir · ' : "") + '<span class="tecla">←→</span> o <span class="tecla">A</span> cambiar · <span class="tecla">Esc</span> cerrar';
     if (dlg.tipo === "mudanza") return t + (dlg.post ? '<span class="tecla">A</span> mudarla · <span class="tecla">Esc</span> volver' : '<span class="tecla">A</span> elegir · <span class="tecla">Esc</span> cerrar');
     if (dlg.tipo === "cosa" && dlg.cosa.tipo === "casa" && dlg.cosa.ent.zona === "cerrada")
@@ -1656,6 +1909,7 @@
         var elegida = i === dlg.sel && (varios || it.tipo !== "accion");
         var cuerpo;
         if (it.tipo === "accion") cuerpo = lineaAccion(it.a, { conEmpresa: conEmpresa, fechaAdelante: it.fechaAdelante });
+        else if (it.tipo === "avatarOpcion") cuerpo = esc(it.o.nombre) + ': <span class="valor">◀ ' + esc(it.o.texto(dlg.borrador[it.o.clave])) + " ▶</span>";
         else if (it.tipo === "opcion") cuerpo = esc(it.o.nombre) + ': <span class="valor">◀ ' + esc(it.o.textos[String(config[it.o.clave])]) + " ▶</span>";
         else cuerpo = "<b>" + esc(it.etiqueta) + "</b>";
         return '<li class="' + (elegida ? "elegida" : "") + '"><span class="cursor">' + (elegida ? "▶" : "") + "</span>" + cuerpo + "</li>";
@@ -1670,6 +1924,7 @@
       if (tec) html += '<p class="teclas">' + tec + "</p>";
     }
     dialogo.innerHTML = html + '<span class="sigue">▼</span>';
+    if (dlg.tipo === "placard") dibujarProbador();
     var el = dialogo.querySelector(".elegida");
     if (el && el.scrollIntoView && varios) el.scrollIntoView({ block: "nearest" });
   }
@@ -1685,6 +1940,7 @@
     if (c.tipo === "calendario") return abrirLista("calendario", sel);
     if (c.tipo === "mudanza") return abrirLista("mudanza", sel);
     if (c.tipo === "opcion") { sonar([523, 784]); return mostrar({ tipo: "config", solo: c.clave, items: [], sel: 0, confirmar: false }); }
+    if (c.tipo === "placard") { sonar([523, 784]); return mostrar({ tipo: "placard", borrador: Object.assign({}, config.avatar), items: [], sel: 0, confirmar: false }); }
     mostrar({ tipo: "cosa", cosa: c, items: [], sel: sel || 0, confirmar: false });
     if (c.tipo === "info" && (!detalles[c.ent.p.id] || detalles[c.ent.p.id].estado === "cargando")) {
       cargarDetalles(c.ent.p.id, function () { if (dlg && dlg.cosa === c) pintarDialogo(); });
@@ -1889,8 +2145,9 @@
   }
 
   function reconstruir(datos) {
-    var antes = dlg ? { tipo: dlg.tipo, sel: dlg.sel } : null;
+    var antes = dlg ? { tipo: dlg.tipo, sel: dlg.sel, solo: dlg.solo } : null;
     datosActuales = datos;
+    revisarRopaGanada();
     armarTodoElPueblo();
     if (escena === "casa") {
       var id = casaActual.p.id;
@@ -1909,7 +2166,8 @@
     }
     actualizarHud();
     if (!antes) return;
-    if (antes.tipo === "prioridades" || antes.tipo === "calendario" || antes.tipo === "config") { mostrar({ tipo: antes.tipo, items: [], sel: antes.sel, confirmar: false }); return; }
+    if (antes.tipo === "placard") { pintarDialogo(); return; }
+    if (antes.tipo === "prioridades" || antes.tipo === "calendario" || antes.tipo === "config") { mostrar({ tipo: antes.tipo, solo: antes.solo, items: [], sel: antes.sel, confirmar: false }); return; }
     if (antes.tipo === "mudanza") { cerrar(); return; }
     var c = delante();
     if (!c) { cerrar(); return; }
@@ -1927,7 +2185,7 @@
       " · " + activas + " postulaciones activas · <b>" + pend + "</b> pendientes" + (modoEjemplo ? " · <i>prueba</i>" : "");
   }
   function actualizarAyuda() {
-    document.getElementById("ayuda").innerHTML = "← ↑ → ↓ moverse · A mirar · Enter prioridades · <span class=\"m\">M minimapa</span>" +
+    document.getElementById("ayuda").innerHTML = "← ↑ → ↓ moverse · A mirar · Enter prioridades e ir a casa · <span class=\"m\">M minimapa</span>" +
       (escena === "casa" || (escena === "hogar" && mapa.piso === 1) ? " · ↓ por la puerta: salir" : escena === "hogar" ? " · la escalera baja" : "");
   }
 
@@ -1968,6 +2226,17 @@
       if (k === "m") { config.minimapa = !config.minimapa; guardarConfig(); return pintarDialogo(); }
       return nada();
     }
+    if (dlg.tipo === "placard") {
+      if (it && it.tipo === "avatarOpcion") {
+        if (ev.key === "ArrowLeft" || ev.key === "ArrowRight") return cambiarAvatar(it.o, ev.key === "ArrowLeft" ? -1 : 1);
+        if (k === "a" || k === " ") return cambiarAvatar(it.o, 1);
+      }
+      if (k === "enter" || ((k === "a" || k === " ") && it && it.tipo === "ponerme")) return ponerme();
+      if (k === "s" && it && it.tipo === "avatarFoto") return copiar(pedidoAvatar());
+      if (k === "escape") return cerrar();
+      if (DIRS[ev.key]) return;
+      return nada();
+    }
     if (dlg.tipo === "mudanza") {
       if (k === "a" || k === "enter" || k === " ") {
         if (!it) return nada();
@@ -2002,6 +2271,7 @@
     }
     if (k === "m") { config.minimapa = !config.minimapa; guardarConfig(); return; }
     if (k === "a" || k === "enter" || k === " ") {
+      if (it && it.tipo === "irCasa") return irACasa();
       if ((dlg.tipo === "prioridades" || dlg.tipo === "calendario") && it) return irA(it.a);
       if (dlg.tipo === "cosa" && dlg.cosa.tipo === "casa" && dlg.cosa.ent.zona === "cerrada") {
         var cerrada = dlg.cosa.ent; cerrar();
@@ -2046,9 +2316,13 @@
   addEventListener("resize", ajustar);
 
   // ---------- arranque ----------
-  cargarDatos(function (datos) {
+  cargarDatos(function (datos) { cargarPreferencias(function () { arrancar(datos); }); });
+  function arrancar(datos) {
+    var nuevo = !config.avatar;
     prepararFiguras();
+    if (nuevo) guardarConfig(); // el personaje inicial (al azar o desde la foto) queda elegido
     datosActuales = datos;
+    revisarRopaGanada();
     armarTodoElPueblo();
     mapa = pueblo.mapa; capaFija = pueblo.capa;
     if (config.velocidad === 1) bici = { x: mapa.miCasa.bici.x, y: mapa.miCasa.bici.y };
@@ -2066,7 +2340,7 @@
       dibujar(ahora);
       requestAnimationFrame(cuadro);
     })(antes);
-  });
+  }
 })();
 </script>
 </body>
